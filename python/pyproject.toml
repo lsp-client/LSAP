@@ -1,0 +1,19 @@
+[project]
+name = "lsap"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "lsap-models",
+    "lsp-client",
+    "pydantic>=2.12.5",
+]
+
+[tool.uv.sources]
+lsp-client = { git = "https://github.com/lsp-client/python-sdk.git" }
+lsap-models = { path = "../models", editable = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
