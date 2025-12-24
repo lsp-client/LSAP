@@ -3,9 +3,15 @@
   "module": "index.ts",
   "type": "module",
   "devDependencies": {
-    "@types/bun": "latest"
+    "@apidevtools/json-schema-ref-parser": "^15.1.3",
+    "@types/bun": "latest",
+    "json-schema-to-zod": "^2.7.0"
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "nunjucks": "^3.2.4",
+    "zod": "^4.2.1"
   }
 }

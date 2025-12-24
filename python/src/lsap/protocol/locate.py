@@ -57,9 +57,9 @@ class LocateResponse(Response):
     file_path: Path
     position: Position
 
-    @override
-    def format(self) -> str:
-        return f"Located {self.file_path} at {self.position.line + 1}:{self.position.character + 1}"
+    templates = {
+        "markdown": "Located `{{ file_path }}` at {{ position.line + 1 }}:{{ position.character + 1 }}"
+    }
 
 
 @define

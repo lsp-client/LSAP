@@ -255,6 +255,7 @@ dependencies = [
     { name = "asyncer" },
     { name = "attrs" },
     { name = "cattrs" },
+    { name = "jinja2" },
     { name = "lsp-client" },
     { name = "pydantic" },
 ]
@@ -271,6 +272,7 @@ requires-dist = [
     { name = "asyncer", specifier = ">=0.0.11" },
     { name = "attrs", specifier = ">=25.4.0" },
     { name = "cattrs", specifier = ">=25.3.0" },
+    { name = "jinja2", specifier = ">=3.1.6" },
     { name = "lsp-client", editable = "packages/lsp-client" },
     { name = "pydantic", specifier = ">=2.12.5" },
 ]

@@ -82,16 +82,12 @@ class SymbolRequest(LocateRequest): ...
 @define
 class SymbolResponse(Response):
     file_path: Path
-    path: SymbolPath
-    snippet: str
+    symbol_path: SymbolPath
+    symbol_content: str
 
-    @override
-    def format(self) -> str:
-        path_str = ".".join(self.path)
-        return (
-            f"### Symbol: `{path_str}` in `{self.file_path}`\n\n"
-            f"```python\n{self.snippet}\n```"
-        )
+    templates = {
+        "markdown": "### Symbol: `{{ symbol_path | join('.') }}` in `{{ file_path }}`\n\n```python\n{{ symbol_content }}\n```"
+    }
 
 
 @define
@@ -105,11 +101,11 @@ class SymbolCapability(Capability[SymbolClient, SymbolRequest, SymbolResponse]):
         return LocateCapability(client=self.client)
 
     async def __call__(self, req: SymbolRequest) -> SymbolResponse | None:
-        resp = await self.locate(req)
-        path = resp and await lookup_position(
+        location = await self.locate(req)
+        path = location and await lookup_position(
             self.client,
             req.locate.file_path,
-            resp.position,
+            location.position,
         )
         symbols = await self.client.request_document_symbol_list(req.locate.file_path)
 
@@ -126,6 +122,6 @@ class SymbolCapability(Capability[SymbolClient, SymbolRequest, SymbolResponse]):
 
         return SymbolResponse(
             file_path=req.locate.file_path,
-            path=path,
-            snippet=snippet.content,
+            symbol_path=path,
+            symbol_content=snippet.content,
         )

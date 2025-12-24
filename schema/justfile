@@ -1,0 +1,2 @@
+export-schema output="dist/schemas":
+    uv run python -m lsap_schema -o {{output}}

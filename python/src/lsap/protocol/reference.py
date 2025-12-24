@@ -1,28 +1,30 @@
 from functools import cached_property
 from pathlib import Path
-from typing import final, override
+from typing import final, override, runtime_checkable
 
 import asyncer
 from attrs import define, frozen
-from lsp_client import Client
 from lsp_client.capability.request import (
     WithRequestDocumentSymbol,
     WithRequestReferences,
 )
+from lsp_client.protocol import CapabilityClientProtocol
 from lsprotocol.types import Location, Position, Range
 
 from lsap.utils.content import SnippetReader
 from lsap.utils.symbol import SymbolPath
 
-from .abc import Capability, Response
+from .abc import Capability, Protocol, Response
 from .locate import LocateCapability, LocateRequest
-from .symbol import SymbolCapability, lookup_position, lookup_symbol
+from .symbol import SymbolCapability, SymbolResponse, lookup_position, lookup_symbol
 
 
+@runtime_checkable
 class ReferenceClient(
     WithRequestReferences,
     WithRequestDocumentSymbol,
-    Client,
+    CapabilityClientProtocol,
+    Protocol,
 ): ...
 
 
@@ -34,26 +36,24 @@ class ReferenceRequest(LocateRequest): ...
 @final
 @define
 class ReferenceResponse(Response):
-    @frozen
-    class Item:
-        file_path: Path
-        symbol_path: SymbolPath
-        snippet: str
+    items: list[SymbolResponse]
 
-    items: list[Item]
-
-    @override
-    def format(self) -> str:
-        lines = [
-            f"- `{item.file_path}` - `{'.'.join(item.symbol_path)}`\n```python\n{item.snippet}\n```"
-            for item in self.items
-        ]
-
-        return "\n\n".join(lines)
+    templates = {
+        "markdown": """{% for item in items -%}
+- `{{ item.file_path }}` - `{{ item.symbol_path | join('.') }}`
+```python
+{{ item.symbol_content }}
+```
+{% if not loop.last %}
+{% endif %}
+{%- endfor %}"""
+    }
 
 
 @define
-class LSAPReference(Capability[ReferenceClient, ReferenceRequest, ReferenceResponse]):
+class ReferenceCapability(
+    Capability[ReferenceClient, ReferenceRequest, ReferenceResponse]
+):
     client: ReferenceClient
 
     @cached_property
@@ -78,7 +78,7 @@ class LSAPReference(Capability[ReferenceClient, ReferenceRequest, ReferenceRespo
         if not ref_result:
             return None
 
-        items: list[ReferenceResponse.Item] = []
+        items: list[SymbolResponse] = []
 
         async with asyncer.create_task_group() as tg:
             for loc in ref_result:
@@ -87,7 +87,7 @@ class LSAPReference(Capability[ReferenceClient, ReferenceRequest, ReferenceRespo
         return ReferenceResponse(items=items)
 
     async def _process_reference(
-        self, loc: Location, items: list[ReferenceResponse.Item]
+        self, loc: Location, items: list[SymbolResponse]
     ) -> None:
         file_path = self.client.from_uri(loc.uri)
         path = await lookup_position(self.client, file_path, loc.range.start)
@@ -110,9 +110,9 @@ class LSAPReference(Capability[ReferenceClient, ReferenceRequest, ReferenceRespo
             return
 
         items.append(
-            ReferenceResponse.Item(
+            SymbolResponse(
                 file_path=file_path,
                 symbol_path=path,
-                snippet=snippet.content,
+                symbol_content=snippet.content,
             )
         )
