@@ -1,16 +1,20 @@
 from pathlib import Path
 
-from pydantic import BaseModel
+from attrs import define
+
+from .abc import Request, Response
 
 
-class InlayReadRequest(BaseModel):
+@define
+class InlayReadRequest(Request):
     file_path: Path
     """
     Relative file path to read with inlay hints.
     """
 
 
-class InlayReadResponse(BaseModel):
+@define
+class InlayReadResponse(Response):
     content: str
     """
     File content with inlay hints.

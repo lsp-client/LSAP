@@ -1,0 +1,50 @@
+from pathlib import Path
+
+import pytest
+from lsprotocol.types import Position
+
+from lsap.exception import AmbiguousError
+from lsap.protocol.locate import LocateCapability, LocateRequest, LocateText
+
+
+class MockClient:
+    def read_file(self, file_path: Path) -> str:
+        return "abc\ndef abc\nghi"
+
+
+@pytest.mark.asyncio
+async def test_locate_text_ambiguous():
+    client = MockClient()
+    capability = LocateCapability(client=client)  # type: ignore
+
+    # "abc" appears twice: line 0 and line 1
+    req = LocateRequest(
+        locate=LocateText(
+            file_path=Path("test.py"),
+            line=(0, 1),
+            find="abc",
+        )
+    )
+
+    with pytest.raises(AmbiguousError) as excinfo:
+        await capability(req)
+
+    assert "Multiple matches for 'abc'" in str(excinfo.value)
+
+
+@pytest.mark.asyncio
+async def test_locate_text_single_match():
+    client = MockClient()
+    capability = LocateCapability(client=client)  # type: ignore
+
+    req = LocateRequest(
+        locate=LocateText(
+            file_path=Path("test.py"),
+            line=(0, 1),
+            find="def",
+        )
+    )
+
+    resp = await capability(req)
+    assert resp is not None
+    assert resp.position == Position(line=1, character=0)

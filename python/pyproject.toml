@@ -5,15 +5,28 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "lsap-models",
+    "anyio>=4.12.0",
+    "asyncer>=0.0.11",
+    "attrs>=25.4.0",
+    "cattrs>=25.3.0",
     "lsp-client",
     "pydantic>=2.12.5",
 ]
 
-[tool.uv.sources]
-lsp-client = { git = "https://github.com/lsp-client/python-sdk.git" }
-lsap-models = { path = "../models", editable = true }
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.uv.workspace]
+members = [
+    "packages/lsp-client",
+]
+
+[tool.uv.sources]
+lsp-client = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-asyncio>=1.3.0",
+]
