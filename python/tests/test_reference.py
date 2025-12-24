@@ -3,7 +3,7 @@ import pytest
 from lsprotocol.types import (
     DocumentSymbol,
     SymbolKind,
-    Range,
+    Range as LSPRange,
     Position as LSPPosition,
     Location,
 )
@@ -24,11 +24,11 @@ class MockReferenceClient:
         foo_symbol = DocumentSymbol(
             name="foo",
             kind=SymbolKind.Method,
-            range=Range(
+            range=LSPRange(
                 start=LSPPosition(line=1, character=4),
                 end=LSPPosition(line=2, character=12),
             ),
-            selection_range=Range(
+            selection_range=LSPRange(
                 start=LSPPosition(line=1, character=8),
                 end=LSPPosition(line=1, character=11),
             ),
@@ -36,11 +36,11 @@ class MockReferenceClient:
         a_symbol = DocumentSymbol(
             name="A",
             kind=SymbolKind.Class,
-            range=Range(
+            range=LSPRange(
                 start=LSPPosition(line=0, character=0),
                 end=LSPPosition(line=2, character=12),
             ),
-            selection_range=Range(
+            selection_range=LSPRange(
                 start=LSPPosition(line=0, character=6),
                 end=LSPPosition(line=0, character=7),
             ),
@@ -57,14 +57,14 @@ class MockReferenceClient:
         return [
             Location(
                 uri="file://test.py",
-                range=Range(
+                range=LSPRange(
                     start=LSPPosition(line=1, character=8),
                     end=LSPPosition(line=1, character=11),
                 ),
             ),
             Location(
                 uri="file://test.py",
-                range=Range(
+                range=LSPRange(
                     start=LSPPosition(line=5, character=2),
                     end=LSPPosition(line=5, character=5),
                 ),
@@ -85,4 +85,4 @@ async def test_reference():
     assert resp is not None
     assert len(resp.items) == 2
     assert resp.items[0].symbol_path == ["A", "foo"]
-    assert "def foo(self):" in resp.items[0].snippet
+    assert "def foo(self):" in resp.items[0].symbol_content

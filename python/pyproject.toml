@@ -10,6 +10,7 @@ dependencies = [
     "attrs>=25.4.0",
     "cattrs>=25.3.0",
     "jinja2>=3.1.6",
+    "lsap-schema",
     "lsp-client",
     "pydantic>=2.12.5",
 ]
@@ -25,6 +26,7 @@ members = [
 
 [tool.uv.sources]
 lsp-client = { workspace = true }
+lsap-schema = { path = "../schema", editable = true }
 
 [dependency-groups]
 dev = [

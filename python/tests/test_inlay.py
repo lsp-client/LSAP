@@ -1,7 +1,8 @@
 from pathlib import Path
 import pytest
-from lsprotocol.types import InlayHint, Position, Range
+from lsprotocol.types import InlayHint, Position as LSPPosition, Range as LSPRange
 from lsap.protocol.inlay import InlayReadCapability, InlayReadRequest
+from lsap_schema.schema import Position, Range
 
 
 class MockInlayClient:
@@ -9,18 +10,18 @@ class MockInlayClient:
         return "x = 1\ny = 2"
 
     async def request_inlay_hint(
-        self, file_path: Path, range: Range
+        self, file_path: Path, range: LSPRange
     ) -> list[InlayHint]:
         # Return hints in non-sorted order to test sorting
         return [
             InlayHint(
-                position=Position(line=1, character=1),
+                position=LSPPosition(line=1, character=1),
                 label=": int",
                 padding_left=True,
                 padding_right=True,
             ),
             InlayHint(
-                position=Position(line=0, character=1),
+                position=LSPPosition(line=0, character=1),
                 label=": int",
                 padding_left=False,
                 padding_right=False,
@@ -85,11 +86,11 @@ async def test_inlay_read_multiple_at_same_pos():
             return "x"
 
         async def request_inlay_hint(
-            self, file_path: Path, range: Range
+            self, file_path: Path, range: LSPRange
         ) -> list[InlayHint]:
             return [
-                InlayHint(position=Position(line=0, character=1), label=": A"),
-                InlayHint(position=Position(line=0, character=1), label=": B"),
+                InlayHint(position=LSPPosition(line=0, character=1), label=": A"),
+                InlayHint(position=LSPPosition(line=0, character=1), label=": B"),
             ]
 
         def get_inlay_hint_label(self, hint: InlayHint) -> str:
@@ -111,7 +112,7 @@ async def test_inlay_read_no_hints():
             return "x = 1"
 
         async def request_inlay_hint(
-            self, file_path: Path, range: Range
+            self, file_path: Path, range: LSPRange
         ) -> list[InlayHint]:
             return []
 

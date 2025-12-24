@@ -1,9 +1,7 @@
-from typing import NewType, Sequence
+from typing import Sequence
 
 from lsprotocol.types import DocumentSymbol
-
-Symbol = NewType("Symbol", str)
-SymbolPath = NewType("SymbolPath", list[Symbol])
+from lsap_schema.abc import SymbolPath
 
 
 def lookup_symbol(

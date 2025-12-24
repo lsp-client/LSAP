@@ -1,6 +1,11 @@
 from pathlib import Path
 import pytest
-from lsprotocol.types import DocumentSymbol, SymbolKind, Range, Position as LSPPosition
+from lsprotocol.types import (
+    DocumentSymbol,
+    SymbolKind,
+    Range as LSPRange,
+    Position as LSPPosition,
+)
 from lsap.protocol.symbol import SymbolCapability, SymbolRequest
 from lsap.protocol.locate import LocateText, LocateSymbol
 from lsap.utils.symbol import Symbol, SymbolPath
@@ -17,11 +22,11 @@ class MockSymbolClient:
         foo_symbol = DocumentSymbol(
             name="foo",
             kind=SymbolKind.Method,
-            range=Range(
+            range=LSPRange(
                 start=LSPPosition(line=1, character=4),
                 end=LSPPosition(line=2, character=12),
             ),
-            selection_range=Range(
+            selection_range=LSPRange(
                 start=LSPPosition(line=1, character=8),
                 end=LSPPosition(line=1, character=11),
             ),
@@ -29,11 +34,11 @@ class MockSymbolClient:
         a_symbol = DocumentSymbol(
             name="A",
             kind=SymbolKind.Class,
-            range=Range(
+            range=LSPRange(
                 start=LSPPosition(line=0, character=0),
                 end=LSPPosition(line=2, character=12),
             ),
-            selection_range=Range(
+            selection_range=LSPRange(
                 start=LSPPosition(line=0, character=6),
                 end=LSPPosition(line=0, character=7),
             ),
@@ -56,9 +61,9 @@ async def test_symbol_from_path():
 
     resp = await capability(req)
     assert resp is not None
-    assert resp.path == ["A", "foo"]
-    assert "def foo(self):" in resp.snippet
-    assert "pass" in resp.snippet
+    assert resp.symbol_path == ["A", "foo"]
+    assert "def foo(self):" in resp.symbol_content
+    assert "pass" in resp.symbol_content
 
 
 @pytest.mark.asyncio
@@ -72,5 +77,5 @@ async def test_symbol_from_text():
 
     resp = await capability(req)
     assert resp is not None
-    assert resp.path == ["A", "foo"]
-    assert "def foo(self):" in resp.snippet
+    assert resp.symbol_path == ["A", "foo"]
+    assert "def foo(self):" in resp.symbol_content

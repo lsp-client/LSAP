@@ -1,12 +1,9 @@
-from abc import ABC, abstractmethod
-from typing import Protocol, Any, ClassVar
+from abc import abstractmethod
+from typing import Protocol
 
-from attrs import define
-from cattrs import Converter
-from lsp_client.protocol import CapabilityClientProtocol
 from jinja2 import Template
-
-conveter = Converter()
+from lsp_client.protocol import CapabilityClientProtocol
+from pydantic import BaseModel
 
 
 class ClientProtocol(
@@ -15,43 +12,31 @@ class ClientProtocol(
 ): ...
 
 
-@define
-class Request: ...
+def format_response(model: BaseModel) -> str:
+    """
+    Format the response to standard Markdown format for agents to consume.
+    Uses jinja2 template from model_config if available.
+    """
+    config = model.model_config
+    json_schema_extra = config.get("json_schema_extra", {})
+    if not isinstance(json_schema_extra, dict):
+        return str(model)
+
+    templates = json_schema_extra.get("lsap_templates", {})
+    if not isinstance(templates, dict):
+        return str(model)
+
+    template_str = templates.get("markdown")
+    if not isinstance(template_str, str):
+        return str(model)
+
+    template = Template(template_str)
+    return template.render(model.model_dump())
 
 
-@define
-class Response(ABC):
-    templates: ClassVar[dict[str, str]] = {}
-
-    def format(self) -> str:
-        """
-        Format the response to standard Markdown format for agents to consume.
-        Uses jinja2 template from ClassVar if available.
-        """
-        template_str = self.templates.get("markdown")
-        if not template_str:
-            return self._fallback_format()
-
-        template = Template(template_str)
-        # We unstructure to dict for jinja2 rendering
-        return template.render(conveter.unstructure(self))
-
-    def _fallback_format(self) -> str:
-        raise NotImplementedError(
-            f"No markdown template defined for {self.__class__.__name__}"
-        )
-
-    def to_json(self) -> dict:
-        """
-        Convert the response to a JSON-serializable dictionary.
-        """
-
-        return conveter.unstructure(self)
-
-
-@define
-class Capability[C: ClientProtocol, Req: Request, Resp: Response]:
-    client: C
+class Capability[C: ClientProtocol, Req: BaseModel, Resp: BaseModel]:
+    def __init__(self, client: C) -> None:
+        self.client = client
 
     @abstractmethod
     async def __call__(self, req: Req) -> Resp | None: ...

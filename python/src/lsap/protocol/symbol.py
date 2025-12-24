@@ -1,17 +1,17 @@
 from functools import cached_property
 from pathlib import Path
-from typing import Protocol, Sequence, final, override
+from typing import Protocol, Sequence
 
-from attrs import define
 from lsp_client.capability.request import WithRequestDocumentSymbol
 from lsp_client.protocol import CapabilityClientProtocol
-from lsprotocol.types import DocumentSymbol, Position, Range
+from lsprotocol.types import DocumentSymbol, Position as LSPPosition, Range as LSPRange
+from lsap_schema.schema.symbol import SymbolRequest, SymbolResponse
 
 from lsap.utils.content import SnippetReader
 from lsap.utils.symbol import Symbol, SymbolPath
 
-from .abc import Capability, Response
-from .locate import LocateCapability, LocateRequest
+from .abc import Capability
+from .locate import LocateCapability
 
 
 class SymbolClient(
@@ -21,7 +21,7 @@ class SymbolClient(
 ): ...
 
 
-def _contains(range: Range, position: Position) -> bool:
+def _contains(range: LSPRange, position: LSPPosition) -> bool:
     return (
         (range.start.line, range.start.character)
         <= (position.line, position.character)
@@ -29,7 +29,7 @@ def _contains(range: Range, position: Position) -> bool:
     )
 
 
-def _lookup_position(nodes: Sequence[DocumentSymbol], p: Position) -> SymbolPath:
+def _lookup_position(nodes: Sequence[DocumentSymbol], p: LSPPosition) -> SymbolPath:
     for n in nodes:
         if not _contains(n.range, p):
             continue
@@ -38,7 +38,7 @@ def _lookup_position(nodes: Sequence[DocumentSymbol], p: Position) -> SymbolPath
 
 
 async def lookup_position(
-    client: SymbolClient, file_path: Path, position: Position
+    client: SymbolClient, file_path: Path, position: LSPPosition
 ) -> SymbolPath:
     if symbols := await client.request_document_symbol_list(file_path):
         if path := _lookup_position(symbols, position):
@@ -74,27 +74,8 @@ def lookup_symbol(
     return target
 
 
-@define
-class SymbolRequest(LocateRequest): ...
-
-
-@final
-@define
-class SymbolResponse(Response):
-    file_path: Path
-    symbol_path: SymbolPath
-    symbol_content: str
-
-    templates = {
-        "markdown": "### Symbol: `{{ symbol_path | join('.') }}` in `{{ file_path }}`\n\n```python\n{{ symbol_content }}\n```"
-    }
-
-
-@define
 class SymbolCapability(Capability[SymbolClient, SymbolRequest, SymbolResponse]):
     """Get info about a symbol located in a specific position."""
-
-    client: SymbolClient
 
     @cached_property
     def locate(self) -> LocateCapability:
@@ -102,10 +83,16 @@ class SymbolCapability(Capability[SymbolClient, SymbolRequest, SymbolResponse]):
 
     async def __call__(self, req: SymbolRequest) -> SymbolResponse | None:
         location = await self.locate(req)
-        path = location and await lookup_position(
+        if not location:
+            return None
+
+        lsp_pos = LSPPosition(
+            line=location.position.line, character=location.position.character
+        )
+        path = await lookup_position(
             self.client,
             req.locate.file_path,
-            location.position,
+            lsp_pos,
         )
         symbols = await self.client.request_document_symbol_list(req.locate.file_path)
 

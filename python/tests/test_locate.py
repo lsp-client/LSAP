@@ -1,10 +1,13 @@
 from pathlib import Path
 
 import pytest
-from lsprotocol.types import Position
 
 from lsap.exception import AmbiguousError
-from lsap.protocol.locate import LocateCapability, LocateRequest, LocateText
+from lsap.protocol.locate import (
+    LocateCapability,
+    LocateRequest,
+    LocateText,
+)
 
 
 class MockClient:
@@ -47,4 +50,5 @@ async def test_locate_text_single_match():
 
     resp = await capability(req)
     assert resp is not None
-    assert resp.position == Position(line=1, character=0)
+    assert resp.position.line == 1
+    assert resp.position.character == 0

@@ -1,14 +1,16 @@
-from pathlib import Path
-from typing import Protocol, override
+from typing import Protocol
 
-from attrs import define
 from lsp_client.capability.request.inlay_hint import WithRequestInlayHint
 from lsp_client.protocol import CapabilityClientProtocol
-from lsprotocol.types import Range
+from lsprotocol.types import (
+    Position as LSPPosition,
+    Range as LSPRange,
+)
+from lsap_schema.schema.inlay_model import InlayReadRequest, InlayReadResponse
 
 from lsap.utils.content import SnippetReader
 
-from .abc import Capability, Request, Response
+from .abc import Capability
 
 
 class InlayReadClient(
@@ -18,32 +20,6 @@ class InlayReadClient(
 ): ...
 
 
-@define
-class InlayReadRequest(Request):
-    file_path: Path
-    """
-    Relative file path to read with inlay hints.
-    """
-
-    range: Range | None = None
-    """
-    Optional range to read. If not provided, the whole file is read.
-    """
-
-
-@define
-class InlayReadResponse(Response):
-    content: str
-    """
-    File content with inlay hints.
-    """
-
-    @override
-    def format(self) -> str:
-        return self.content
-
-
-@define
 class InlayReadCapability(
     Capability[InlayReadClient, InlayReadRequest, InlayReadResponse]
 ):
@@ -53,7 +29,18 @@ class InlayReadCapability(
         if not reader._lines:
             return InlayReadResponse(content="")
 
-        target_range = req.range or reader.full_range
+        if req.range:
+            target_range = LSPRange(
+                start=LSPPosition(
+                    line=req.range.start.line, character=req.range.start.character
+                ),
+                end=LSPPosition(
+                    line=req.range.end.line, character=req.range.end.character
+                ),
+            )
+        else:
+            target_range = reader.full_range
+
         hints = await self.client.request_inlay_hint(req.file_path, target_range)
 
         # Get the base text for the requested range
