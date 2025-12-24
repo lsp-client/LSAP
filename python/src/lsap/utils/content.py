@@ -40,6 +40,30 @@ class SnippetReader:
             starts.append(starts[-1] + len(line))
         return starts
 
+    @property
+    def full_range(self) -> Range:
+        """
+        The Range covering the entire document.
+        """
+        if not self._lines:
+            return Range(
+                start=Position(line=0, character=0), end=Position(line=0, character=0)
+            )
+
+        last_line_idx = len(self._lines) - 1
+        return Range(
+            start=Position(line=0, character=0),
+            end=Position(line=last_line_idx, character=len(self._lines[last_line_idx])),
+        )
+
+    def position_to_offset(self, position: Position) -> int:
+        """
+        Convert a Position to a character offset.
+        """
+        line_idx = max(0, min(position.line, len(self._line_starts) - 1))
+        offset = self._line_starts[line_idx] + position.character
+        return min(offset, self._line_starts[-1])
+
     def offset_to_position(self, start: Position, offset: int) -> Position:
         """
         Convert a relative offset from a start position to an absolute Position.

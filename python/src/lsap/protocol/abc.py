@@ -3,13 +3,12 @@ from typing import Protocol
 
 from attrs import define
 from cattrs import Converter
-from lsp_client.protocol import CapabilityClientProtocol, CapabilityProtocol
+from lsp_client.protocol import CapabilityClientProtocol
 
 conveter = Converter()
 
 
 class ClientProtocol(
-    CapabilityProtocol,
     CapabilityClientProtocol,
     Protocol,
 ): ...
