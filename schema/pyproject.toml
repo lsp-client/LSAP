@@ -9,8 +9,14 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "pydantic>=2.12.5",
+    "python-liquid>=2.1.0",
 ]
 
 [build-system]
 requires = ["uv_build>=0.9.9,<0.10.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
