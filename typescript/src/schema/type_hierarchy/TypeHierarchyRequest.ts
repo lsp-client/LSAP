@@ -1,0 +1,3 @@
+import { z } from "zod";
+
+export const TypeHierarchyRequest = z.object({ "locate": z.union([z.object({ "file_path": z.string(), "line": z.union([z.number().int(), z.array(z.any()).min(2).max(2)]), "find": z.string(), "position": z.enum(["start","end"]).default("start") }), z.object({ "file_path": z.string(), "symbol_path": z.array(z.string()) }).describe("Locate by symbol path")]), "direction": z.enum(["supertypes","subtypes","both"]).default("both"), "depth": z.number().int().default(2) }).describe("Traces supertypes or subtypes of a class or interface.\n\nUse this to explore class inheritance, finding base classes (supertypes)\nor derived classes (subtypes).");

@@ -1,0 +1,3 @@
+import { z } from "zod";
+
+export const SymbolOutlineItem = z.object({ "name": z.string(), "kind": z.string(), "range": z.object({ "start": z.object({ "line": z.number().int(), "character": z.number().int() }), "end": z.object({ "line": z.number().int(), "character": z.number().int() }) }), "children": z.array(z.object({ "name": z.string(), "kind": z.string(), "range": z.object({ "start": z.object({ "line": z.number().int(), "character": z.number().int() }), "end": z.object({ "line": z.number().int(), "character": z.number().int() }) }), "children": z.any() })).default([]) });

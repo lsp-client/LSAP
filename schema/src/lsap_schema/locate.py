@@ -3,7 +3,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from ..abc import SymbolPath
+from .abc import SymbolPath
 
 
 class Position(BaseModel):
@@ -41,6 +41,12 @@ class LocateSymbol(BaseModel):
 
 
 class LocateRequest(BaseModel):
+    """
+    Base request for locating code positions.
+
+    Use this when you need to specify a target location by either a text search or a symbol path.
+    """
+
     locate: LocateText | LocateSymbol
     """Locate by text snippet or symbol path"""
 

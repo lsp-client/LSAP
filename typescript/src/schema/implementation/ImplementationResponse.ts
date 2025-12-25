@@ -1,0 +1,7 @@
+import { z } from "zod";
+
+export const ImplementationResponse = z.object({ "items": z.array(z.object({ "file_path": z.string(), "symbol_path": z.array(z.string()), "symbol_content": z.union([z.string(), z.null()]).default(null), "hover": z.union([z.string(), z.null()]).default(null), "parameters": z.union([z.array(z.object({ "name": z.string(), "label": z.string(), "documentation": z.union([z.string(), z.null()]).default(null) })), z.null()]).default(null) })), "offset": z.number().int(), "limit": z.union([z.number().int(), z.null()]).default(null), "total": z.union([z.number().int(), z.null()]).default(null), "has_more": z.boolean().default(false) });
+
+export const ImplementationResponseTemplates = {
+  "markdown": "\n### Implementations Found\n\n{% if total is not none -%}\n**Total implementations**: {{ total }} | **Showing**: {{ items | length }}{% if limit %} (Offset: {{ offset }}, Limit: {{ limit }}){% endif %}\n{%- endif %}\n\n{% if not items -%}\nNo concrete implementations found.\n{%- else -%}\n{%- for item in items %}\n- `{{ item.file_path }}` - `{{ item.symbol_path | join('.') }}`\n{% if item.hover -%}\n  {{ item.hover | indent(2) }}\n{%- endif %}\n{% if item.symbol_content -%}\n```python\n{{ item.symbol_content }}\n```\n{%- endif %}\n{%- endfor %}\n\n{% if has_more -%}\n---\n> [!TIP]\n> **More implementations available.**\n> To see more, specify a `limit` and use: `offset={{ offset + (limit or items|length) }}`\n{%- endif %}\n{%- endif %}\n"
+} as const;

@@ -1,0 +1,3 @@
+import { z } from "zod";
+
+export const DeclarationRequest = z.object({ "locate": z.union([z.object({ "file_path": z.string(), "line": z.union([z.number().int(), z.array(z.any()).min(2).max(2)]), "find": z.string(), "position": z.enum(["start","end"]).default("start") }), z.object({ "file_path": z.string(), "symbol_path": z.array(z.string()) }).describe("Locate by symbol path")]), "include_hover": z.boolean().default(true), "include_content": z.boolean().default(true) }).describe("Finds the declaration site of a symbol.\n\nUse this when you need to find where a symbol is declared (e.g. in a header or interface).");

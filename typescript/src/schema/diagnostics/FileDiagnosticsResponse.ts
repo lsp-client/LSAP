@@ -1,0 +1,7 @@
+import { z } from "zod";
+
+export const FileDiagnosticsResponse = z.object({ "file_path": z.string(), "diagnostics": z.array(z.object({ "range": z.object({ "start": z.object({ "line": z.number().int(), "character": z.number().int() }), "end": z.object({ "line": z.number().int(), "character": z.number().int() }) }), "severity": z.enum(["Error","Warning","Information","Hint"]), "message": z.string(), "source": z.union([z.string(), z.null()]).default(null), "code": z.union([z.string(), z.number().int(), z.null()]).default(null) })), "offset": z.number().int(), "limit": z.union([z.number().int(), z.null()]).default(null), "total": z.union([z.number().int(), z.null()]).default(null), "has_more": z.boolean().default(false) });
+
+export const FileDiagnosticsResponseTemplates = {
+  "markdown": "\n### Diagnostics for `{{ file_path }}`\n{% if total is not none -%}\n**Total issues**: {{ total }} | **Showing**: {{ diagnostics | length }}{% if limit %} (Offset: {{ offset }}, Limit: {{ limit }}){% endif %}\n{%- endif %}\n\n{% if not diagnostics -%}\nNo issues found.\n{%- else -%}\n{%- for d in diagnostics %}\n- **{{ d.severity }}**: {{ d.message }} (at line {{ d.range.start.line + 1 }}, col {{ d.range.start.character + 1 }})\n{%- endfor %}\n\n{% if has_more -%}\n---\n> [!TIP]\n> **More issues available.**\n> To see the rest, specify a `limit` and use: `offset={{ offset + (limit or diagnostics|length) }}`\n{%- endif %}\n{%- endif %}\n"
+} as const;
