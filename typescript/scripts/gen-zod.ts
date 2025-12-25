@@ -19,7 +19,8 @@ async function processDir(dir: string, outputDir: string) {
       const name = basename(entry.name, ".json");
       const zodCode = jsonSchemaToZod(dereferencedSchema);
 
-      const templates = (dereferencedSchema as any).lsap_templates;
+      const { markdown } = dereferencedSchema as any;
+      const templates = markdown ? { markdown } : undefined;
       console.log(`Checking templates for ${name}:`, templates);
       const templatesCode = templates ? `\n\nexport const ${name}Templates = ${JSON.stringify(templates, null, 2)} as const;` : "";
 

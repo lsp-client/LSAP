@@ -42,6 +42,12 @@ class LocateSymbol(BaseModel):
 
 class LocateRequest(BaseModel):
     locate: LocateText | LocateSymbol
+    """Locate by text snippet or symbol path"""
+
+
+markdown_template = (
+    "Located `{{ file_path }}` at {{ position.line + 1 }}:{{ position.character + 1 }}"
+)
 
 
 class LocateResponse(BaseModel):
@@ -50,8 +56,6 @@ class LocateResponse(BaseModel):
 
     model_config = ConfigDict(
         json_schema_extra={
-            "lsap_templates": {
-                "markdown": "Located `{{ file_path }}` at {{ position.line + 1 }}:{{ position.character + 1 }}"
-            }
+            "markdown": markdown_template,
         }
     )

@@ -1,12 +1,15 @@
 from typing import Protocol
 
+from attrs import define
+from lsap_schema.schema.inlay_read import InlayReadRequest, InlayReadResponse
 from lsp_client.capability.request.inlay_hint import WithRequestInlayHint
 from lsp_client.protocol import CapabilityClientProtocol
 from lsprotocol.types import (
     Position as LSPPosition,
+)
+from lsprotocol.types import (
     Range as LSPRange,
 )
-from lsap_schema.schema.inlay_model import InlayReadRequest, InlayReadResponse
 
 from lsap.utils.content import SnippetReader
 
@@ -20,6 +23,7 @@ class InlayReadClient(
 ): ...
 
 
+@define
 class InlayReadCapability(
     Capability[InlayReadClient, InlayReadRequest, InlayReadResponse]
 ):

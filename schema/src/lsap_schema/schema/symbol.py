@@ -1,10 +1,22 @@
 from pathlib import Path
+from typing import Final
+
 from pydantic import BaseModel, ConfigDict
+
 from ..abc import SymbolPath
 from .locate import LocateRequest
 
 
 class SymbolRequest(LocateRequest): ...
+
+
+markdown_template: Final = """
+### Symbol: `{{ symbol_path | join('.') }}` in `{{ file_path }}`
+
+```
+{{ symbol_content }}
+```
+"""
 
 
 class SymbolResponse(BaseModel):
@@ -14,8 +26,6 @@ class SymbolResponse(BaseModel):
 
     model_config = ConfigDict(
         json_schema_extra={
-            "lsap_templates": {
-                "markdown": "### Symbol: `{{ symbol_path | join('.') }}` in `{{ file_path }}`\n\n```python\n{{ symbol_content }}\n```"
-            }
+            "markdown": markdown_template,
         }
     )

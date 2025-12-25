@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from typing import Protocol
 
+from attrs import define
 from jinja2 import Template
 from lsp_client.protocol import CapabilityClientProtocol
 from pydantic import BaseModel
@@ -22,11 +23,7 @@ def format_response(model: BaseModel) -> str:
     if not isinstance(json_schema_extra, dict):
         return str(model)
 
-    templates = json_schema_extra.get("lsap_templates", {})
-    if not isinstance(templates, dict):
-        return str(model)
-
-    template_str = templates.get("markdown")
+    template_str = json_schema_extra.get("markdown")
     if not isinstance(template_str, str):
         return str(model)
 
@@ -34,9 +31,9 @@ def format_response(model: BaseModel) -> str:
     return template.render(model.model_dump())
 
 
+@define
 class Capability[C: ClientProtocol, Req: BaseModel, Resp: BaseModel]:
-    def __init__(self, client: C) -> None:
-        self.client = client
+    client: C
 
     @abstractmethod
     async def __call__(self, req: Req) -> Resp | None: ...

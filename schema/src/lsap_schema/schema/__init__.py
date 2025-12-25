@@ -1,4 +1,4 @@
-from .inlay_model import InlayReadRequest, InlayReadResponse
+from .inlay_read import InlayReadRequest, InlayReadResponse
 from .locate import (
     LocateRequest,
     LocateResponse,
