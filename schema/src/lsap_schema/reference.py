@@ -31,7 +31,7 @@ markdown_template: Final = """
 ### References Found
 
 {% if total is not none -%}
-**Total references**: {{ total }} | **Showing**: {{ items | length }}{% if limit %} (Offset: {{ offset }}, Limit: {{ limit }}){% endif %}
+Total references: {{ total }} | Showing: {{ items | length }}{% if limit %} (Offset: {{ offset }}, Limit: {{ limit }}){% endif %}
 {%- endif %}
 
 {% for item in items -%}
@@ -49,7 +49,7 @@ markdown_template: Final = """
 {% if has_more -%}
 ---
 > [!TIP]
-> **More references available.**
+> More references available.
 > To see more, specify a `limit` and use: `offset={{ offset + (limit or items|length) }}`
 {%- endif %}
 """

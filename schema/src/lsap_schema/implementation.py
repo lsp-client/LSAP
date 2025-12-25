@@ -31,7 +31,7 @@ markdown_template: Final = """
 ### Implementations Found
 
 {% if total is not none -%}
-**Total implementations**: {{ total }} | **Showing**: {{ items | length }}{% if limit %} (Offset: {{ offset }}, Limit: {{ limit }}){% endif %}
+Total implementations: {{ total }} | Showing: {{ items | length }}{% if limit %} (Offset: {{ offset }}, Limit: {{ limit }}){% endif %}
 {%- endif %}
 
 {% if not items -%}
@@ -52,7 +52,7 @@ No concrete implementations found.
 {% if has_more -%}
 ---
 > [!TIP]
-> **More implementations available.**
+> More implementations available.
 > To see more, specify a `limit` and use: `offset={{ offset + (limit or items|length) }}`
 {%- endif %}
 {%- endif %}

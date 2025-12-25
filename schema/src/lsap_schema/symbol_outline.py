@@ -30,7 +30,7 @@ markdown_template: Final = """
 ### Symbol Outline for `{{ file_path }}`
 
 {%- macro render_item(item, depth=0) %}
-{{ "  " * depth }}- **{{ item.name }}** (`{{ item.kind }}`)
+{{ "  " * depth }}- {{ item.name }} (`{{ item.kind }}`)
 {%- if item.symbol_content %}
 
 {{ "  " * (depth + 1) }}```{{ file_path.suffix[1:] if file_path.suffix else "" }}

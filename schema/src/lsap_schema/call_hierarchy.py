@@ -46,7 +46,7 @@ markdown_template: Final = """
   {%- if current_depth <= depth %}
     {%- set node = nodes[node_id] %}
     {%- set edges_to_show = edges_out[node_id] if dir_label == "Calls" else edges_in[node_id] %}
-{{ "  " * current_depth }}- **{{ node.name }}** (`{{ node.kind }}`) in `{{ node.file_path }}`
+{{ "  " * current_depth }}- {{ node.name }} (`{{ node.kind }}`) in `{{ node.file_path }}`
     {%- if node_id in visited %} (recursive cycle)
     {%- else %}
       {%- set new_visited = visited + [node_id] %}

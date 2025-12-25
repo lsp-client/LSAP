@@ -43,13 +43,30 @@ Inherits from `LocateRequest`. Since a symbol (like an interface) can have multi
 ````markdown
 ### Implementations Found
 
-**Total implementations**: 5 | **Showing**: 2 (Offset: 0, Limit: 2)
+Total implementations: 5 | Showing: 2 (Offset: 0, Limit: 2)
 
 - `workers/local.py` - `LocalWorker.run`
 
 ```python
 def run(self):
     print("Running locally")
+``````
+
+- `workers/remote.py` - `RemoteWorker.run`
+
+```python
+def run(self):
+    ssh.execute("run")
+```
+
+---
+
+> [!TIP]
+> More implementations available.
+> To see more, specify a `limit` and use: `offset=2`
+
+```
+
 ```
 ````
 

@@ -36,20 +36,20 @@ class FileDiagnosticsRequest(BaseModel):
 markdown_template: Final = """
 ### Diagnostics for `{{ file_path }}`
 {% if total is not none -%}
-**Total issues**: {{ total }} | **Showing**: {{ diagnostics | length }}{% if limit %} (Offset: {{ offset }}, Limit: {{ limit }}){% endif %}
+Total issues: {{ total }} | Showing: {{ diagnostics | length }}{% if limit %} (Offset: {{ offset }}, Limit: {{ limit }}){% endif %}
 {%- endif %}
 
 {% if not diagnostics -%}
 No issues found.
 {%- else -%}
 {%- for d in diagnostics %}
-- **{{ d.severity }}**: {{ d.message }} (at line {{ d.range.start.line + 1 }}, col {{ d.range.start.character + 1 }})
+- {{ d.severity }}: {{ d.message }} (at line {{ d.range.start.line + 1 }}, col {{ d.range.start.character + 1 }})
 {%- endfor %}
 
 {% if has_more -%}
 ---
 > [!TIP]
-> **More issues available.**
+> More issues available.
 > To see the rest, specify a `limit` and use: `offset={{ offset + (limit or diagnostics|length) }}`
 {%- endif %}
 {%- endif %}

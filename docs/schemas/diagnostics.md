@@ -34,8 +34,8 @@ The Diagnostics API reports syntax errors, type mismatches, and other linting is
 ```markdown
 ### Diagnostics for `src/buggy.py`
 
-**Total issues**: 2 | **Showing**: 2
+Total issues: 2 | Showing: 2
 
-- **Error**: Undefined variable 'x' (at line 10, col 5)
-- **Warning**: Unused import 'sys' (at line 2, col 1)
+- Error: Undefined variable 'x' (at line 10, col 5)
+- Warning: Unused import 'sys' (at line 2, col 1)
 ```

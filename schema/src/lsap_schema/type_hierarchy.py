@@ -43,7 +43,7 @@ markdown_template: Final = """
   {%- if current_depth <= depth %}
     {%- set node = nodes[node_id] %}
     {%- set edges_to_show = edges_down[node_id] if dir_label == "Subtypes" else edges_up[node_id] %}
-{{ "  " * current_depth }}- **{{ node.name }}** (`{{ node.kind }}`) {% if node.detail %}[{{ node.detail }}]{% endif %} in `{{ node.file_path }}`
+{{ "  " * current_depth }}- {{ node.name }} (`{{ node.kind }}`) {% if node.detail %}[{{ node.detail }}]{% endif %} in `{{ node.file_path }}`
     {%- if node_id in visited %} (recursive cycle)
     {%- else %}
       {%- do visited.append(node_id) %}

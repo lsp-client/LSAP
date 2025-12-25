@@ -42,15 +42,15 @@ The Symbol Outline API returns a hierarchical tree of all symbols defined within
 ````markdown
 ### Symbol Outline for `src/models.py`
 
-- **User** (`Class`)
-  - \***\*init\*\*** (`Method`)
-  - **get_full_name** (`Method`)
+- User (`Class`)
+  - __init__ (`Method`)
+  - get_full_name (`Method`)
 
     ```python
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"
     ```
 
-- **APIClient** (`Class`)
-  - **request** (`Method`)
+- APIClient (`Class`)
+  - request (`Method`)
 ````

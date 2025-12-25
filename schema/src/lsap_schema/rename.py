@@ -35,7 +35,7 @@ class RenameRequest(LocateRequest):
 markdown_template: Final = """
 ### Rename Preview: `{{ old_name }}` -> `{{ new_name }}`
 
-**Summary**: Affects {{ total_files }} files and {{ total_occurrences }} occurrences.
+Summary: Affects {{ total_files }} files and {{ total_occurrences }} occurrences.
 
 {% for file in changes -%}
 #### File: `{{ file.file_path }}`
@@ -48,7 +48,7 @@ markdown_template: Final = """
 
 ---
 > [!WARNING]
-> **This is a permanent workspace-wide change.**
+> This is a permanent workspace-wide change.
 > Please verify the diffs above before proceeding with further edits.
 """
 

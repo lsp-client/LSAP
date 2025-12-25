@@ -50,7 +50,7 @@ Contains `from_node_id`, `to_node_id`, and `relationship` (`extends` or `impleme
 
 #### Subtypes (Children/Implementations)
 
-- **BaseModel** (`Class`) in `models.py`
-  - **User** (`Class`) in `user.py`
-  - **Order** (`Class`) in `order.py`
+- BaseModel (`Class`) in `models.py`
+  - User (`Class`) in `user.py`
+  - Order (`Class`) in `order.py`
 ```

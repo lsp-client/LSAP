@@ -33,20 +33,20 @@ class WorkspaceSymbolRequest(BaseModel):
 markdown_template: Final = """
 ### Workspace Symbols matching `{{ query }}`
 {% if total is not none -%}
-**Total found**: {{ total }} | **Showing**: {{ items | length }}{% if limit %} (Offset: {{ offset }}, Limit: {{ limit }}){% endif %}
+Total found: {{ total }} | Showing: {{ items | length }}{% if limit %} (Offset: {{ offset }}, Limit: {{ limit }}){% endif %}
 {%- endif %}
 
 {% if not items -%}
 No symbols found matching the query.
 {%- else -%}
 {%- for item in items %}
-- **{{ item.name }}** (`{{ item.kind }}`) in `{{ item.file_path }}` {% if item.container_name %}(in `{{ item.container_name }}`){% endif %}
+- {{ item.name }} (`{{ item.kind }}`) in `{{ item.file_path }}` {% if item.container_name %}(in `{{ item.container_name }}`){% endif %}
 {%- endfor %}
 
 {% if has_more -%}
 ---
 > [!TIP]
-> **More results available.**
+> More results available.
 > To fetch the next page, specify a `limit` and use: `offset={{ offset + (limit or items|length) }}`
 {%- endif %}
 {%- endif %}
