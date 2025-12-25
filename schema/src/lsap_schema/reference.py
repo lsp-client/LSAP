@@ -1,12 +1,13 @@
 from typing import Final
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import ConfigDict
 
+from .abc import PaginatedRequest, PaginatedResponse
 from .locate import LocateRequest
 from .symbol import SymbolResponse
 
 
-class ReferenceRequest(LocateRequest):
+class ReferenceRequest(LocateRequest, PaginatedRequest):
     """
     Finds all references (usages) of a symbol.
 
@@ -20,26 +21,20 @@ class ReferenceRequest(LocateRequest):
     include_content: bool = True
     """Whether to include the source code snippet for each reference."""
 
-    limit: int | None = None
-    """Maximum number of references to return (default: None, returns all)"""
-
-    offset: int = 0
-    """Number of references to skip (default: 0)"""
-
 
 markdown_template: Final = """
 ### References Found
 
-{% if total is not none -%}
-Total references: {{ total }} | Showing: {{ items | length }}{% if limit %} (Offset: {{ offset }}, Limit: {{ limit }}){% endif %}
+{% if total != nil -%}
+Total references: {{ total }} | Showing: {{ items.size }}{% if max_items != nil %} (Offset: {{ start_index }}, Limit: {{ max_items }}){% endif %}
 {%- endif %}
 
 {% for item in items -%}
-- `{{ item.file_path }}` - `{{ item.symbol_path | join('.') }}`
-{% if item.hover -%}
-  {{ item.hover | indent(2) }}
+- `{{ item.file_path }}` - `{{ item.symbol_path | join: "." }}`
+{% if item.hover != nil -%}
+  {{ item.hover | indent: 2 }}
 {%- endif %}
-{% if item.symbol_content -%}
+{% if item.symbol_content != nil -%}
 ```python
 {{ item.symbol_content }}
 ```
@@ -50,17 +45,17 @@ Total references: {{ total }} | Showing: {{ items | length }}{% if limit %} (Off
 ---
 > [!TIP]
 > More references available.
-> To see more, specify a `limit` and use: `offset={{ offset + (limit or items|length) }}`
+{%- if pagination_id != nil %}
+> Use `pagination_id="{{ pagination_id }}"` to fetch the next page.
+{%- else %}
+> To see more, specify a `max_items` and use: `start_index={% assign step = max_items | default: items.size %}{{ start_index | plus: step }}`
+{%- endif %}
 {%- endif %}
 """
 
 
-class ReferenceResponse(BaseModel):
+class ReferenceResponse(PaginatedResponse):
     items: list[SymbolResponse]
-    offset: int
-    limit: int | None = None
-    total: int | None = None
-    has_more: bool = False
 
     model_config = ConfigDict(
         json_schema_extra={

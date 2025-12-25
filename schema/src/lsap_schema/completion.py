@@ -2,6 +2,7 @@ from typing import Final
 
 from pydantic import BaseModel, ConfigDict
 
+from .abc import PaginatedRequest, PaginatedResponse
 from .locate import LocateRequest
 
 
@@ -22,7 +23,7 @@ class CompletionItem(BaseModel):
     """The actual snippet that would be inserted"""
 
 
-class CompletionRequest(LocateRequest):
+class CompletionRequest(LocateRequest, PaginatedRequest):
     """
     Gets code completion suggestions at a specific position.
 
@@ -30,26 +31,36 @@ class CompletionRequest(LocateRequest):
     at a cursor position to help write or edit code.
     """
 
-    limit: int = 15
+    max_items: int | None = 15
     """Limit the number of suggestions to avoid token bloat (default: 15)"""
 
 
 markdown_template: Final = """
 ### Code Completion at the requested location
 
-{% if not items -%}
+{% if items.size == 0 -%}
 No completion suggestions found.
 {%- else -%}
 | Symbol | Kind | Detail |
 | :--- | :--- | :--- |
 {%- for item in items %}
-| `{{ item.label }}` | {{ item.kind }} | {{ item.detail or "" }} |
+| `{{ item.label }}` | {{ item.kind }} | {{ item.detail | default: "" }} |
 {%- endfor %}
 
-{% if items[0].documentation %}
+{% if items[0].documentation != nil %}
 #### Top Suggestion Detail: `{{ items[0].label }}`
 {{ items[0].documentation }}
 {% endif %}
+
+{% if has_more -%}
+---
+> [!TIP]
+{%- if pagination_id != nil %}
+> Use `pagination_id="{{ pagination_id }}"` to fetch more suggestions.
+{%- else %}
+> More results available. Use `start_index` to fetch more.
+{%- endif %}
+{%- endif %}
 
 ---
 > [!TIP]
@@ -58,7 +69,7 @@ No completion suggestions found.
 """
 
 
-class CompletionResponse(BaseModel):
+class CompletionResponse(PaginatedResponse):
     items: list[CompletionItem]
 
     model_config = ConfigDict(

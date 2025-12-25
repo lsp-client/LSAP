@@ -3,6 +3,7 @@ from typing import Final
 
 from pydantic import BaseModel, ConfigDict
 
+from .abc import Response, Request
 from .locate import Range
 
 
@@ -10,11 +11,11 @@ class SymbolOutlineItem(BaseModel):
     name: str
     kind: str
     range: Range
-    children: list["SymbolOutlineItem"] = []
+    level: int = 0
     symbol_content: str | None = None
 
 
-class SymbolOutlineRequest(BaseModel):
+class SymbolOutlineRequest(Request):
     """
     Retrieves a hierarchical outline of symbols within a file.
 
@@ -29,27 +30,20 @@ class SymbolOutlineRequest(BaseModel):
 markdown_template: Final = """
 ### Symbol Outline for `{{ file_path }}`
 
-{%- macro render_item(item, depth=0) %}
-{{ "  " * depth }}- {{ item.name }} (`{{ item.kind }}`)
-{%- if item.symbol_content %}
-
-{{ "  " * (depth + 1) }}```{{ file_path.suffix[1:] if file_path.suffix else "" }}
-{{ item.symbol_content | indent(width=(depth + 1) * 2, first=True) }}
-{{ "  " * (depth + 1) }}```
-
+{% for item in items -%}
+{% for i in (1..item.level) %}  {% endfor %}- {{ item.name }} (`{{ item.kind }}`)
+{%- if item.symbol_content != nil %}
+{% assign content_depth = item.level | plus: 1 %}
+{% assign indent_size = content_depth | times: 2 %}
+{% for i in (1..content_depth) %}  {% endfor %}```{{ file_path.suffix | slice: 1, 10 }}
+{{ item.symbol_content | indent: indent_size }}
+{% for i in (1..content_depth) %}  {% endfor %}```
 {%- endif %}
-{%- for child in item.children %}
-{{ render_item(child, depth + 1) }}
-{%- endfor %}
-{%- endmacro %}
-
-{%- for item in items %}
-{{ render_item(item) }}
 {%- endfor %}
 """
 
 
-class SymbolOutlineResponse(BaseModel):
+class SymbolOutlineResponse(Response):
     file_path: Path
     items: list[SymbolOutlineItem]
 

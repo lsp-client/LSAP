@@ -3,6 +3,7 @@ from typing import Final
 
 from pydantic import BaseModel, ConfigDict
 
+from .abc import PaginatedRequest, PaginatedResponse
 from .locate import Range
 
 
@@ -14,7 +15,7 @@ class WorkspaceSymbolItem(BaseModel):
     container_name: str | None = None
 
 
-class WorkspaceSymbolRequest(BaseModel):
+class WorkspaceSymbolRequest(PaginatedRequest):
     """
     Searches for symbols across the entire workspace by name.
 
@@ -23,43 +24,38 @@ class WorkspaceSymbolRequest(BaseModel):
     """
 
     query: str
-    limit: int | None = None
-    """Maximum number of symbols to return (default: None, returns all)"""
-
-    offset: int = 0
-    """Number of symbols to skip (default: 0)"""
 
 
 markdown_template: Final = """
 ### Workspace Symbols matching `{{ query }}`
-{% if total is not none -%}
-Total found: {{ total }} | Showing: {{ items | length }}{% if limit %} (Offset: {{ offset }}, Limit: {{ limit }}){% endif %}
+{% if total != nil -%}
+Total found: {{ total }} | Showing: {{ items.size }}{% if max_items != nil %} (Offset: {{ start_index }}, Limit: {{ max_items }}){% endif %}
 {%- endif %}
 
-{% if not items -%}
+{% if items.size == 0 -%}
 No symbols found matching the query.
 {%- else -%}
 {%- for item in items %}
-- {{ item.name }} (`{{ item.kind }}`) in `{{ item.file_path }}` {% if item.container_name %}(in `{{ item.container_name }}`){% endif %}
+- {{ item.name }} (`{{ item.kind }}`) in `{{ item.file_path }}` {% if item.container_name != nil %}(in `{{ item.container_name }}`){% endif %}
 {%- endfor %}
 
 {% if has_more -%}
 ---
 > [!TIP]
 > More results available.
-> To fetch the next page, specify a `limit` and use: `offset={{ offset + (limit or items|length) }}`
+{%- if pagination_id != nil %}
+> Use `pagination_id="{{ pagination_id }}"` to fetch the next page.
+{%- else %}
+> To fetch the next page, specify a `max_items` and use: `start_index={% assign step = max_items | default: items.size %}{{ start_index | plus: step }}`
+{%- endif %}
 {%- endif %}
 {%- endif %}
 """
 
 
-class WorkspaceSymbolResponse(BaseModel):
+class WorkspaceSymbolResponse(PaginatedResponse):
     query: str
     items: list[WorkspaceSymbolItem]
-    offset: int
-    limit: int | None = None
-    total: int | None = None
-    has_more: bool = False
 
     model_config = ConfigDict(
         json_schema_extra={

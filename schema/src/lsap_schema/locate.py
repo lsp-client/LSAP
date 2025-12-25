@@ -3,7 +3,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from .abc import SymbolPath
+from .abc import SymbolPath, Response, Request
 
 
 class Position(BaseModel):
@@ -40,7 +40,7 @@ class LocateSymbol(BaseModel):
     """Symbol hierarchy path, e.g., ["MyClass", "my_method"]"""
 
 
-class LocateRequest(BaseModel):
+class LocateRequest(Request):
     """
     Base request for locating code positions.
 
@@ -51,12 +51,10 @@ class LocateRequest(BaseModel):
     """Locate by text snippet or symbol path"""
 
 
-markdown_template = (
-    "Located `{{ file_path }}` at {{ position.line + 1 }}:{{ position.character + 1 }}"
-)
+markdown_template = "Located `{{ file_path }}` at {{ position.line | plus: 1 }}:{{ position.character | plus: 1 }}"
 
 
-class LocateResponse(BaseModel):
+class LocateResponse(Response):
     file_path: Path
     position: Position
 

@@ -3,6 +3,7 @@ from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict
 
+from .abc import Response
 from .locate import LocateRequest, Position
 
 
@@ -12,6 +13,14 @@ class CallHierarchyNode(BaseModel):
     kind: str
     file_path: Path
     range_start: Position
+
+
+class CallHierarchyItem(BaseModel):
+    name: str
+    kind: str
+    file_path: Path
+    level: int
+    is_cycle: bool = False
 
 
 class CallEdge(BaseModel):
@@ -42,30 +51,18 @@ class CallHierarchyRequest(LocateRequest):
 markdown_template: Final = """
 ### Call Hierarchy for `{{ root.name }}` (Depth: {{ depth }}, Direction: {{ direction }})
 
-{%- macro render_tree(node_id, current_depth, visited, dir_label) %}
-  {%- if current_depth <= depth %}
-    {%- set node = nodes[node_id] %}
-    {%- set edges_to_show = edges_out[node_id] if dir_label == "Calls" else edges_in[node_id] %}
-{{ "  " * current_depth }}- {{ node.name }} (`{{ node.kind }}`) in `{{ node.file_path }}`
-    {%- if node_id in visited %} (recursive cycle)
-    {%- else %}
-      {%- set new_visited = visited + [node_id] %}
-      {%- for edge in edges_to_show %}
-        {%- set target_id = edge.to_node_id if dir_label == "Calls" else edge.from_node_id %}
-{{ render_tree(target_id, current_depth + 1, new_visited, dir_label) }}
-      {%- endfor %}
-    {%- endif %}
-  {%- endif %}
-{%- endmacro %}
-
-{% if direction in ["incoming", "both"] %}
+{% if direction == "incoming" or direction == "both" %}
 #### Incoming Calls (Who calls this?)
-{{ render_tree(root.id, 0, [], "Called By") }}
+{% for item in calls_in %}
+{% for i in (1..item.level) %}  {% endfor %}- {{ item.name }} (`{{ item.kind }}`) in `{{ item.file_path }}`{% if item.is_cycle %} (recursive cycle){% endif %}
+{% endfor %}
 {% endif %}
 
-{% if direction in ["outgoing", "both"] %}
+{% if direction == "outgoing" or direction == "both" %}
 #### Outgoing Calls (What does this call?)
-{{ render_tree(root.id, 0, [], "Calls") }}
+{% for item in calls_out %}
+{% for i in (1..item.level) %}  {% endfor %}- {{ item.name }} (`{{ item.kind }}`) in `{{ item.file_path }}`{% if item.is_cycle %} (recursive cycle){% endif %}
+{% endfor %}
 {% endif %}
 
 ---
@@ -74,7 +71,7 @@ markdown_template: Final = """
 """
 
 
-class CallHierarchyResponse(BaseModel):
+class CallHierarchyResponse(Response):
     root: CallHierarchyNode
     nodes: dict[str, CallHierarchyNode]
     """Map of node ID to node details"""
@@ -84,6 +81,12 @@ class CallHierarchyResponse(BaseModel):
 
     edges_out: dict[str, list[CallEdge]]
     """Map of node ID to its outgoing edges"""
+
+    calls_in: list[CallHierarchyItem] = []
+    """Flat list of incoming calls for tree rendering"""
+
+    calls_out: list[CallHierarchyItem] = []
+    """Flat list of outgoing calls for tree rendering"""
 
     direction: str
     depth: int

@@ -3,7 +3,7 @@ from typing import Final
 
 from pydantic import BaseModel, ConfigDict
 
-from .abc import SymbolPath
+from .abc import SymbolPath, Response
 from .locate import LocateRequest
 
 
@@ -32,19 +32,19 @@ class SymbolRequest(LocateRequest):
 
 
 markdown_template: Final = """
-### Symbol: `{{ symbol_path | join('.') }}` in `{{ file_path }}`
+### Symbol: `{{ symbol_path | join: "." }}` in `{{ file_path }}`
 
 {% if hover -%}
 #### Overview
 {{ hover }}
 {%- endif %}
 
-{% if parameters -%}
+{% if parameters.size > 0 -%}
 #### Parameters
 | Parameter | Description |
 | :--- | :--- |
 {%- for p in parameters %}
-| `{{ p.label }}` | {{ p.documentation or "" }} |
+| `{{ p.label }}` | {{ p.documentation | default: "" }} |
 {%- endfor %}
 {%- endif %}
 
@@ -57,7 +57,7 @@ markdown_template: Final = """
 """
 
 
-class SymbolResponse(BaseModel):
+class SymbolResponse(Response):
     file_path: Path
     symbol_path: SymbolPath
     symbol_content: str | None = None

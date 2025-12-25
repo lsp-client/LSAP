@@ -3,6 +3,7 @@ from typing import Final
 
 from pydantic import BaseModel, ConfigDict
 
+from .abc import Response
 from .locate import LocateRequest
 
 
@@ -40,7 +41,7 @@ Summary: Affects {{ total_files }} files and {{ total_occurrences }} occurrences
 {% for file in changes -%}
 #### File: `{{ file.file_path }}`
 {%- for diff in file.diffs %}
-- Line {{ diff.line + 1 }}:
+- Line {{ diff.line | plus: 1 }}:
   - `{{ diff.original }}`
   + `{{ diff.modified }}`
 {%- endfor %}
@@ -53,7 +54,7 @@ Summary: Affects {{ total_files }} files and {{ total_occurrences }} occurrences
 """
 
 
-class RenameResponse(BaseModel):
+class RenameResponse(Response):
     old_name: str
     new_name: str
     total_files: int

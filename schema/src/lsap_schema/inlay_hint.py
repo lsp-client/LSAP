@@ -3,6 +3,7 @@ from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict
 
+from .abc import Response, Request
 from .locate import Range
 
 
@@ -15,7 +16,7 @@ class InlayHintItem(BaseModel):
     """Specific position where the hint should be placed"""
 
 
-class InlayHintRequest(BaseModel):
+class InlayHintRequest(Request):
     """
     Retrieves inline hints like parameter names or inferred types.
 
@@ -34,7 +35,7 @@ class InlineValueItem(BaseModel):
     """The value text to display (e.g., 'x = 42')"""
 
 
-class InlineValueRequest(BaseModel):
+class InlineValueRequest(Request):
     """
     Retrieves runtime or contextual values for variables in a range.
 
@@ -61,7 +62,7 @@ markdown_template: Final = """
 """
 
 
-class DecoratedContentResponse(BaseModel):
+class DecoratedContentResponse(Response):
     file_path: Path
     decorated_content: str
     """Content with hints/values baked in as comments"""

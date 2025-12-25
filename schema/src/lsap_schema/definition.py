@@ -52,12 +52,12 @@ class TypeDefinitionRequest(LocateRequest):
 markdown_template: Final = """
 ### Navigation Result
 
-{% if hover -%}
+{% if hover != nil -%}
 #### Documentation
 {{ hover }}
 {%- endif %}
 
-{% if symbol_content -%}
+{% if symbol_content != nil -%}
 #### Implementation / Declaration
 ```python
 {{ symbol_content }}
