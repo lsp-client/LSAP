@@ -11,6 +11,7 @@ class SymbolOutlineItem(BaseModel):
     kind: str
     range: Range
     children: list["SymbolOutlineItem"] = []
+    symbol_content: str | None = None
 
 
 class SymbolOutlineRequest(BaseModel):
@@ -22,6 +23,7 @@ class SymbolOutlineRequest(BaseModel):
     """
 
     file_path: Path
+    display_code_for: list[str] = []
 
 
 markdown_template: Final = """
@@ -29,6 +31,13 @@ markdown_template: Final = """
 
 {%- macro render_item(item, depth=0) %}
 {{ "  " * depth }}- **{{ item.name }}** (`{{ item.kind }}`)
+{%- if item.symbol_content %}
+
+{{ "  " * (depth + 1) }}```{{ file_path.suffix[1:] if file_path.suffix else "" }}
+{{ item.symbol_content | indent(width=(depth + 1) * 2, first=True) }}
+{{ "  " * (depth + 1) }}```
+
+{%- endif %}
 {%- for child in item.children %}
 {{ render_item(child, depth + 1) }}
 {%- endfor %}

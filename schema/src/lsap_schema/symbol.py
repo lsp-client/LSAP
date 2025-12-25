@@ -3,7 +3,7 @@ from typing import Final
 
 from pydantic import BaseModel, ConfigDict
 
-from ..abc import SymbolPath
+from .abc import SymbolPath
 from .locate import LocateRequest
 
 

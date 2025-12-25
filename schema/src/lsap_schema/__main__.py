@@ -5,15 +5,17 @@ import inspect
 import pkgutil
 from pathlib import Path
 from pydantic import BaseModel
-import lsap_schema.schema as schema_pkg
+import lsap_schema
+
+...
 
 
 def export_schemas(output_root: Path):
     output_root.mkdir(parents=True, exist_ok=True)
 
-    # We use lsap_schema.schema as the base package for exports
-    path: list[str] = getattr(schema_pkg, "__path__")
-    package_name: str = getattr(schema_pkg, "__name__")
+    # We use lsap_schema as the base package for exports
+    path = list(lsap_schema.__path__)
+    package_name = lsap_schema.__name__
 
     for _, module_name, _ in pkgutil.walk_packages(path, package_name + "."):
         try:
@@ -21,8 +23,8 @@ def export_schemas(output_root: Path):
         except ImportError:
             continue
 
-        # Get relative module name starting from lsap_schema.schema
-        # e.g., lsap_schema.schema.locate -> locate
+        # Get relative module name starting from lsap_schema
+        # e.g., lsap_schema.locate -> locate
         relative_module = module_name.removeprefix(package_name).strip(".")
         if not relative_module:
             continue
