@@ -161,12 +161,14 @@ name = "lsap-schema"
 version = "0.1.0"
 source = { editable = "../schema" }
 dependencies = [
+    { name = "lsprotocol" },
     { name = "pydantic" },
     { name = "python-liquid" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "lsprotocol", specifier = ">=2025.0.0" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "python-liquid", specifier = ">=2.1.0" },
 ]

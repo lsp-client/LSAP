@@ -1,3 +1,4 @@
+from collections.abc import Iterator
 from typing import Sequence
 
 from lsap_schema.abc import SymbolPath
@@ -15,3 +16,14 @@ def lookup_symbol(
             return None
         current_nodes = target.children or []
     return target
+
+
+def iter_symbols(
+    nodes: Sequence[DocumentSymbol],
+) -> Iterator[tuple[SymbolPath, DocumentSymbol]]:
+    p = SymbolPath([])
+    for n in nodes:
+        current_path = SymbolPath([*p, n.name])
+        yield current_path, n
+        if n.children:
+            yield from iter_symbols(n.children)

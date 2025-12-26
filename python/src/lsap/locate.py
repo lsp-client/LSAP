@@ -13,10 +13,10 @@ from lsprotocol.types import Position as LSPPosition
 from lsprotocol.types import Range as LSPRange
 
 from lsap.exception import AmbiguousError
-from lsap.utils.content import SnippetReader
+from lsap.utils.content import DocumentReader
+from lsap.utils.symbol import iter_symbols
 
 from .abc import Capability
-from .symbol_outline import lookup_symbol
 
 
 class LocateClient(
@@ -34,7 +34,7 @@ class LocateCapability(Capability[LocateClient, LocateRequest, LocateResponse]):
             case LocateText(
                 file_path=file_path, line=line, find=find, find_end=find_end
             ):
-                reader = SnippetReader(self.client.read_file(file_path))
+                reader = DocumentReader(self.client.read_file(file_path))
                 start, end = (line, line) if isinstance(line, int) else line
 
                 content = reader.read(
@@ -61,11 +61,13 @@ class LocateCapability(Capability[LocateClient, LocateRequest, LocateResponse]):
                 if not symbols or not symbol_path:
                     return
 
-                if target := lookup_symbol(symbols, symbol_path):
-                    position = target.selection_range.start
+                for path, symbol in iter_symbols(symbols):
+                    if path == symbol_path:
+                        position = symbol.selection_range.start
+                        break
 
         if position:
             return LocateResponse(
                 file_path=req.locate.file_path,
-                position=Position(line=position.line, character=position.character),
+                position=Position.from_lsp(position),
             )

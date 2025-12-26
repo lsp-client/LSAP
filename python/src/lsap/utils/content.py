@@ -22,11 +22,7 @@ class Snippet:
 
 
 @define
-class SnippetReader:
-    """
-    Utility for reading snippets from a string given a Range.
-    """
-
+class DocumentReader:
     document: str
 
     @cached_property
@@ -75,16 +71,6 @@ class SnippetReader:
         return Position(line=line_idx, character=char_idx)
 
     def read(self, read_range: Range) -> Snippet | None:
-        """
-        Reads a continuous range from the content.
-
-        Args:
-            read_range: The Range to read.
-
-        Returns:
-            A Content object or None if the range is out of bounds.
-        """
-
         if not self._lines:
             return
 

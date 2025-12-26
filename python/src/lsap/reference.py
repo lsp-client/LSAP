@@ -21,9 +21,10 @@ from lsprotocol.types import (
 
 from lsap.utils.content import SnippetReader
 
+from lsap.utils.symbol import lookup_symbol
 from .abc import Capability, Protocol
 from .locate import LocateCapability
-from .symbol_outline import SymbolCapability, lookup_position, lookup_symbol
+from .symbol_outline import SymbolCapability, lookup_position
 
 
 @runtime_checkable

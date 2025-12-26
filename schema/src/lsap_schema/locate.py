@@ -25,6 +25,9 @@ class Position(BaseModel):
         """Convert from LSP Position (0-based) to Position (1-based)"""
         return cls(line=position.line + 1, character=position.character + 1)
 
+    def to_lsp(self) -> LSPPosition:
+        return LSPPosition(line=self.line - 1, character=self.character - 1)
+
 
 class Range(BaseModel):
     start: Position

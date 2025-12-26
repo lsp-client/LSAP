@@ -1,3 +1,3 @@
-from .content import Snippet, SnippetReader
+from .content import DocumentReader, Snippet
 
-__all__ = ["SnippetReader", "Snippet"]
+__all__ = ["DocumentReader", "Snippet"]

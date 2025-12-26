@@ -6,9 +6,10 @@ from lsprotocol.types import (
     Range as LSPRange,
     Position as LSPPosition,
 )
-from lsap.protocol.symbol import SymbolCapability, SymbolRequest
-from lsap.protocol.locate import LocateText, LocateSymbol
-from lsap.utils.symbol import Symbol, SymbolPath
+from lsap.symbol_outline import SymbolCapability
+from lsap_schema.symbol import SymbolRequest
+from lsap.locate import LocateText, LocateSymbol
+from lsap_schema.abc import Symbol, SymbolPath
 
 
 class MockSymbolClient:
@@ -62,6 +63,7 @@ async def test_symbol_from_path():
     resp = await capability(req)
     assert resp is not None
     assert resp.symbol_path == ["A", "foo"]
+    assert resp.symbol_content is not None
     assert "def foo(self):" in resp.symbol_content
     assert "pass" in resp.symbol_content
 
@@ -78,4 +80,44 @@ async def test_symbol_from_text():
     resp = await capability(req)
     assert resp is not None
     assert resp.symbol_path == ["A", "foo"]
+    assert resp.symbol_content is not None
     assert "def foo(self):" in resp.symbol_content
+
+
+def test_iter_symbols():
+    foo_symbol = DocumentSymbol(
+        name="foo",
+        kind=SymbolKind.Method,
+        range=LSPRange(
+            start=LSPPosition(line=1, character=4),
+            end=LSPPosition(line=1, character=10),
+        ),
+        selection_range=LSPRange(
+            start=LSPPosition(line=1, character=4),
+            end=LSPPosition(line=1, character=10),
+        ),
+    )
+    a_symbol = DocumentSymbol(
+        name="A",
+        kind=SymbolKind.Class,
+        range=LSPRange(
+            start=LSPPosition(line=0, character=0),
+            end=LSPPosition(line=2, character=0),
+        ),
+        selection_range=LSPRange(
+            start=LSPPosition(line=0, character=0),
+            end=LSPPosition(line=2, character=0),
+        ),
+        children=[foo_symbol],
+    )
+
+    symbols = [a_symbol]
+    client = MockSymbolClient()
+    capability = SymbolCapability(client=client)  # type: ignore
+
+    results = list(capability.iter_symbols(symbols))
+    assert len(results) == 2
+    assert results[0][0] == ["A"]
+    assert results[0][1].name == "A"
+    assert results[1][0] == ["A", "foo"]
+    assert results[1][1].name == "foo"

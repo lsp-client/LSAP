@@ -10,7 +10,7 @@ from lsprotocol.types import DocumentSymbol
 from lsprotocol.types import Position as LSPPosition
 from lsprotocol.types import Range as LSPRange
 
-from lsap.utils.content import SnippetReader
+from lsap.utils.content import DocumentReader
 
 from .abc import Capability
 from .locate import LocateCapability
@@ -62,20 +62,6 @@ async def lookup_position(
     return SymbolPath([])
 
 
-def lookup_symbol(
-    nodes: Sequence[DocumentSymbol], path: SymbolPath
-) -> DocumentSymbol | None:
-    current_nodes: list[DocumentSymbol] = list(nodes)
-    target: DocumentSymbol | None = None
-
-    for name in path:
-        target = next((s for s in current_nodes if s.name == name), None)
-        if not target:
-            return
-        current_nodes = list(target.children or [])
-    return target
-
-
 class SymbolCapability(Capability[SymbolClient, SymbolRequest, SymbolResponse]):
     """Get info about a symbol located in a specific position."""
 
@@ -91,11 +77,7 @@ class SymbolCapability(Capability[SymbolClient, SymbolRequest, SymbolResponse]):
         lsp_pos = LSPPosition(
             line=location.position.line, character=location.position.character
         )
-        path = await lookup_position(
-            self.client,
-            req.locate.file_path,
-            lsp_pos,
-        )
+        path = await lookup_position(self.client, req.locate.file_path, lsp_pos)
         symbols = await self.client.request_document_symbol_list(req.locate.file_path)
 
         if not (path and symbols):
@@ -105,7 +87,7 @@ class SymbolCapability(Capability[SymbolClient, SymbolRequest, SymbolResponse]):
         if not target:
             return
 
-        reader = SnippetReader(self.client.read_file(req.locate.file_path))
+        reader = DocumentReader(self.client.read_file(req.locate.file_path))
         if not (snippet := reader.read(target.range)):
             return
 
