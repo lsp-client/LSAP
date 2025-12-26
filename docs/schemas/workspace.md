@@ -41,7 +41,7 @@ Inherits from `PaginatedResponse`.
 ```markdown
 # Workspace Symbols matching `AuthService`
 
-Total found: 12 | Showing: 5 (Offset: 0, Limit: 5)
+Total found: 12 | Showing: 5 (Offset: 0, max_items: 5)
 
 - AuthService (`Class`) in `src/auth/service.py`
 - IAuthService (`Interface`) in `src/auth/interfaces.py`
