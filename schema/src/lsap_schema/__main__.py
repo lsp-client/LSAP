@@ -25,7 +25,7 @@ def export_schemas(output_root: Path):
         
         # Get relative module name starting from lsap_schema
         # e.g., lsap_schema.locate -> locate
-        package_name = "lsap_schema"
+        package_name = lsap_schema.__name__
         relative_module = module_name.removeprefix(package_name + ".").strip(".")
         
         if not relative_module:
