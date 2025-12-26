@@ -7,16 +7,23 @@ The Workspace API provides global symbol search capabilities across the entire p
 | Field    | Type             | Default  | Description                               |
 | :------- | :--------------- | :------- | :---------------------------------------- |
 | `query`  | `string`         | Required | Search string for symbols.                |
-| `limit`  | `number \| null` | `null`   | Maximum number of results to return.      |
-| `offset` | `number`         | `0`      | Number of results to skip for pagination. |
+| `max_items` | `number \| null` | `null` | Maximum number of results to return.      |
+| `start_index` | `number`       | `0`      | Number of results to skip for pagination. |
+| `pagination_id` | `string \| null` | `null` | Token to retrieve the next page of results. |
 
 ## WorkspaceSymbolResponse
 
+Inherits from `PaginatedResponse`.
+
 | Field      | Type                    | Description                                                 |
 | :--------- | :---------------------- | :---------------------------------------------------------- |
+| `query`    | `string`                | The search string used to find the symbols.                 |
 | `items`    | `WorkspaceSymbolItem[]` | List of matching symbols.                                   |
+| `start_index` | `number`             | Offset of the current page.                                 |
+| `max_items` | `number?`              | Number of items per page (if specified).                    |
 | `total`    | `number \| null`        | Total number of matches found globally.                     |
 | `has_more` | `boolean`               | Whether more results are available beyond the current page. |
+| `pagination_id`| `string?`           | Token for retrieving the next page.                         |
 
 ## Example Usage
 
@@ -25,7 +32,7 @@ The Workspace API provides global symbol search capabilities across the entire p
 ```json
 {
   "query": "AuthService",
-  "limit": 5
+  "max_items": 5
 }
 ```
 
@@ -45,5 +52,5 @@ The Workspace API provides global symbol search capabilities across the entire p
 
 > [!TIP]
 > **More results available.**
-> To fetch the next page, specify a `limit` and use: `offset=5`
+> To fetch the next page, specify a `max_items` and use: `start_index=5`
 ```

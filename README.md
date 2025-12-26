@@ -189,9 +189,10 @@ For detailed information on each capability, request/response models, and the co
 ### Individual Capability Specs:
 
 - [Locate](docs/schemas/locate.md) | [Symbol](docs/schemas/symbol.md) | [Symbol Outline](docs/schemas/symbol_outline.md)
-- [Call Hierarchy](docs/schemas/call_hierarchy.md) | [Type Hierarchy](docs/schemas/type_hierarchy.md)
+- [Definition](docs/schemas/definition.md) | [Call Hierarchy](docs/schemas/call_hierarchy.md) | [Type Hierarchy](docs/schemas/type_hierarchy.md)
 - [References](docs/schemas/reference.md) | [Implementation](docs/schemas/implementation.md)
 - [Workspace Search](docs/schemas/workspace.md) | [Diagnostics](docs/schemas/diagnostics.md)
+- [Completion](docs/schemas/completion.md) | [Rename](docs/schemas/rename.md)
 - [Inlay Hints & Inline Values](docs/schemas/inlay_hints.md)
 
 ---

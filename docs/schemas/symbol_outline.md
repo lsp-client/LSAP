@@ -18,13 +18,13 @@ The Symbol Outline API returns a hierarchical tree of all symbols defined within
 
 ### SymbolOutlineItem
 
-| Field            | Type                  | Description                                                  |
-| :--------------- | :-------------------- | :----------------------------------------------------------- |
-| `name`           | `string`              | Name of the symbol.                                          |
-| `kind`           | `string`              | Type of the symbol (e.g., `Class`, `Function`, `Interface`). |
-| `range`          | `Range`               | Range of the symbol in the file.                             |
-| `children`       | `SymbolOutlineItem[]` | Nested symbols (e.g., methods within a class).               |
-| `symbol_content` | `string`              | The source code of the symbol, if requested.                 |
+| Field            | Type     | Description                                                  |
+| :--------------- | :------- | :----------------------------------------------------------- |
+| `name`           | `string` | Name of the symbol.                                          |
+| `kind`           | `string` | Type of the symbol (e.g., `Class`, `Function`, `Interface`). |
+| `range`          | `Range`  | Range of the symbol in the file.                             |
+| `level`          | `number` | Nesting level (0 for top-level, 1 for nested, etc.).         |
+| `symbol_content` | `string?`| The source code of the symbol, if requested.                 |
 
 ## Example Usage
 
