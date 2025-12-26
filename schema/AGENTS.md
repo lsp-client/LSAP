@@ -19,5 +19,5 @@
 
 ## Template Design
 
-- Always read docs/liquid_cheatsheet.md before writing Liquid templates.
+- Always read [cheetsheet](docs/liquid_cheatsheet.md) before writing Liquid templates.
 - Validate templates after writing.
