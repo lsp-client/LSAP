@@ -40,13 +40,13 @@ The Symbol Outline API returns a hierarchical tree of all symbols defined within
 ### Markdown Rendered for LLM
 
 ````markdown
-### Symbol Outline for `src/models.py`
+# Symbol Outline for `src/models.py`
 
 - User (`Class`)
   - __init__ (`Method`)
   - get_full_name (`Method`)
 
-    ```python
+    ```py
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"
     ```

@@ -40,7 +40,7 @@ Inherits from `PaginatedResponse`.
 ### Markdown Rendered for LLM
 
 ```markdown
-### Diagnostics for `src/buggy.py`
+# Diagnostics for `src/buggy.py`
 
 Total issues: 2 | Showing: 2
 

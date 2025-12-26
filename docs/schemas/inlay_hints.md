@@ -60,29 +60,34 @@ Instead of returning raw JSON lists of positions (which are hard for LLMs to rea
 #### Markdown Rendered for LLM
 
 ````markdown
-### Code with Annotations: `src/api.py`
+# Code with Annotations: `src/api.py`
 
 ```python
 # The hints help the Agent know which argument is which
 client.post(/* url:= */ "https://api.com", /* data:= */ payload, /* verify:= */ False)
 ```
-````
 
+---
+> [!NOTE]
+> Annotations like `/* :type */` or `/* param:= */` are injected for clarity.
+> Runtime values (if any) are shown as `// value: x=42`.
 ````
 
 ### Scenario: Debugging an Error
+
 #### Request (InlineValueRequest)
+
 ```json
 {
   "file_path": "src/logic.py",
   "range": { "start": {"line": 10, ...}, "end": {"line": 20, ...} }
 }
-````
+```
 
 #### Markdown Rendered for LLM
 
 ````markdown
-### Code with Annotations: `src/logic.py`
+# Code with Annotations: `src/logic.py`
 
 ```python
 def process(items):
@@ -91,8 +96,9 @@ def process(items):
         total += i.price  // value: i.price = None
         # Agent can now see that i.price is None, causing the crash!
 ```
+
+---
+> [!NOTE]
+> Annotations like `/* :type */` or `/* param:= */` are injected for clarity.
+> Runtime values (if any) are shown as `// value: x=42`.
 ````
-
-```
-
-```

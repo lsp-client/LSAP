@@ -48,20 +48,16 @@ Inherits from `LocateRequest`.
 ### Markdown Rendered for LLM
 
 ````markdown
-### Symbol: `calculate_total` in `src/main.py`
+# Symbol: `calculate_total` in `src/main.py`
 
-#### Documentation
+## Overview
 
 Calculates the total price of items in the cart, including tax.
 
-#### Implementation
+## Implementation
 
 ```python
 def calculate_total(items, tax_rate):
     return sum(item.price for item in items) * (1 + tax_rate)
 ```
 ````
-
-```
-
-```

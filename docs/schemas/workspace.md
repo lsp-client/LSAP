@@ -39,18 +39,18 @@ Inherits from `PaginatedResponse`.
 ### Markdown Rendered for LLM
 
 ```markdown
-### Workspace Symbols matching `AuthService`
+# Workspace Symbols matching `AuthService`
 
-**Total found**: 12 | **Showing**: 5 (Offset: 0, Limit: 5)
+Total found: 12 | Showing: 5 (Offset: 0, Limit: 5)
 
-- **AuthService** (`Class`) in `src/auth/service.py`
-- **IAuthService** (`Interface`) in `src/auth/interfaces.py`
-- **MockAuthService** (`Class`) in `tests/mocks.py`
+- AuthService (`Class`) in `src/auth/service.py`
+- IAuthService (`Interface`) in `src/auth/interfaces.py`
+- MockAuthService (`Class`) in `tests/mocks.py`
 - ...
 
 ---
 
 > [!TIP]
-> **More results available.**
+> More results available.
 > To fetch the next page, specify a `max_items` and use: `start_index=5`
 ```

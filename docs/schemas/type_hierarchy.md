@@ -46,11 +46,15 @@ Contains `from_node_id`, `to_node_id`, and `relationship` (`extends` or `impleme
 ### Markdown Rendered for LLM
 
 ```markdown
-### Type Hierarchy for `BaseModel` (Depth: 1, Direction: subtypes)
+# Type Hierarchy for `BaseModel` (Depth: 1, Direction: subtypes)
 
-#### Subtypes (Children/Implementations)
+## Subtypes (Children/Implementations)
 
 - BaseModel (`Class`) in `models.py`
   - User (`Class`) in `user.py`
   - Order (`Class`) in `order.py`
+
+---
+> [!NOTE]
+> Tree is truncated at depth 1. Increase `depth` parameter to explore further if needed.
 ```

@@ -44,9 +44,9 @@ Inherits from `PaginatedResponse`.
 ### Markdown Rendered for LLM
 
 ````markdown
-### References Found
+# References Found
 
-**Total references**: 45 | **Showing**: 10 (Offset: 0, Limit: 10)
+Total references: 45 | Showing: 10 (Offset: 0, Limit: 10)
 
 - `src/ui/header.py` - `Header.render`
 
@@ -63,6 +63,6 @@ return {"date": format_date(obj.created_at)}
 ---
 
 > [!TIP]
-> **More references available.**
+> More references available.
 > To see more, specify a `max_items` and use: `start_index=10`
 ````

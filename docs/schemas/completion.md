@@ -59,7 +59,7 @@ Inherits from `PaginatedResponse`.
 #### Markdown Rendered for LLM
 
 ```markdown
-### Code Completion at the requested location
+# Code Completion at the requested location
 
 | Symbol      | Kind     | Detail                 |
 | :---------- | :------- | :--------------------- |
@@ -67,7 +67,11 @@ Inherits from `PaginatedResponse`.
 | `send_json` | Method   | (data: dict) -> None   |
 | `is_active` | Property | bool                   |
 
-#### Top Suggestion Detail: `connect`
+## Top Suggestion Detail: `connect`
 
 Establishes a connection to the server...
+
+---
+> [!TIP]
+> Use these symbols to construct your next code edit. You can focus on a specific method to get more details.
 ```

@@ -51,7 +51,10 @@ Contains `from_node_id`, `to_node_id`, and `call_sites` (list of positions).
 
 #### Outgoing Calls (What does this call?)
 
-- start_server (`Function`) in `src/app.py`
-  - initialize_db (`Function`) in `src/db.py`
-  - setup_routes (`Function`) in `src/routes.py`
+- initialize_db (`Function`) in `src/db.py`
+- setup_routes (`Function`) in `src/routes.py`
+
+---
+> [!NOTE]
+> Tree is truncated at depth 1. Use `depth` parameter to explore further.
 ```

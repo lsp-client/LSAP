@@ -47,7 +47,7 @@ Inherits from `PaginatedResponse`.
 #### Markdown Rendered for LLM
 
 ````markdown
-### Implementations Found
+# Implementations Found
 
 Total implementations: 5 | Showing: 2 (Offset: 0, Limit: 2)
 
