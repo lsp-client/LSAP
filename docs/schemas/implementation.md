@@ -49,7 +49,7 @@ Inherits from `PaginatedResponse`.
 ````markdown
 # Implementations Found
 
-Total implementations: 5 | Showing: 2 (Offset: 0, Limit: 2)
+Total implementations: 5 | Showing: 2 (Offset: 0, max_items: 2)
 
 - `workers/local.py` - `LocalWorker.run`
 
