@@ -11,6 +11,9 @@ import lsap_schema
 def export_schemas(output_root: Path):
     output_root.mkdir(parents=True, exist_ok=True)
 
+    # Get package name once
+    package_name = lsap_schema.__name__
+    
     # Import all exported classes from lsap_schema
     # These are manually defined in __init__.py
     for name in lsap_schema.__all__:
@@ -25,7 +28,6 @@ def export_schemas(output_root: Path):
         
         # Get relative module name starting from lsap_schema
         # e.g., lsap_schema.locate -> locate
-        package_name = lsap_schema.__name__
         relative_module = module_name.removeprefix(package_name + ".").strip(".")
         
         if not relative_module:
