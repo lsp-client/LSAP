@@ -23,7 +23,7 @@ class ReferenceRequest(LocateRequest, PaginatedRequest):
 
 
 markdown_template: Final = """
-### References Found
+# References Found
 
 {% if total != nil -%}
 Total references: {{ total }} | Showing: {{ items.size }}{% if max_items != nil %} (Offset: {{ start_index }}, Limit: {{ max_items }}){% endif %}
@@ -35,7 +35,7 @@ Total references: {{ total }} | Showing: {{ items.size }}{% if max_items != nil 
   {{ item.hover | indent: 2 }}
 {%- endif %}
 {% if item.symbol_content != nil -%}
-```python
+```
 {{ item.symbol_content }}
 ```
 {%- endif %}

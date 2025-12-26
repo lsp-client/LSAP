@@ -1,14 +1,29 @@
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Self
 
-from pydantic import BaseModel, ConfigDict
+from lsprotocol.types import Position as LSPPosition
+from pydantic import BaseModel, ConfigDict, Field
 
-from .abc import SymbolPath, Response, Request
+from .abc import Request, Response, SymbolPath
 
 
 class Position(BaseModel):
-    line: int
-    character: int
+    """
+    Represents a specific position in a file using line and character numbers.
+
+    Note: Line and character are 1-based indices. 0-based indices are used in LSP, so conversion is needed when interfacing with LSP.
+    """
+
+    line: int = Field(ge=1)
+    """1-based line number"""
+
+    character: int = Field(ge=1)
+    """1-based character (column) number"""
+
+    @classmethod
+    def from_lsp(cls, position: LSPPosition) -> Self:
+        """Convert from LSP Position (0-based) to Position (1-based)"""
+        return cls(line=position.line + 1, character=position.character + 1)
 
 
 class Range(BaseModel):
@@ -26,8 +41,8 @@ class LocateText(BaseModel):
     find: str
     """Text snippet to find"""
 
-    position: Literal["start", "end"] = "start"
-    """Position in the snippet to locate, default to 'start'"""
+    find_end: Literal["start", "end"] = "start"
+    """Which end of `find` should locate, default to 'start'"""
 
 
 class LocateSymbol(BaseModel):
@@ -51,7 +66,9 @@ class LocateRequest(Request):
     """Locate by text snippet or symbol path"""
 
 
-markdown_template = "Located `{{ file_path }}` at {{ position.line | plus: 1 }}:{{ position.character | plus: 1 }}"
+markdown_template = (
+    "Located `{{ file_path }}` at {{ position.line }}:{{ position.character }}"
+)
 
 
 class LocateResponse(Response):

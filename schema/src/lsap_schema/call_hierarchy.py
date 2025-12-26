@@ -73,6 +73,7 @@ markdown_template: Final = """
 
 class CallHierarchyResponse(Response):
     root: CallHierarchyNode
+
     nodes: dict[str, CallHierarchyNode]
     """Map of node ID to node details"""
 

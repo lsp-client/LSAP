@@ -40,24 +40,24 @@ class TypeHierarchyRequest(LocateRequest):
     """
 
     direction: Literal["supertypes", "subtypes", "both"] = "both"
-    """Whether to trace parents (supertypes) or children (subtypes)"""
+    """Whether to trace supertypes, subtypes, or both (default: both)"""
 
     depth: int = 2
     """How many levels to trace (default: 2)"""
 
 
 markdown_template: Final = """
-### Type Hierarchy for `{{ root.name }}` (Depth: {{ depth }}, Direction: {{ direction }})
+# Type Hierarchy for `{{ root.name }}` (Depth: {{ depth }}, Direction: {{ direction }})
 
 {% if direction == "supertypes" or direction == "both" %}
-#### Supertypes (Parents/Base Classes)
+## Supertypes (Parents/Base Classes)
 {% for item in types_up %}
 {% for i in (1..item.level) %}  {% endfor %}- {{ item.name }} (`{{ item.kind }}`) {% if item.detail %}[{{ item.detail }}]{% endif %} in `{{ item.file_path }}`{% if item.is_cycle %} (recursive cycle){% endif %}
 {% endfor %}
 {% endif %}
 
 {% if direction == "subtypes" or direction == "both" %}
-#### Subtypes (Children/Implementations)
+## Subtypes (Children/Implementations)
 {% for item in types_down %}
 {% for i in (1..item.level) %}  {% endfor %}- {{ item.name }} (`{{ item.kind }}`) {% if item.detail %}[{{ item.detail }}]{% endif %} in `{{ item.file_path }}`{% if item.is_cycle %} (recursive cycle){% endif %}
 {% endfor %}
@@ -65,7 +65,7 @@ markdown_template: Final = """
 
 ---
 > [!NOTE]
-> Tree is truncated at depth {{ depth }}. Use `depth` parameter to explore further.
+> Tree is truncated at depth {{ depth }}. Increase `depth` parameter to explore further if needed.
 """
 
 

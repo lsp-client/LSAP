@@ -2,6 +2,8 @@ from functools import cached_property
 from typing import runtime_checkable
 
 import asyncer
+from lsap_schema.schema.reference import ReferenceRequest, ReferenceResponse
+from lsap_schema.schema.symbol import SymbolResponse
 from lsp_client.capability.request import (
     WithRequestDocumentSymbol,
     WithRequestReferences,
@@ -9,17 +11,19 @@ from lsp_client.capability.request import (
 from lsp_client.protocol import CapabilityClientProtocol
 from lsprotocol.types import (
     Location,
+)
+from lsprotocol.types import (
     Position as LSPPosition,
+)
+from lsprotocol.types import (
     Range as LSPRange,
 )
-from lsap_schema.schema.reference import ReferenceRequest, ReferenceResponse
-from lsap_schema.schema.symbol import SymbolResponse
 
 from lsap.utils.content import SnippetReader
 
 from .abc import Capability, Protocol
 from .locate import LocateCapability
-from .symbol import SymbolCapability, lookup_position, lookup_symbol
+from .symbol_outline import SymbolCapability, lookup_position, lookup_symbol
 
 
 @runtime_checkable

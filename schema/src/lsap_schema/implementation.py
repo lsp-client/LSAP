@@ -23,7 +23,7 @@ class ImplementationRequest(LocateRequest, PaginatedRequest):
 
 
 markdown_template: Final = """
-### Implementations Found
+# Implementations Found
 
 {% if total != nil -%}
 Total implementations: {{ total }} | Showing: {{ items.size }}{% if max_items != nil %} (Offset: {{ start_index }}, Limit: {{ max_items }}){% endif %}
@@ -38,7 +38,7 @@ No concrete implementations found.
   {{ item.hover | indent: 2 }}
 {%- endif %}
 {% if item.symbol_content != nil -%}
-```python
+```
 {{ item.symbol_content }}
 ```
 {%- endif %}

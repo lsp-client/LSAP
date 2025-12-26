@@ -3,7 +3,7 @@ from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from .abc import Response, Request
+from .abc import Request, Response
 from .locate import Range
 
 
@@ -49,9 +49,9 @@ class InlineValueRequest(Request):
 
 
 markdown_template: Final = """
-### Code with Annotations: `{{ file_path }}`
+# Code with Annotations: `{{ file_path }}`
 
-```python
+```
 {{ decorated_content }}
 ```
 

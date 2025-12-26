@@ -29,7 +29,7 @@ class FileDiagnosticsRequest(PaginatedRequest):
 
 
 markdown_template: Final = """
-### Diagnostics for `{{ file_path }}`
+# Diagnostics for `{{ file_path }}`
 {% if total != nil -%}
 Total issues: {{ total }} | Showing: {{ diagnostics.size }}{% if max_items != nil %} (Offset: {{ start_index }}, Limit: {{ max_items }}){% endif %}
 {%- endif %}
@@ -38,7 +38,7 @@ Total issues: {{ total }} | Showing: {{ diagnostics.size }}{% if max_items != ni
 No issues found.
 {%- else -%}
 {%- for d in diagnostics %}
-- {{ d.severity }}: {{ d.message }} (at line {{ d.range.start.line | plus: 1 }}, col {{ d.range.start.character | plus: 1 }})
+- {{ d.severity }}: {{ d.message }} (at line {{ d.range.start.line }}, col {{ d.range.start.character }})
 {%- endfor %}
 
 {% if has_more -%}

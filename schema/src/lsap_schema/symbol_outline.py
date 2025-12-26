@@ -3,7 +3,7 @@ from typing import Final
 
 from pydantic import BaseModel, ConfigDict
 
-from .abc import Response, Request
+from .abc import Request, Response
 from .locate import Range
 
 
@@ -28,7 +28,7 @@ class SymbolOutlineRequest(Request):
 
 
 markdown_template: Final = """
-### Symbol Outline for `{{ file_path }}`
+# Symbol Outline for `{{ file_path }}`
 
 {% for item in items -%}
 {% for i in (1..item.level) %}  {% endfor %}- {{ item.name }} (`{{ item.kind }}`)
@@ -36,7 +36,7 @@ markdown_template: Final = """
 {% assign content_depth = item.level | plus: 1 %}
 {% assign indent_size = content_depth | times: 2 %}
 {% for i in (1..content_depth) %}  {% endfor %}```{{ file_path.suffix | slice: 1, 10 }}
-{{ item.symbol_content | indent: indent_size }}
+{{ item.symbol_content }}
 {% for i in (1..content_depth) %}  {% endfor %}```
 {%- endif %}
 {%- endfor %}

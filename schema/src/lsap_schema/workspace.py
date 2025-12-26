@@ -24,10 +24,11 @@ class WorkspaceSymbolRequest(PaginatedRequest):
     """
 
     query: str
+    """The symbol name to search for."""
 
 
 markdown_template: Final = """
-### Workspace Symbols matching `{{ query }}`
+# Workspace Symbols matching `{{ query }}`
 {% if total != nil -%}
 Total found: {{ total }} | Showing: {{ items.size }}{% if max_items != nil %} (Offset: {{ start_index }}, Limit: {{ max_items }}){% endif %}
 {%- endif %}
@@ -55,6 +56,7 @@ No symbols found matching the query.
 
 class WorkspaceSymbolResponse(PaginatedResponse):
     query: str
+    """The search string used to find the symbols"""
     items: list[WorkspaceSymbolItem]
 
     model_config = ConfigDict(

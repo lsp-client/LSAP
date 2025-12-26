@@ -9,6 +9,7 @@ from .locate import LocateRequest
 
 class RenameDiff(BaseModel):
     line: int
+    """Line number (1-based)"""
     original: str
     """Line content before rename"""
 
@@ -34,14 +35,14 @@ class RenameRequest(LocateRequest):
 
 
 markdown_template: Final = """
-### Rename Preview: `{{ old_name }}` -> `{{ new_name }}`
+# Rename Preview: `{{ old_name }}` -> `{{ new_name }}`
 
 Summary: Affects {{ total_files }} files and {{ total_occurrences }} occurrences.
 
 {% for file in changes -%}
-#### File: `{{ file.file_path }}`
+## File: `{{ file.file_path }}`
 {%- for diff in file.diffs %}
-- Line {{ diff.line | plus: 1 }}:
+- Line {{ diff.line }}:
   - `{{ diff.original }}`
   + `{{ diff.modified }}`
 {%- endfor %}

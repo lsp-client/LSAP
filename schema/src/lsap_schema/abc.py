@@ -1,24 +1,18 @@
-from pydantic import BaseModel
+from functools import lru_cache
+
 from liquid import Environment
+from pydantic import BaseModel
 
 Symbol = str
 SymbolPath = list[Symbol]
-
 
 # Shared environment for all responses
 _env = Environment()
 
 
-def _indent(value: str, n: int = 4) -> str:
-    if not isinstance(value, str):
-        return value
-    indent_str = " " * n
-    return "\n".join(
-        (indent_str + line) if line else line for line in value.splitlines()
-    )
-
-
-_env.add_filter("indent", _indent)
+@lru_cache()
+def get_template(template_source: str):
+    return _env.from_string(template_source)
 
 
 class Response(BaseModel):
@@ -35,17 +29,14 @@ class Response(BaseModel):
                 f"Template '{template_name}' must be a string, got {type(template_str).__name__}"
             )
 
-        template = _env.from_string(template_str)
-        return template.render(**self.model_dump())
+        return get_template(template_str).render(**self.model_dump())
 
 
-class Request(BaseModel):
-    pass
+class Request(BaseModel): ...
 
 
 class PaginatedRequest(Request):
     max_items: int | None = None
-
     """Maximum number of items to return"""
 
     start_index: int = 0
@@ -60,5 +51,5 @@ class PaginatedResponse(Response):
     max_items: int | None = None
     total: int | None = None
     has_more: bool = False
+
     pagination_id: str | None = None
-    """Token to retrieve the next page of results"""

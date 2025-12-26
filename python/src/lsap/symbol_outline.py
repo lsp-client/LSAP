@@ -2,13 +2,15 @@ from functools import cached_property
 from pathlib import Path
 from typing import Protocol, Sequence
 
+from lsap_schema.abc import Symbol, SymbolPath
+from lsap_schema.symbol import SymbolRequest, SymbolResponse
 from lsp_client.capability.request import WithRequestDocumentSymbol
 from lsp_client.protocol import CapabilityClientProtocol
-from lsprotocol.types import DocumentSymbol, Position as LSPPosition, Range as LSPRange
-from lsap_schema.schema.symbol import SymbolRequest, SymbolResponse
+from lsprotocol.types import DocumentSymbol
+from lsprotocol.types import Position as LSPPosition
+from lsprotocol.types import Range as LSPRange
 
 from lsap.utils.content import SnippetReader
-from lsap.utils.symbol import Symbol, SymbolPath
 
 from .abc import Capability
 from .locate import LocateCapability

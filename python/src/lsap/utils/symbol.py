@@ -1,7 +1,7 @@
 from typing import Sequence
 
+from lsap_schema.abc import SymbolPath
 from lsprotocol.types import DocumentSymbol
-from lsap_schema.abc import Symbol, SymbolPath
 
 
 def lookup_symbol(

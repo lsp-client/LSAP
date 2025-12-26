@@ -40,7 +40,7 @@ def test_locate_response_format():
     )
     rendered = resp.format()
     assert "test.py" in rendered
-    assert "2:3" in rendered  # 1-based in template
+    assert "1:2" in rendered
 
 
 def test_symbol_response_format():

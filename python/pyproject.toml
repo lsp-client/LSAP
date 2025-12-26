@@ -9,23 +9,18 @@ dependencies = [
     "asyncer>=0.0.11",
     "attrs>=25.4.0",
     "cattrs>=25.3.0",
-    "jinja2>=3.1.6",
     "lsap-schema",
     "lsp-client",
     "pydantic>=2.12.5",
+    "python-liquid>=2.1.0",
 ]
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.uv.workspace]
-members = [
-    "packages/lsp-client",
-]
+requires = ["uv_build>=0.9.9,<0.10.0"]
+build-backend = "uv_build"
 
 [tool.uv.sources]
-lsp-client = { workspace = true }
+lsp-client = { path = "../../python-sdk", editable=true }
 lsap-schema = { path = "../schema", editable = true }
 
 [dependency-groups]
