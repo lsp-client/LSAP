@@ -10,15 +10,22 @@ Inherits from `LocateRequest`.
 | :---------------- | :--------------- | :------ | :--------------------------------------------------- |
 | `include_hover`   | `boolean`        | `false` | Whether to include docs for each reference.          |
 | `include_content` | `boolean`        | `true`  | Whether to include code snippets for each reference. |
-| `limit`           | `number \| null` | `null`  | Pagination limit.                                    |
-| `offset`          | `number`         | `0`     | Pagination offset.                                   |
+| `max_items`       | `number \| null` | `null`  | Maximum number of references to return.              |
+| `start_index`     | `number`         | `0`     | Number of items to skip for pagination.              |
+| `pagination_id`   | `string \| null` | `null`  | Token to retrieve the next page of results.          |
 
 ## ReferenceResponse
+
+Inherits from `PaginatedResponse`.
 
 | Field      | Type               | Description                                       |
 | :--------- | :----------------- | :------------------------------------------------ |
 | `items`    | `SymbolResponse[]` | List of locations where the symbol is referenced. |
+| `start_index` | `number`        | Offset of the current page.                       |
+| `max_items` | `number?`         | Number of items per page (if specified).          |
+| `total`    | `number?`          | Total number of references (if available).        |
 | `has_more` | `boolean`          | Whether more references exist beyond the limit.   |
+| `pagination_id`| `string?`      | Token for retrieving the next page.               |
 
 ## Example Usage
 
@@ -30,23 +37,22 @@ Inherits from `LocateRequest`.
     "file_path": "src/utils.py",
     "symbol_path": ["format_date"]
   },
-  "limit": 10
+  "max_items": 10
 }
 ```
 
 ### Markdown Rendered for LLM
 
 ````markdown
-### References Found
+# References Found
 
-**Total references**: 45 | **Showing**: 10 (Offset: 0, Limit: 10)
+Total references: 45 | Showing: 10 (Offset: 0, Limit: 10)
 
 - `src/ui/header.py` - `Header.render`
 
 ```python
 formatted = format_date(user.last_login)
 ```
-````
 
 - `src/api/views.py` - `UserDetail.get`
 
@@ -57,9 +63,6 @@ return {"date": format_date(obj.created_at)}
 ---
 
 > [!TIP]
-> **More references available.**
-> To see more, specify a `limit` and use: `offset=10`
-
-```
-
-```
+> More references available.
+> To see more, specify a `max_items` and use: `start_index=10`
+````

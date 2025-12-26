@@ -9,16 +9,25 @@ Inherits from `LocateRequest`.
 | Field    | Type                         | Default  | Description                                                   |
 | :------- | :--------------------------- | :------- | :------------------------------------------------------------ |
 | `locate` | `LocateText \| LocateSymbol` | Required | Where to trigger the completion.                              |
-| `limit`  | `number`                     | `15`     | Maximum number of suggestions to return to avoid token bloat. |
+| `max_items`| `number \| null`           | `15`     | Maximum number of suggestions to return to avoid token bloat. |
+| `start_index`| `number`                 | `0`      | Number of items to skip.                                      |
+| `pagination_id`| `string \| null`         | `null`   | Token to retrieve the next page of results.                   |
 
 > [!TIP]
-> To trigger completion after a dot (e.g., `user.`), use `LocateText` with `find="user."` and `position="end"`.
+> To trigger completion after a dot (e.g., `user.`), use `LocateText` with `find="user."` and `find_end="end"`.
 
 ## CompletionResponse
+
+Inherits from `PaginatedResponse`.
 
 | Field   | Type               | Description                              |
 | :------ | :----------------- | :--------------------------------------- |
 | `items` | `CompletionItem[]` | List of suggestions sorted by relevance. |
+| `start_index` | `number`     | Offset of the current page.              |
+| `max_items` | `number?`      | Number of items per page (if specified). |
+| `total` | `number?`          | Total number of suggestions (if available). |
+| `has_more` | `boolean`       | Whether more results are available.      |
+| `pagination_id`| `string?`   | Token for retrieving the next page.      |
 
 ### CompletionItem
 
@@ -41,16 +50,16 @@ Inherits from `LocateRequest`.
     "file_path": "src/main.py",
     "line": 15,
     "find": "client.",
-    "position": "end"
+    "find_end": "end"
   },
-  "limit": 5
+  "max_items": 5
 }
 ```
 
 #### Markdown Rendered for LLM
 
 ```markdown
-### Code Completion at the requested location
+# Code Completion at the requested location
 
 | Symbol      | Kind     | Detail                 |
 | :---------- | :------- | :--------------------- |
@@ -58,7 +67,11 @@ Inherits from `LocateRequest`.
 | `send_json` | Method   | (data: dict) -> None   |
 | `is_active` | Property | bool                   |
 
-#### Top Suggestion Detail: `connect`
+## Top Suggestion Detail: `connect`
 
 Establishes a connection to the server...
+
+---
+> [!TIP]
+> Use these symbols to construct your next code edit. You can focus on a specific method to get more details.
 ```

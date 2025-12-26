@@ -52,16 +52,12 @@ If an Agent is reading `main.py` and sees `client.send_message()`, it can find t
 #### Markdown Rendered for LLM
 
 ````markdown
-### Navigation Result
+# Navigation Result
 
-#### Implementation / Declaration
+## Implementation / Declaration
 
 ```python
 def send_message(self, text: str):
     self.connection.post(text)
 ```
 ````
-
-```
-
-```

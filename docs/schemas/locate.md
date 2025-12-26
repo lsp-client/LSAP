@@ -13,7 +13,7 @@ Finds a position based on a text search.
 - `file_path`: Path to search in.
 - `line`: Specific line number or range `[start, end]`.
 - `find`: String snippet to find.
-- `position`: `"start"` or `"end"` of the snippet.
+- `find_end`: `"start"` or `"end"` of the snippet (default: `"start"`).
 
 ### LocateSymbol
 
@@ -39,7 +39,7 @@ Finds a position based on a symbol path.
     "file_path": "src/main.py",
     "line": [10, 50],
     "find": "def my_func",
-    "position": "start"
+    "find_end": "start"
   }
 }
 ```

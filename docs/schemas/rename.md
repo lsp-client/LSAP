@@ -46,28 +46,26 @@ Contains `file_path` and a list of `RenameDiff` objects (line number, original t
 #### Markdown Rendered for LLM
 
 ```markdown
-### Rename Preview: `fetch_data` -> `get_resource`
+# Rename Preview: `fetch_data` -> `get_resource`
 
-**Summary**: Affects 2 files and 3 occurrences.
+Summary: Affects 2 files and 3 occurrences.
 
-#### File: `src/client.py`
-
+## File: `src/client.py`
 - Line 10:
   - `def fetch_data(self, id):`
-  * `def get_resource(self, id):`
+  + `def get_resource(self, id):`
 
-#### File: `src/main.py`
-
+## File: `src/main.py`
 - Line 42:
   - `data = client.fetch_data(1)`
-  * `data = client.get_resource(1)`
+  + `data = client.get_resource(1)`
 - Line 50:
   - `logger.info("Fetched", client.fetch_data(2))`
-  * `logger.info("Fetched", client.get_resource(2))`
+  + `logger.info("Fetched", client.get_resource(2))`
 
 ---
 
 > [!WARNING]
-> **This is a permanent workspace-wide change.**
+> This is a permanent workspace-wide change.
 > Please verify the diffs above before proceeding with further edits.
 ```

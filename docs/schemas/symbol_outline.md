@@ -18,13 +18,13 @@ The Symbol Outline API returns a hierarchical tree of all symbols defined within
 
 ### SymbolOutlineItem
 
-| Field            | Type                  | Description                                                  |
-| :--------------- | :-------------------- | :----------------------------------------------------------- |
-| `name`           | `string`              | Name of the symbol.                                          |
-| `kind`           | `string`              | Type of the symbol (e.g., `Class`, `Function`, `Interface`). |
-| `range`          | `Range`               | Range of the symbol in the file.                             |
-| `children`       | `SymbolOutlineItem[]` | Nested symbols (e.g., methods within a class).               |
-| `symbol_content` | `string`              | The source code of the symbol, if requested.                 |
+| Field            | Type     | Description                                                  |
+| :--------------- | :------- | :----------------------------------------------------------- |
+| `name`           | `string` | Name of the symbol.                                          |
+| `kind`           | `string` | Type of the symbol (e.g., `Class`, `Function`, `Interface`). |
+| `range`          | `Range`  | Range of the symbol in the file.                             |
+| `level`          | `number` | Nesting level (0 for top-level, 1 for nested, etc.).         |
+| `symbol_content` | `string?`| The source code of the symbol, if requested.                 |
 
 ## Example Usage
 
@@ -40,13 +40,13 @@ The Symbol Outline API returns a hierarchical tree of all symbols defined within
 ### Markdown Rendered for LLM
 
 ````markdown
-### Symbol Outline for `src/models.py`
+# Symbol Outline for `src/models.py`
 
 - User (`Class`)
   - __init__ (`Method`)
   - get_full_name (`Method`)
 
-    ```python
+    ```py
     def get_full_name(self):
         return f"{self.first_name} {self.last_name}"
     ```
