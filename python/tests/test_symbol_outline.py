@@ -1,11 +1,13 @@
 from pathlib import Path
+
 import pytest
 from lsprotocol.types import (
     DocumentSymbol,
-    SymbolKind,
-    Range as LSPRange,
     Position as LSPPosition,
+    Range as LSPRange,
+    SymbolKind,
 )
+
 from lsap.symbol_outline import SymbolOutlineCapability
 from lsap_schema.symbol_outline import SymbolOutlineRequest
 
@@ -45,13 +47,16 @@ class MockSymbolOutlineClient:
         )
         return [a_symbol]
 
+    async def request_hover(self, file_path: Path, position: LSPPosition):
+        return None
+
 
 @pytest.mark.asyncio
 async def test_symbol_outline():
     client = MockSymbolOutlineClient()
     capability = SymbolOutlineCapability(client=client)  # type: ignore
 
-    req = SymbolOutlineRequest(file_path=Path("test.py"), display_code_for=["foo"])
+    req = SymbolOutlineRequest(file_path=Path("test.py"), include_content=True)
 
     resp = await capability(req)
     assert resp is not None
@@ -59,9 +64,9 @@ async def test_symbol_outline():
 
     assert resp.items[0].name == "A"
     assert resp.items[0].level == 0
-    assert resp.items[0].symbol_content is None
+    assert resp.items[0].content is not None
 
     assert resp.items[1].name == "foo"
     assert resp.items[1].level == 1
-    assert resp.items[1].symbol_content is not None
-    assert "def foo(self):" in resp.items[1].symbol_content
+    assert resp.items[1].content is not None
+    assert "def foo(self):" in resp.items[1].content

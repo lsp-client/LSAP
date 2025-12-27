@@ -1,13 +1,15 @@
 from typing import Protocol, override
 
+from asyncer import create_task_group
 from lsap_schema.locate import Position, Range
 from lsap_schema.symbol_outline import (
     SymbolOutlineItem,
     SymbolOutlineRequest,
     SymbolOutlineResponse,
 )
-from lsp_client.capability.request import WithRequestDocumentSymbol
+from lsp_client.capability.request import WithRequestDocumentSymbol, WithRequestHover
 from lsp_client.protocol import CapabilityClientProtocol
+from lsprotocol.types import DocumentSymbol
 
 from lsap.abc import Capability
 from lsap.utils.content import DocumentReader
@@ -16,6 +18,7 @@ from lsap.utils.symbol import iter_symbols
 
 class SymbolOutlineClient(
     WithRequestDocumentSymbol,
+    WithRequestHover,
     CapabilityClientProtocol,
     Protocol,
 ): ...
@@ -30,18 +33,22 @@ class SymbolOutlineCapability(
         if symbols is None:
             return None
 
-        reader = DocumentReader(self.client.read_file(req.file_path))
+        reader = (
+            DocumentReader(self.client.read_file(req.file_path))
+            if req.include_content
+            else None
+        )
         items: list[SymbolOutlineItem] = []
 
-        for path, symbol in iter_symbols(symbols):
-            symbol_content: str | None = None
-            if symbol.name in req.display_code_for:
-                snippet = reader.read(symbol.range)
-                if snippet:
-                    symbol_content = snippet.content
+        async def fill_hover(it: SymbolOutlineItem, sym: DocumentSymbol) -> None:
+            if hover := await self.client.request_hover(
+                req.file_path, sym.selection_range.start
+            ):
+                it.hover = hover.value
 
-            items.append(
-                SymbolOutlineItem(
+        async with create_task_group() as tg:
+            for path, symbol in iter_symbols(symbols):
+                item = SymbolOutlineItem(
                     name=symbol.name,
                     kind=symbol.kind.name,
                     range=Range(
@@ -49,8 +56,13 @@ class SymbolOutlineCapability(
                         end=Position.from_lsp(symbol.range.end),
                     ),
                     level=len(path) - 1,
-                    symbol_content=symbol_content,
                 )
-            )
+                items.append(item)
+
+                if reader and (snippet := reader.read(symbol.range)):
+                    item.content = snippet.content
+
+                if req.include_hover:
+                    tg.soonify(fill_hover)(item, symbol)
 
         return SymbolOutlineResponse(file_path=req.file_path, items=items)
