@@ -26,6 +26,9 @@ from .diagnostics import (
     FileDiagnosticsResponse,
 )
 
+# Hover
+from .hover import HoverRequest, HoverResponse
+
 # Inlay hint
 from .inlay_hint import (
     DecoratedContentResponse,
@@ -41,12 +44,10 @@ from .locate import (
     LocateResponse,
     LocateSymbol,
     LocateText,
-    Position,
-    Range,
 )
 
 # Reference
-from .reference import ReferenceRequest, ReferenceResponse
+from .reference import ReferenceItem, ReferenceRequest, ReferenceResponse
 
 # Rename
 from .rename import (
@@ -57,14 +58,14 @@ from .rename import (
 )
 
 # Symbol
-from .symbol import ParameterInfo, SymbolRequest, SymbolResponse
+from .symbol import SymbolRequest, SymbolResponse
 
 # Symbol outline
 from .symbol_outline import (
-    SymbolOutlineItem,
     SymbolOutlineRequest,
     SymbolOutlineResponse,
 )
+
 
 # Type hierarchy
 from .type_hierarchy import (
@@ -74,6 +75,9 @@ from .type_hierarchy import (
     TypeHierarchyRequest,
     TypeHierarchyResponse,
 )
+
+# Types
+from .types import Position, Range
 
 # Workspace
 from .workspace import (
@@ -105,6 +109,9 @@ __all__ = [
     "Diagnostic",
     "FileDiagnosticsRequest",
     "FileDiagnosticsResponse",
+    # Hover
+    "HoverRequest",
+    "HoverResponse",
     # Inlay hint
     "DecoratedContentResponse",
     "InlayHintItem",
@@ -119,6 +126,7 @@ __all__ = [
     "Position",
     "Range",
     # Reference
+    "ReferenceItem",
     "ReferenceRequest",
     "ReferenceResponse",
     # Rename
@@ -127,11 +135,9 @@ __all__ = [
     "RenameRequest",
     "RenameResponse",
     # Symbol
-    "ParameterInfo",
     "SymbolRequest",
     "SymbolResponse",
     # Symbol outline
-    "SymbolOutlineItem",
     "SymbolOutlineRequest",
     "SymbolOutlineResponse",
     # Type hierarchy

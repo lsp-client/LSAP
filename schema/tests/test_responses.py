@@ -1,25 +1,28 @@
-import pytest
 from pathlib import Path
-from lsap_schema.completion import CompletionResponse, CompletionItem
-from lsap_schema.locate import LocateResponse, Position, Range
-from lsap_schema.symbol import SymbolResponse, ParameterInfo
-from lsap_schema.workspace import WorkspaceSymbolResponse, WorkspaceSymbolItem
-from lsap_schema.reference import ReferenceResponse
-from lsap_schema.definition import DefinitionResponse
-from lsap_schema.diagnostics import FileDiagnosticsResponse, Diagnostic
-from lsap_schema.symbol_outline import SymbolOutlineResponse, SymbolOutlineItem
-from lsap_schema.rename import RenameResponse, RenameFileChange, RenameDiff
-from lsap_schema.inlay_hint import DecoratedContentResponse
+
+import pytest
+
 from lsap_schema.call_hierarchy import (
-    CallHierarchyResponse,
-    CallHierarchyNode,
     CallHierarchyItem,
+    CallHierarchyNode,
+    CallHierarchyResponse,
 )
+from lsap_schema.completion import CompletionItem, CompletionResponse
+from lsap_schema.definition import DefinitionResponse
+from lsap_schema.diagnostics import Diagnostic, FileDiagnosticsResponse
+from lsap_schema.inlay_hint import DecoratedContentResponse
+from lsap_schema.locate import LocateResponse, Position, Range
+from lsap_schema.reference import ReferenceResponse
+from lsap_schema.rename import RenameDiff, RenameFileChange, RenameResponse
+from lsap_schema.symbol import SymbolResponse
+from lsap_schema.symbol_outline import SymbolOutlineResponse
+from lsap_schema.types import SymbolInfo, SymbolKind
 from lsap_schema.type_hierarchy import (
-    TypeHierarchyResponse,
-    TypeHierarchyNode,
     TypeHierarchyItem,
+    TypeHierarchyNode,
+    TypeHierarchyResponse,
 )
+from lsap_schema.workspace import WorkspaceSymbolItem, WorkspaceSymbolResponse
 
 
 def test_completion_response_format():
@@ -46,64 +49,107 @@ def test_locate_response_format():
 def test_symbol_response_format():
     resp = SymbolResponse(
         file_path=Path("test.py"),
-        symbol_path=["MyClass", "my_method"],
+        name="my_method",
+        path=["MyClass", "my_method"],
+        kind=SymbolKind.Method,
         hover="Test Hover",
-        parameters=[ParameterInfo(name="p1", label="p1: int", documentation="doc")],
-        symbol_content="def my_method(): pass",
+        code="def my_method(): pass",
     )
     rendered = resp.format()
     assert "MyClass.my_method" in rendered
     assert "Test Hover" in rendered
-    assert "p1: int" in rendered
     assert "def my_method()" in rendered
 
 
 def test_workspace_symbol_response_format():
+    from lsap_schema.workspace import WorkspaceSymbolRequest
+
+    req = WorkspaceSymbolRequest(query="test")
     resp = WorkspaceSymbolResponse(
-        query="test",
+        request=req,
         items=[
             WorkspaceSymbolItem(
-                name="test_sym",
-                kind="Class",
                 file_path=Path("test.py"),
-                range=Range(
-                    start=Position(line=1, character=1),
-                    end=Position(line=2, character=1),
-                ),
-            )
+                name="class MyClass",
+                path=["MyClass"],
+                kind=SymbolKind.Class,
+                code="class MyClass: pass",
+                hover="A test class",
+            ),
+            WorkspaceSymbolItem(
+                file_path=Path("test.py"),
+                name="my_method",
+                path=["MyClass", "my_method"],
+                kind=SymbolKind.Method,
+            ),
         ],
         start_index=0,
         has_more=False,
     )
     rendered = resp.format()
-    assert "test_sym" in rendered
-    assert "Class" in rendered
+    assert "test" in rendered
+    assert "MyClass" in rendered
+    assert "class" in rendered
     assert "test.py" in rendered
 
 
 def test_reference_response_format():
-    symbol_resp = SymbolResponse(
-        file_path=Path("test.py"), symbol_path=["test"], symbol_content="test_content"
+    from lsap_schema.reference import ReferenceItem, ReferenceRequest
+    from lsap_schema.locate import LocateText
+
+    item = ReferenceItem(
+        file_path=Path("test.py"),
+        line=10,
+        code="test_content",
+        symbol=SymbolInfo(
+            file_path=Path("test.py"),
+            name="test",
+            path=["test"],
+            kind=SymbolKind.Function,
+        ),
     )
-    resp = ReferenceResponse(
-        items=[symbol_resp], start_index=0, has_more=False, mode="references"
+    req = ReferenceRequest(
+        mode="references",
+        locate=LocateText(
+            file_path=Path("test.py"),
+            line=10,
+            find="test",
+        ),
     )
+    resp = ReferenceResponse(request=req, items=[item], start_index=0, has_more=False)
     rendered = resp.format()
     assert "References Found" in rendered
-    assert "test.py" in rendered
+    assert "test.py:10" in rendered
     assert "test_content" in rendered
 
 
 def test_implementation_response_format():
-    symbol_resp = SymbolResponse(
-        file_path=Path("test.py"), symbol_path=["test"], symbol_content="test_content"
+    from lsap_schema.reference import ReferenceItem, ReferenceRequest
+    from lsap_schema.locate import LocateText
+
+    item = ReferenceItem(
+        file_path=Path("test.py"),
+        line=10,
+        code="test_content",
+        symbol=SymbolInfo(
+            file_path=Path("test.py"),
+            name="test",
+            path=["test"],
+            kind=SymbolKind.Function,
+        ),
     )
-    resp = ReferenceResponse(
-        items=[symbol_resp], start_index=0, has_more=False, mode="implementations"
+    req = ReferenceRequest(
+        mode="implementations",
+        locate=LocateText(
+            file_path=Path("test.py"),
+            line=10,
+            find="test",
+        ),
     )
+    resp = ReferenceResponse(request=req, items=[item], start_index=0, has_more=False)
     rendered = resp.format()
     assert "Implementations Found" in rendered
-    assert "test.py" in rendered
+    assert "test.py:10" in rendered
     assert "test_content" in rendered
 
 
@@ -133,33 +179,27 @@ def test_symbol_outline_response_format():
     resp = SymbolOutlineResponse(
         file_path=Path("test.py"),
         items=[
-            SymbolOutlineItem(
+            SymbolInfo(
+                file_path=Path("test.py"),
                 name="class MyClass",
-                kind="Class",
-                range=Range(
-                    start=Position(line=1, character=1),
-                    end=Position(line=10, character=1),
-                ),
-                level=0,
-                symbol_content="class MyClass: pass",
+                path=["MyClass"],
+                kind=SymbolKind.Class,
+                code="class MyClass: pass",
                 hover="A test class",
             ),
-            SymbolOutlineItem(
+            SymbolInfo(
+                file_path=Path("test.py"),
                 name="my_method(arg1: int) -> None",
-                kind="Method",
-                range=Range(
-                    start=Position(line=1, character=4),
-                    end=Position(line=2, character=4),
-                ),
-                level=1,
+                path=["MyClass", "my_method"],
+                kind=SymbolKind.Method,
             ),
         ],
     )
     rendered = resp.format()
     assert "class MyClass" in rendered
-    assert "Class" in rendered
+    assert "class" in rendered
     assert "A test class" in rendered
-    assert "my_method(arg1: int) -> None" in rendered
+    assert "my_method" in rendered
 
 
 def test_rename_response_format():
@@ -243,19 +283,26 @@ def test_type_hierarchy_response_format():
 
 
 def test_definition_response_format():
+    from lsap_schema.definition import DefinitionRequest
+
+    req = DefinitionRequest(
+        mode="definition",
+    )
     resp = DefinitionResponse(
         file_path=Path("test.py"),
-        symbol_path=["test"],
-        symbol_content="test_content",
+        name="test",
+        path=["test"],
+        kind=SymbolKind.Function,
+        request=req,
+        code="test_content",
         hover="test_hover",
-        mode="definition",
     )
     rendered = resp.format()
     assert "Definition Result" in rendered
     assert "test_hover" in rendered
     assert "test_content" in rendered
 
-    resp.mode = "type_definition"
+    req.mode = "type_definition"
     rendered = resp.format()
     assert "Type definition Result" in rendered
 
@@ -264,3 +311,27 @@ def test_format_invalid_template():
     resp = CompletionResponse(items=[], start_index=0)
     with pytest.raises(ValueError):
         resp.format(template_name="invalid")
+
+
+def test_symbol_kind_conversion():
+    """Test SymbolKind.from_lsp() conversion"""
+    from lsprotocol.types import SymbolKind as LSPSymbolKind
+
+    # Test various symbol kinds
+    test_cases = [
+        LSPSymbolKind.File,
+        LSPSymbolKind.Module,
+        LSPSymbolKind.Class,
+        LSPSymbolKind.Method,
+        LSPSymbolKind.Function,
+        LSPSymbolKind.Variable,
+        LSPSymbolKind.Interface,
+        LSPSymbolKind.Enum,
+    ]
+
+    for lsp_kind in test_cases:
+        result = SymbolKind.from_lsp(lsp_kind)
+        # Verify the name matches
+        assert result.name == lsp_kind.name
+        # Verify it's the correct type
+        assert isinstance(result, SymbolKind)

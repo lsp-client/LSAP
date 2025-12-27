@@ -1,13 +1,23 @@
+from pathlib import Path
 from typing import Final, Literal
 
-from pydantic import ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from .abc import PaginatedRequest, PaginatedResponse
 from .locate import LocateRequest
-from .symbol import SymbolResponse
+from .types import SymbolInfo
 
 
-class ReferenceRequest(LocateRequest, PaginatedRequest):
+class ReferenceItem(BaseModel):
+    file_path: Path
+    line: int = Field(..., description="1-based line number")
+    code: str = Field(..., description="Surrounding code snippet")
+    symbol: SymbolInfo | None = Field(
+        None, description="The symbol containing this reference"
+    )
+
+
+class ReferenceRequest(PaginatedRequest, LocateRequest):
     """
     Finds all references (usages) or concrete implementations of a symbol.
 
@@ -18,39 +28,36 @@ class ReferenceRequest(LocateRequest, PaginatedRequest):
     mode: Literal["references", "implementations"] = "references"
     """Whether to find references or concrete implementations."""
 
-    include_hover: bool = False
-    """Whether to include documentation for each item. Default to False to save tokens."""
-
-    include_content: bool = True
-    """Whether to include the source code snippet for each item."""
+    context_lines: int = 2
+    """Number of lines around the match to include"""
 
 
 markdown_template: Final = """
-# {{ mode | capitalize }} Found
+# {{ request.mode | capitalize }} Found
 
 {% if total != nil -%}
-Total {{ mode }}: {{ total }} | Showing: {{ items.size }}{% if max_items != nil %} (Offset: {{ start_index }}, Limit: {{ max_items }}){% endif %}
+Total {{ request.mode }}: {{ total }} | Showing: {{ items.size }}{% if max_items != nil %} (Offset: {{ start_index }}, Limit: {{ max_items }}){% endif %}
 {%- endif %}
 
 {% if items.size == 0 -%}
-No {{ mode }} found.
+No {{ request.mode }} found.
 {%- else -%}
-{%- for item in items %}
-- `{{ item.file_path }}` - `{{ item.symbol_path | join: "." }}`
-{% if item.hover != nil -%}
-  {{ item.hover | indent: 2 }}
+{%- for item in items -%}
+### {{ item.file_path }}:{{ item.line }}
+{%- if item.symbol != nil %}
+In `{{ item.symbol.path | join: "." }}` (`{{ item.symbol.kind }}`)
 {%- endif %}
-{% if item.symbol_content != nil -%}
+
+```{{ item.file_path.suffix | remove_first: "." }}
+{{ item.code }}
 ```
-{{ item.symbol_content }}
-```
-{%- endif %}
-{%- endfor %}
+
+{% endfor -%}
 
 {% if has_more -%}
 ---
 > [!TIP]
-> More {{ mode }} available.
+> More {{ request.mode }} available.
 {%- if pagination_id != nil %}
 > Use `pagination_id="{{ pagination_id }}"` to fetch the next page.
 {%- else %}
@@ -62,10 +69,8 @@ No {{ mode }} found.
 
 
 class ReferenceResponse(PaginatedResponse):
-    mode: Literal["references", "implementations"] = "references"
-    """The mode used for this response."""
-
-    items: list[SymbolResponse]
+    request: ReferenceRequest
+    items: list[ReferenceItem]
 
     model_config = ConfigDict(
         json_schema_extra={

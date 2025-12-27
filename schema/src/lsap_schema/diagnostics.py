@@ -4,7 +4,7 @@ from typing import Final, Literal
 from pydantic import BaseModel, ConfigDict
 
 from .abc import PaginatedRequest, PaginatedResponse
-from .locate import Range
+from .types import Range
 
 
 class Diagnostic(BaseModel):
@@ -37,8 +37,10 @@ Total issues: {{ total }} | Showing: {{ diagnostics.size }}{% if max_items != ni
 {% if diagnostics.size == 0 -%}
 No issues found.
 {%- else -%}
+| Line:Col | Severity | Message |
+| :--- | :--- | :--- |
 {%- for d in diagnostics %}
-- {{ d.severity }}: {{ d.message }} (at line {{ d.range.start.line }}, col {{ d.range.start.character }})
+| {{ d.range.start.line }}:{{ d.range.start.character }} | {{ d.severity }} | {{ d.message }} |
 {%- endfor %}
 
 {% if has_more -%}

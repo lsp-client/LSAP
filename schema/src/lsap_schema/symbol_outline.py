@@ -1,22 +1,13 @@
 from pathlib import Path
 from typing import Final
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import ConfigDict
 
-from .abc import Request, Response
-from .locate import Range
-
-
-class SymbolOutlineItem(BaseModel):
-    name: str
-    kind: str
-    range: Range
-    level: int = 0
-    content: str | None = None
-    hover: str | None = None
+from .abc import Response, SymbolInfoRequest
+from .types import SymbolInfo
 
 
-class SymbolOutlineRequest(Request):
+class SymbolOutlineRequest(SymbolInfoRequest):
     """
     Retrieves a hierarchical outline of symbols within a file.
 
@@ -26,36 +17,32 @@ class SymbolOutlineRequest(Request):
 
     file_path: Path
 
-    include_hover: bool = True
-    """Whether to include hover/documentation information"""
-
-    include_content: bool = True
-    """Whether to include the symbol's source code content"""
-
 
 markdown_template: Final = """
 # Symbol Outline for `{{ file_path }}`
 
 {% for item in items -%}
-{% for i in (1..item.level) %}  {% endfor %}- {{ item.name }} (`{{ item.kind }}`)
-{%- if item.hover %}
-{% assign content_depth = item.level | plus: 1 %}
-{% for i in (1..content_depth) %}  {% endfor %}{{ item.hover | replace: "\n", " " | truncate: 100 }}
+{% assign level = item.path | size | plus: 1 -%}
+{% for i in (1..level) %}#{% endfor %} {{ item.path | join: "." }} (`{{ item.kind }}`)
+{%- if item.detail != nil %}
+{{ item.detail }}
 {%- endif %}
-{%- if item.content != nil %}
-{% assign content_depth = item.level | plus: 1 %}
-{% assign indent_size = content_depth | times: 2 %}
-{% for i in (1..content_depth) %}  {% endfor %}```{{ file_path.suffix | slice: 1, 10 }}
-{{ item.content }}
-{% for i in (1..content_depth) %}  {% endfor %}```
+{%- if item.hover != nil %}
+{{ item.hover | strip | truncate: 120 }}
 {%- endif %}
-{%- endfor %}
+{%- if item.code != nil %}
+```{{ file_path.suffix | remove_first: "." }}
+{{ item.code }}
+```
+{%- endif %}
+
+{% endfor -%}
 """
 
 
 class SymbolOutlineResponse(Response):
     file_path: Path
-    items: list[SymbolOutlineItem]
+    items: list[SymbolInfo]
 
     model_config = ConfigDict(
         json_schema_extra={

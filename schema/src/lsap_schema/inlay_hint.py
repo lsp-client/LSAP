@@ -4,7 +4,7 @@ from typing import Final, Literal
 from pydantic import BaseModel, ConfigDict
 
 from .abc import Request, Response
-from .locate import Range
+from .types import Range
 
 
 class InlayHintItem(BaseModel):

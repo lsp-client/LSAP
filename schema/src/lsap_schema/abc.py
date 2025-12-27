@@ -3,10 +3,6 @@ from functools import lru_cache
 from liquid import Environment
 from pydantic import BaseModel
 
-Symbol = str
-SymbolPath = list[Symbol]
-
-# Shared environment for all responses
 _env = Environment()
 
 
@@ -15,24 +11,32 @@ def get_template(template_source: str):
     return _env.from_string(template_source)
 
 
+class Request(BaseModel): ...
+
+
 class Response(BaseModel):
     def format(self, template_name: str = "markdown") -> str:
-        extra = self.model_config.get("json_schema_extra")
-        if not isinstance(extra, dict) or template_name not in extra:
-            raise ValueError(
-                f"Template '{template_name}' not found in model_config.json_schema_extra"
-            )
-
-        template_str = extra[template_name]
-        if not isinstance(template_str, str):
-            raise TypeError(
-                f"Template '{template_name}' must be a string, got {type(template_str).__name__}"
-            )
-
-        return get_template(template_str).render(**self.model_dump())
+        match self.model_config.get("json_schema_extra"):
+            case dict() as templates if (
+                template_str := templates.get(template_name)
+            ) and isinstance(template_str, str):
+                return get_template(template_str).render(**self.model_dump())
+            case _:
+                raise ValueError(
+                    f"No template named '{template_name}' found in model_config.json_schema_extra"
+                )
 
 
-class Request(BaseModel): ...
+class SymbolInfoRequest(Request):
+    """
+    Base request for retrieving symbol information.
+    """
+
+    include_hover: bool = True
+    """Whether to include hover/documentation information"""
+
+    include_code: bool = True
+    """Whether to include the symbol's source code content"""
 
 
 class PaginatedRequest(Request):

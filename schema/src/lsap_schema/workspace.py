@@ -1,21 +1,16 @@
-from pathlib import Path
 from typing import Final
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import ConfigDict
 
-from .abc import PaginatedRequest, PaginatedResponse
-from .locate import Range
+from .abc import PaginatedRequest, PaginatedResponse, SymbolInfoRequest
+from .types import SymbolInfo
 
 
-class WorkspaceSymbolItem(BaseModel):
-    name: str
-    kind: str
-    file_path: Path
-    range: Range
+class WorkspaceSymbolItem(SymbolInfo):
     container_name: str | None = None
 
 
-class WorkspaceSymbolRequest(PaginatedRequest):
+class WorkspaceSymbolRequest(PaginatedRequest, SymbolInfoRequest):
     """
     Searches for symbols across the entire workspace by name.
 
@@ -28,7 +23,7 @@ class WorkspaceSymbolRequest(PaginatedRequest):
 
 
 markdown_template: Final = """
-# Workspace Symbols matching `{{ query }}`
+# Workspace Symbols matching `{{ request.query }}`
 {% if total != nil -%}
 Total found: {{ total }} | Showing: {{ items.size }}{% if max_items != nil %} (Offset: {{ start_index }}, Limit: {{ max_items }}){% endif %}
 {%- endif %}
@@ -37,7 +32,21 @@ Total found: {{ total }} | Showing: {{ items.size }}{% if max_items != nil %} (O
 No symbols found matching the query.
 {%- else -%}
 {%- for item in items %}
-- {{ item.name }} (`{{ item.kind }}`) in `{{ item.file_path }}` {% if item.container_name != nil %}(in `{{ item.container_name }}`){% endif %}
+### {{ item.name }} (`{{ item.kind }}`)
+- Location: `{{ item.file_path }}` {% if item.container_name != nil %}(in `{{ item.container_name }}`){% endif %}
+{%- if item.detail %}
+- Detail: {{ item.detail }}
+{%- endif %}
+{%- if item.hover != nil %}
+
+{{ item.hover }}
+{%- endif %}
+{%- if item.code != nil %}
+
+```{{ item.file_path.suffix | remove_first: "." }}
+{{ item.code }}
+```
+{%- endif %}
 {%- endfor %}
 
 {% if has_more -%}
@@ -55,8 +64,8 @@ No symbols found matching the query.
 
 
 class WorkspaceSymbolResponse(PaginatedResponse):
-    query: str
-    """The search string used to find the symbols"""
+    request: WorkspaceSymbolRequest
+
     items: list[WorkspaceSymbolItem]
 
     model_config = ConfigDict(

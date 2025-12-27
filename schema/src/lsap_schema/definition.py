@@ -2,11 +2,11 @@ from typing import Final, Literal
 
 from pydantic import ConfigDict
 
-from .locate import LocateRequest
-from .symbol import SymbolResponse
+from .abc import Response, SymbolInfoRequest
+from .types import SymbolInfo
 
 
-class DefinitionRequest(LocateRequest):
+class DefinitionRequest(SymbolInfoRequest):
     """
     Finds the definition, declaration, or type definition of a symbol.
 
@@ -17,33 +17,32 @@ class DefinitionRequest(LocateRequest):
     mode: Literal["definition", "declaration", "type_definition"] = "definition"
     """The type of location to find."""
 
-    include_hover: bool = True
-    """Whether to include documentation for the result."""
-
-    include_content: bool = True
-    """Whether to include the source code of the result."""
-
 
 markdown_template: Final = """
-# {{ mode | replace: "_", " " | capitalize }} Result
+# {{ request.mode | replace: "_", " " | capitalize }} Result
+
+### `{{ file_path }}`: {{ path | join: "." }} (`{{ kind }}`)
+
+{% if detail -%}
+{{ detail }}
+{%- endif %}
 
 {% if hover != nil -%}
 ## Documentation
 {{ hover }}
 {%- endif %}
 
-{% if symbol_content != nil -%}
+{% if code != nil -%}
 ## Content
-```
-{{ symbol_content }}
+```{{ file_path.suffix | remove_first: "." }}
+{{ code }}
 ```
 {%- endif %}
 """
 
 
-class DefinitionResponse(SymbolResponse):
-    mode: Literal["definition", "declaration", "type_definition"] = "definition"
-    """The mode used for this response."""
+class DefinitionResponse(SymbolInfo, Response):
+    request: DefinitionRequest
 
     model_config = ConfigDict(
         json_schema_extra={

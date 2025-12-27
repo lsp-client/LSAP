@@ -1,58 +1,30 @@
 from pathlib import Path
-from typing import Literal, Self
+from typing import Literal
 
-from lsprotocol.types import Position as LSPPosition
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
-from .abc import Request, Response, SymbolPath
-
-
-class Position(BaseModel):
-    """
-    Represents a specific position in a file using line and character numbers.
-
-    Note: Line and character are 1-based indices. 0-based indices are used in LSP, so conversion is needed when interfacing with LSP.
-    """
-
-    line: int = Field(ge=1)
-    """1-based line number"""
-
-    character: int = Field(ge=1)
-    """1-based character (column) number"""
-
-    @classmethod
-    def from_lsp(cls, position: LSPPosition) -> Self:
-        """Convert from LSP Position (0-based) to Position (1-based)"""
-        return cls(line=position.line + 1, character=position.character + 1)
-
-    def to_lsp(self) -> LSPPosition:
-        return LSPPosition(line=self.line - 1, character=self.character - 1)
+from .abc import Request, Response
+from .types import Position as Position, Range as Range, SymbolPath
 
 
-class Range(BaseModel):
-    start: Position
-    end: Position
-
-
-class LocateText(BaseModel):
+class LocateBase(BaseModel):
     file_path: Path
     """Relative file path"""
 
+
+class LocateText(LocateBase):
     line: int | tuple[int, int]
     """Line number or range (start, end)"""
 
     find: str
     """Text snippet to find"""
 
-    find_end: Literal["start", "end"] = "start"
-    """Which end of `find` should locate, default to 'start'"""
+    find_end: Literal["start", "end"] = "end"
+    """Which end of `find` should locate, default to 'end'"""
 
 
-class LocateSymbol(BaseModel):
+class LocateSymbol(LocateBase):
     """Locate by symbol path"""
-
-    file_path: Path
-    """Relative file path"""
 
     symbol_path: SymbolPath
     """Symbol hierarchy path, e.g., ["MyClass", "my_method"]"""
