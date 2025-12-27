@@ -7,13 +7,17 @@ from lsprotocol.types import (
     Position as LSPPosition,
     Location,
 )
-from lsap.protocol.reference import ReferenceCapability, ReferenceRequest
-from lsap.protocol.locate import LocateText
+from lsap.reference import ReferenceCapability
+from lsap_schema.reference import ReferenceRequest
+from lsap_schema.locate import LocateText
 
 
 class MockReferenceClient:
     def read_file(self, file_path: Path) -> str:
         return "class A:\n    def foo(self):\n        pass\n\na = A()\na.foo()"
+
+    async def request_hover(self, file_path: Path, position: LSPPosition):
+        return None
 
     def from_uri(self, uri: str) -> Path:
         return Path(uri.replace("file://", ""))
@@ -85,4 +89,5 @@ async def test_reference():
     assert resp is not None
     assert len(resp.items) == 2
     assert resp.items[0].symbol_path == ["A", "foo"]
+    assert resp.items[0].symbol_content is not None
     assert "def foo(self):" in resp.items[0].symbol_content

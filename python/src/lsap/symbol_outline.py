@@ -1,98 +1,56 @@
-from functools import cached_property
-from pathlib import Path
-from typing import Protocol, Sequence
+from typing import Protocol, override
 
-from lsap_schema.abc import Symbol, SymbolPath
-from lsap_schema.symbol import SymbolRequest, SymbolResponse
+from lsap_schema.locate import Position, Range
+from lsap_schema.symbol_outline import (
+    SymbolOutlineItem,
+    SymbolOutlineRequest,
+    SymbolOutlineResponse,
+)
 from lsp_client.capability.request import WithRequestDocumentSymbol
 from lsp_client.protocol import CapabilityClientProtocol
-from lsprotocol.types import DocumentSymbol
-from lsprotocol.types import Position as LSPPosition
-from lsprotocol.types import Range as LSPRange
 
+from lsap.abc import Capability
 from lsap.utils.content import DocumentReader
-
-from .abc import Capability
-from .locate import LocateCapability
+from lsap.utils.symbol import iter_symbols
 
 
-class SymbolClient(
+class SymbolOutlineClient(
     WithRequestDocumentSymbol,
     CapabilityClientProtocol,
     Protocol,
 ): ...
 
 
-def _contains(range: LSPRange, position: LSPPosition) -> bool:
-    return (
-        (range.start.line, range.start.character)
-        <= (position.line, position.character)
-        < (range.end.line, range.end.character)
-    )
-
-
-def _lookup_position(nodes: Sequence[DocumentSymbol], p: LSPPosition) -> SymbolPath:
-    for n in nodes:
-        if not _contains(n.range, p):
-            continue
-        return SymbolPath([Symbol(n.name)] + _lookup_position(n.children or [], p))
-    return SymbolPath([])
-
-
-async def lookup_position(
-    client: SymbolClient, file_path: Path, position: LSPPosition
-) -> SymbolPath:
-    if symbols := await client.request_document_symbol_list(file_path):
-        if path := _lookup_position(symbols, position):
-            return path
-
-    if symbols := await client.request_document_symbol_information_list(file_path):
-        matches = [s for s in symbols if _contains(s.location.range, position)]
-        # Sort by nesting: Root starts earlier and ends later
-        matches.sort(
-            key=lambda s: (
-                s.location.range.start.line,
-                s.location.range.start.character,
-                -s.location.range.end.line,
-                -s.location.range.end.character,
-            )
-        )
-        return SymbolPath([Symbol(s.name) for s in matches])
-
-    return SymbolPath([])
-
-
-class SymbolCapability(Capability[SymbolClient, SymbolRequest, SymbolResponse]):
-    """Get info about a symbol located in a specific position."""
-
-    @cached_property
-    def locate(self) -> LocateCapability:
-        return LocateCapability(client=self.client)
-
-    async def __call__(self, req: SymbolRequest) -> SymbolResponse | None:
-        location = await self.locate(req)
-        if not location:
+class SymbolOutlineCapability(
+    Capability[SymbolOutlineClient, SymbolOutlineRequest, SymbolOutlineResponse]
+):
+    @override
+    async def __call__(self, req: SymbolOutlineRequest) -> SymbolOutlineResponse | None:
+        symbols = await self.client.request_document_symbol_list(req.file_path)
+        if symbols is None:
             return None
 
-        lsp_pos = LSPPosition(
-            line=location.position.line, character=location.position.character
-        )
-        path = await lookup_position(self.client, req.locate.file_path, lsp_pos)
-        symbols = await self.client.request_document_symbol_list(req.locate.file_path)
+        reader = DocumentReader(self.client.read_file(req.file_path))
+        items: list[SymbolOutlineItem] = []
 
-        if not (path and symbols):
-            return
+        for path, symbol in iter_symbols(symbols):
+            symbol_content: str | None = None
+            if symbol.name in req.display_code_for:
+                snippet = reader.read(symbol.range)
+                if snippet:
+                    symbol_content = snippet.content
 
-        target = lookup_symbol(symbols, path)
-        if not target:
-            return
+            items.append(
+                SymbolOutlineItem(
+                    name=symbol.name,
+                    kind=symbol.kind.name,
+                    range=Range(
+                        start=Position.from_lsp(symbol.range.start),
+                        end=Position.from_lsp(symbol.range.end),
+                    ),
+                    level=len(path) - 1,
+                    symbol_content=symbol_content,
+                )
+            )
 
-        reader = DocumentReader(self.client.read_file(req.locate.file_path))
-        if not (snippet := reader.read(target.range)):
-            return
-
-        return SymbolResponse(
-            file_path=req.locate.file_path,
-            symbol_path=path,
-            symbol_content=snippet.content,
-        )
+        return SymbolOutlineResponse(file_path=req.file_path, items=items)

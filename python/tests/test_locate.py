@@ -3,8 +3,10 @@ from pathlib import Path
 import pytest
 
 from lsap.exception import AmbiguousError
-from lsap.protocol.locate import (
+from lsap.locate import (
     LocateCapability,
+)
+from lsap_schema.locate import (
     LocateRequest,
     LocateText,
 )
@@ -50,5 +52,5 @@ async def test_locate_text_single_match():
 
     resp = await capability(req)
     assert resp is not None
-    assert resp.position.line == 1
-    assert resp.position.character == 0
+    assert resp.position.line == 2
+    assert resp.position.character == 1

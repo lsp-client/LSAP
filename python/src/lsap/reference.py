@@ -2,10 +2,11 @@ from functools import cached_property
 from typing import runtime_checkable
 
 import asyncer
-from lsap_schema.schema.reference import ReferenceRequest, ReferenceResponse
-from lsap_schema.schema.symbol import SymbolResponse
+from lsap_schema.reference import ReferenceRequest, ReferenceResponse
+from lsap_schema.symbol import SymbolResponse
 from lsp_client.capability.request import (
     WithRequestDocumentSymbol,
+    WithRequestHover,
     WithRequestReferences,
 )
 from lsp_client.protocol import CapabilityClientProtocol
@@ -19,18 +20,19 @@ from lsprotocol.types import (
     Range as LSPRange,
 )
 
-from lsap.utils.content import SnippetReader
+from lsap.utils.content import DocumentReader
+from lsap.utils.symbol import symbol_at
 
-from lsap.utils.symbol import lookup_symbol
 from .abc import Capability, Protocol
 from .locate import LocateCapability
-from .symbol_outline import SymbolCapability, lookup_position
+from .symbol import SymbolCapability
 
 
 @runtime_checkable
 class ReferenceClient(
     WithRequestReferences,
     WithRequestDocumentSymbol,
+    WithRequestHover,
     CapabilityClientProtocol,
     Protocol,
 ): ...
@@ -69,21 +71,28 @@ class ReferenceCapability(
             for loc in ref_result:
                 tg.soonify(self._process_reference)(loc, items)
 
-        return ReferenceResponse(items=items)
+        return ReferenceResponse(
+            items=items,
+            start_index=req.start_index,
+            max_items=req.max_items,
+            total=len(items),
+            has_more=False,
+        )
 
     async def _process_reference(
         self, loc: Location, items: list[SymbolResponse]
     ) -> None:
         file_path = self.client.from_uri(loc.uri)
-        path = await lookup_position(self.client, file_path, loc.range.start)
-
         symbols = await self.client.request_document_symbol_list(file_path)
-        reader = SnippetReader(self.client.read_file(file_path))
+        reader = DocumentReader(self.client.read_file(file_path))
 
-        if path and symbols and (target := lookup_symbol(symbols, path)):
-            snippet = reader.read(target.range)
+        match = symbol_at(symbols, loc.range.start) if symbols else None
+
+        if match:
+            path, symbol = match
+            snippet = reader.read(symbol.range)
         else:
-            # Fallback to the line of the reference if no symbol found or snippet empty
+            path = []
             snippet = reader.read(
                 LSPRange(
                     start=LSPPosition(line=loc.range.start.line, character=0),

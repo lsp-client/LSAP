@@ -6,13 +6,16 @@ from lsprotocol.types import (
     Range as LSPRange,
     Position as LSPPosition,
 )
-from lsap.symbol_outline import SymbolCapability
+from lsap.symbol import SymbolCapability
 from lsap_schema.symbol import SymbolRequest
 from lsap.locate import LocateText, LocateSymbol
 from lsap_schema.abc import Symbol, SymbolPath
 
 
 class MockSymbolClient:
+    async def request_hover(self, file_path: Path, position: LSPPosition):
+        return None
+
     def read_file(self, file_path: Path) -> str:
         return "class A:\n    def foo(self):\n        pass"
 
