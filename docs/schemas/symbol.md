@@ -4,13 +4,11 @@ The Symbol API provides detailed information about a specific code symbol, inclu
 
 ## SymbolRequest
 
-Inherits from `LocateRequest`.
-
-| Field             | Type                         | Default  | Description                                                         |
-| :---------------- | :--------------------------- | :------- | :------------------------------------------------------------------ |
-| `locate`          | `LocateText \| LocateSymbol` | Required | How to find the symbol (by text snippet or symbol path).            |
-| `include_hover`   | `boolean`                    | `true`   | Whether to include documentation/hover information in the response. |
-| `include_content` | `boolean`                    | `true`   | Whether to include the source code of the symbol.                   |
+| Field             | Type                                                     | Default  | Description                                              |
+| :---------------- | :------------------------------------------------------- | :------- | :------------------------------------------------------- |
+| `locate`          | [`LocateText`](locate.md) \| [`LocateSymbol`](locate.md) | Required | How to find the symbol (by text snippet or symbol path). |
+| `include_hover`   | `boolean`                                                | `true`   | Whether to include documentation/hover information.      |
+| `include_content` | `boolean`                                                | `true`   | Whether to include the source code of the symbol.        |
 
 ## SymbolResponse
 
