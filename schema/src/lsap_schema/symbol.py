@@ -30,6 +30,9 @@ class SymbolRequest(LocateRequest):
     include_content: bool = True
     """Whether to include the symbol's source code content"""
 
+    include_signature: bool = True
+    """Whether to include function signature/parameters"""
+
 
 markdown_template: Final = """
 # Symbol: `{{ symbol_path | join: "." }}` in `{{ file_path }}`

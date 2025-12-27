@@ -1,15 +1,14 @@
 from pathlib import Path
+
 import pytest
-from lsprotocol.types import (
-    DocumentSymbol,
-    SymbolKind,
-    Range as LSPRange,
-    Position as LSPPosition,
-)
-from lsap.symbol import SymbolCapability
-from lsap_schema.symbol import SymbolRequest
-from lsap.locate import LocateText, LocateSymbol
 from lsap_schema.abc import Symbol, SymbolPath
+from lsap_schema.symbol import SymbolRequest
+from lsprotocol.types import DocumentSymbol, SymbolKind
+from lsprotocol.types import Position as LSPPosition
+from lsprotocol.types import Range as LSPRange
+
+from lsap.locate import LocateSymbol, LocateText
+from lsap.symbol import SymbolCapability
 
 
 class MockSymbolClient:
@@ -49,6 +48,9 @@ class MockSymbolClient:
             children=[foo_symbol],
         )
         return [a_symbol]
+
+    async def request_active_signature(self, file_path: Path, position: LSPPosition):
+        return None
 
 
 @pytest.mark.asyncio
