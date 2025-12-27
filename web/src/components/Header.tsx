@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Github } from 'lucide-react'
+import ThemeToggle from './ThemeToggle'
 
 export default function Header() {
   return (
@@ -18,7 +19,7 @@ export default function Header() {
             </span>
           </Link>
           
-          <nav className="flex items-center gap-8">
+          <nav className="flex items-center gap-6">
             <Link 
               to="/docs" 
               className="font-mono text-sm text-muted-foreground hover:text-foreground transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-primary after:transition-all hover:after:w-full"
@@ -34,6 +35,7 @@ export default function Header() {
               <Github className="h-4 w-4" />
               GitHub
             </a>
+            <ThemeToggle />
           </nav>
         </div>
       </div>

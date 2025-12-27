@@ -10,7 +10,7 @@ import { isValidElement, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Link } from "react-router-dom";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { oneLight, oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import Header from "../components/Header";
 import { Button } from "../components/ui/button";
 import {
@@ -19,6 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
+import { useTheme } from "../lib/ThemeProvider";
 
 interface Example {
   id: string;
@@ -137,6 +138,7 @@ save_to_database
 export default function HomePage() {
   const [activeExample, setActiveExample] = useState(0);
   const [animationStep, setAnimationStep] = useState(0);
+  const { resolvedTheme } = useTheme();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -521,7 +523,7 @@ export default function HomePage() {
                                 return (
                                   <div className="my-2 rounded-sm border border-border/40 bg-muted p-2.5">
                                     <SyntaxHighlighter
-                                      style={oneLight}
+                                      style={resolvedTheme === 'dark' ? oneDark : oneLight}
                                       language={match[1]}
                                       PreTag="div"
                                       wrapLines

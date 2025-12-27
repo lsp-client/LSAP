@@ -3,10 +3,11 @@ import { isValidElement, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Link, useParams } from "react-router-dom";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { oneLight, oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import remarkGfm from "remark-gfm";
 import Header from "../components/Header";
 import { Card } from "../components/ui/card";
+import { useTheme } from "../lib/ThemeProvider";
 
 const DOCS = [
   { id: "README", title: "Overview", path: "/docs/schemas/README.md" },
@@ -61,6 +62,7 @@ export default function DocsPage() {
   const { docId } = useParams();
   const [content, setContent] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const { resolvedTheme } = useTheme();
 
   const cleanDocId = docId?.replace(/\.md$/, "");
   const currentDoc = DOCS.find((d) => d.id === cleanDocId) ?? DOCS[0];
@@ -189,7 +191,7 @@ export default function DocsPage() {
                             return (
                               <div className="my-6">
                                 <SyntaxHighlighter
-                                  style={oneLight}
+                                  style={resolvedTheme === 'dark' ? oneDark : oneLight}
                                   language={match[1]}
                                   PreTag="div"
                                   className="rounded-md border border-border"

@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -7,30 +8,30 @@ export default {
   theme: {
     extend: {
       colors: {
-        border: "hsl(220 13% 91%)",
-        input: "hsl(220 13% 91%)",
-        ring: "hsl(210 24% 60%)",
-        background: "hsl(210 17% 98%)",
-        foreground: "hsl(210 24% 20%)",
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "hsl(210 24% 60%)",
-          foreground: "hsl(0 0% 100%)",
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: "hsl(210 16% 93%)",
-          foreground: "hsl(210 24% 30%)",
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
         },
         muted: {
-          DEFAULT: "hsl(210 16% 96%)",
-          foreground: "hsl(210 12% 50%)",
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
         },
         card: {
-          DEFAULT: "hsl(0 0% 100%)",
-          foreground: "hsl(210 24% 20%)",
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
         },
         accent: {
-          DEFAULT: "hsl(210 24% 60%)",
-          foreground: "hsl(0 0% 100%)",
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
         },
       },
       fontFamily: {
