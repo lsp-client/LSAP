@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from functools import cached_property
 from pathlib import Path
-from typing import TYPE_CHECKING, Protocol, override
+from typing import Protocol, override
 
 from lsap_schema.symbol import SymbolRequest, SymbolResponse
 from lsap_schema.types import SymbolKind
