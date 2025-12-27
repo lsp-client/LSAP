@@ -40,7 +40,9 @@ The Type Hierarchy API allows exploring the inheritance relationships of a class
 
 ## Example Usage
 
-### Request
+### Scenario 1: Finding all subclasses (subtypes)
+
+#### Request
 
 ```json
 {
@@ -53,19 +55,80 @@ The Type Hierarchy API allows exploring the inheritance relationships of a class
 }
 ```
 
-### Markdown Rendered for LLM
+#### Markdown Rendered for LLM
 
 ```markdown
 # Type Hierarchy for `BaseModel` (Depth: 1, Direction: subtypes)
 
 ## Subtypes (Children/Implementations)
-
-- BaseModel (`Class`) in `models.py`
-  - User (`Class`) in `user.py`
-  - Order (`Class`) in `order.py`
+  - User (`Class`) [inherits from BaseModel] in `src/models/user.py`
+  - Order (`Class`) [inherits from BaseModel] in `src/models/order.py`
+  - Product (`Class`) [inherits from BaseModel] in `src/models/product.py`
 
 ---
 
 > [!NOTE]
 > Tree is truncated at depth 1. Increase `depth` parameter to explore further if needed.
+```
+
+### Scenario 2: Finding parent classes (supertypes)
+
+#### Request
+
+```json
+{
+  "locate": {
+    "file_path": "src/models/user.py",
+    "symbol_path": ["User"]
+  },
+  "direction": "supertypes",
+  "depth": 2
+}
+```
+
+#### Markdown Rendered for LLM
+
+```markdown
+# Type Hierarchy for `User` (Depth: 2, Direction: supertypes)
+
+## Supertypes (Parents/Base Classes)
+  - BaseModel (`Class`) [base class for all models] in `src/models/base.py`
+  - Serializable (`Interface`) [provides serialization methods] in `src/interfaces.py`
+
+---
+
+> [!NOTE]
+> Tree is truncated at depth 2. Increase `depth` parameter to explore further if needed.
+```
+
+### Scenario 3: Exploring complete hierarchy (both directions)
+
+#### Request
+
+```json
+{
+  "locate": {
+    "file_path": "src/controllers.py",
+    "symbol_path": ["AuthController"]
+  },
+  "direction": "both",
+  "depth": 2
+}
+```
+
+#### Markdown Rendered for LLM
+
+```markdown
+# Type Hierarchy for `AuthController` (Depth: 2, Direction: both)
+
+## Supertypes (Parents/Base Classes)
+  - BaseController (`Class`) [handles common controller logic] in `src/controllers/base.py`
+
+## Subtypes (Children/Implementations)
+  - AdminAuthController (`Class`) [admin-specific authentication] in `src/controllers/admin.py`
+
+---
+
+> [!NOTE]
+> Tree is truncated at depth 2. Increase `depth` parameter to explore further if needed.
 ```

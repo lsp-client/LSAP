@@ -38,7 +38,7 @@ LSAP focuses on providing a **Preview** of the changes to help the Agent verify 
 
 ## Example Usage
 
-### Scenario: Renaming a method used across the project
+### Scenario 1: Renaming a method used across the project
 
 #### Request
 
@@ -63,16 +63,133 @@ Summary: Affects 2 files and 3 occurrences.
 
 - Line 10:
   - `def fetch_data(self, id):`
-  * `def get_resource(self, id):`
+  + `def get_resource(self, id):`
 
 ## File: `src/main.py`
 
 - Line 42:
   - `data = client.fetch_data(1)`
-  * `data = client.get_resource(1)`
+  + `data = client.get_resource(1)`
 - Line 50:
   - `logger.info("Fetched", client.fetch_data(2))`
-  * `logger.info("Fetched", client.get_resource(2))`
+  + `logger.info("Fetched", client.get_resource(2))`
+
+---
+
+> [!WARNING]
+> This is a permanent workspace-wide change.
+> Please verify the diffs above before proceeding with further edits.
+```
+
+### Scenario 2: Renaming a variable within a function
+
+#### Request
+
+```json
+{
+  "locate": {
+    "file_path": "src/utils.py",
+    "line": 15,
+    "find": "temp"
+  },
+  "new_name": "buffer"
+}
+```
+
+#### Markdown Rendered for LLM
+
+```markdown
+# Rename Preview: `temp` -> `buffer`
+
+Summary: Affects 1 file and 5 occurrences.
+
+## File: `src/utils.py`
+
+- Line 15:
+  - `temp = []`
+  + `buffer = []`
+- Line 18:
+  - `temp.append(item)`
+  + `buffer.append(item)`
+- Line 20:
+  - `return temp`
+  + `return buffer`
+- Line 25:
+  - `temp.clear()`
+  + `buffer.clear()`
+- Line 28:
+  - `for item in temp:`
+  + `for item in buffer:`
+
+---
+
+> [!WARNING]
+> This is a permanent workspace-wide change.
+> Please verify the diffs above before proceeding with further edits.
+```
+
+### Scenario 3: Renaming a class with many usages
+
+#### Request
+
+```json
+{
+  "locate": {
+    "file_path": "src/models.py",
+    "symbol_path": ["UserAccount"]
+  },
+  "new_name": "UserProfile"
+}
+```
+
+#### Markdown Rendered for LLM
+
+```markdown
+# Rename Preview: `UserAccount` -> `UserProfile`
+
+Summary: Affects 5 files and 12 occurrences.
+
+## File: `src/models.py`
+
+- Line 10:
+  - `class UserAccount:`
+  + `class UserProfile:`
+
+## File: `src/auth.py`
+
+- Line 5:
+  - `from .models import UserAccount`
+  + `from .models import UserProfile`
+- Line 15:
+  - `user = UserAccount(...)`
+  + `user = UserProfile(...)`
+
+## File: `src/views.py`
+
+- Line 20:
+  - `def get_user_account(request):`
+  + `def get_user_profile(request):`
+- Line 22:
+  - `account = UserAccount.objects.get(...)`
+  + `account = UserProfile.objects.get(...)`
+
+## File: `tests/test_models.py`
+
+- Line 10:
+  - `def test_user_account_creation():`
+  + `def test_user_profile_creation():`
+- Line 12:
+  - `account = UserAccount(...)`
+  + `account = UserProfile(...)`
+
+## File: `docs/api.md`
+
+- Line 5:
+  - `### UserAccount Endpoints`
+  + `### UserProfile Endpoints`
+- Line 10:
+  - `Creates a new UserAccount instance.`
+  + `Creates a new UserProfile instance.`
 
 ---
 

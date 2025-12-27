@@ -36,7 +36,7 @@ The Completion API (IntelliSense) provides context-aware code suggestions at a s
 
 ## Example Usage
 
-### Scenario: Discovering methods on an object
+### Scenario 1: Discovering methods on an object after dot
 
 #### Request
 
@@ -55,20 +55,88 @@ The Completion API (IntelliSense) provides context-aware code suggestions at a s
 #### Markdown Rendered for LLM
 
 ```markdown
-# Code Completion at the requested location
-
-| Symbol      | Kind     | Detail                 |
-| :---------- | :------- | :--------------------- |
-| `connect`   | Method   | (timeout: int) -> bool |
-| `send_json` | Method   | (data: dict) -> None   |
-| `is_active` | Property | bool                   |
+# Code Completion
 
 ## Top Suggestion Detail: `connect`
+Establishes a connection to the server using the configured credentials. Returns true if successful.
 
-Establishes a connection to the server...
+| Symbol | Kind | Detail |
+| :--- | :--- | :--- |
+| `connect` | Method | (timeout: int = 30) -> bool |
+| `send_json` | Method | (data: dict, retry: int = 3) -> None |
+| `is_active` | Property | bool |
+| `disconnect` | Method | () -> None |
+| `get_status` | Method | () -> dict |
 
 ---
 
 > [!TIP]
 > Use these symbols to construct your next code edit. You can focus on a specific method to get more details.
+```
+
+### Scenario 2: Getting completions with more items and pagination
+
+#### Request
+
+```json
+{
+  "locate": {
+    "file_path": "src/api.py",
+    "line": 42,
+    "find": "response.",
+    "find_end": "end"
+  },
+  "max_items": 10,
+  "start_index": 0
+}
+```
+
+#### Markdown Rendered for LLM
+
+```markdown
+# Code Completion
+
+## Top Suggestion Detail: `json`
+Returns the response body parsed as JSON. Raises JSONDecodeError if invalid.
+
+| Symbol | Kind | Detail |
+| :--- | :--- | :--- |
+| `json` | Method | () -> dict |
+| `text` | Property | str |
+| `status_code` | Property | int |
+| `headers` | Property | dict |
+| `cookies` | Property | dict |
+| `raise_for_status` | Method | () -> None |
+| `content` | Property | bytes |
+| `iter_content` | Method | (chunk_size: int = None) -> iterator |
+| `close` | Method | () -> None |
+| `is_redirect` | Property | bool |
+
+---
+
+> [!TIP]
+> Use `pagination_id="abc123"` to fetch more suggestions.
+```
+
+### Scenario 3: No completion suggestions available
+
+#### Request
+
+```json
+{
+  "locate": {
+    "file_path": "src/main.py",
+    "line": 100,
+    "find": "unknown_var.",
+    "find_end": "end"
+  }
+}
+```
+
+#### Markdown Rendered for LLM
+
+```markdown
+# Code Completion
+
+No completion suggestions found.
 ```

@@ -15,7 +15,7 @@ Finds a position based on a text search.
 | `file_path` | `string`                     | Required  | Path to search in.                            |
 | `line`      | `number \| [number, number]` | `null`    | Specific line number or range `[start, end]`. |
 | `find`      | `string`                     | Required  | String snippet to find.                       |
-| `find_end`  | `"start" \| "end"`           | `"start"` | Match the start or end of the snippet.        |
+| `find_end`  | `"start" \| "end"`           | `"end"`   | Match the start or end of the snippet.        |
 
 ### LocateSymbol
 
