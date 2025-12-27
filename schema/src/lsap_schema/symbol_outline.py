@@ -12,7 +12,8 @@ class SymbolOutlineItem(BaseModel):
     kind: str
     range: Range
     level: int = 0
-    symbol_content: str | None = None
+    content: str | None = None
+    hover: str | None = None
 
 
 class SymbolOutlineRequest(Request):
@@ -24,7 +25,12 @@ class SymbolOutlineRequest(Request):
     """
 
     file_path: Path
-    display_code_for: list[str] = []
+
+    include_hover: bool = True
+    """Whether to include hover/documentation information"""
+
+    include_content: bool = True
+    """Whether to include the symbol's source code content"""
 
 
 markdown_template: Final = """
@@ -32,11 +38,15 @@ markdown_template: Final = """
 
 {% for item in items -%}
 {% for i in (1..item.level) %}  {% endfor %}- {{ item.name }} (`{{ item.kind }}`)
-{%- if item.symbol_content != nil %}
+{%- if item.hover %}
+{% assign content_depth = item.level | plus: 1 %}
+{% for i in (1..content_depth) %}  {% endfor %}{{ item.hover | replace: "\n", " " | truncate: 100 }}
+{%- endif %}
+{%- if item.content != nil %}
 {% assign content_depth = item.level | plus: 1 %}
 {% assign indent_size = content_depth | times: 2 %}
 {% for i in (1..content_depth) %}  {% endfor %}```{{ file_path.suffix | slice: 1, 10 }}
-{{ item.symbol_content }}
+{{ item.content }}
 {% for i in (1..content_depth) %}  {% endfor %}```
 {%- endif %}
 {%- endfor %}

@@ -134,7 +134,7 @@ def test_symbol_outline_response_format():
         file_path=Path("test.py"),
         items=[
             SymbolOutlineItem(
-                name="MyClass",
+                name="class MyClass",
                 kind="Class",
                 range=Range(
                     start=Position(line=1, character=1),
@@ -142,9 +142,10 @@ def test_symbol_outline_response_format():
                 ),
                 level=0,
                 symbol_content="class MyClass: pass",
+                hover="A test class",
             ),
             SymbolOutlineItem(
-                name="my_method",
+                name="my_method(arg1: int) -> None",
                 kind="Method",
                 range=Range(
                     start=Position(line=1, character=4),
@@ -155,10 +156,10 @@ def test_symbol_outline_response_format():
         ],
     )
     rendered = resp.format()
-    assert "MyClass" in rendered
-    assert "Class" in rendered
     assert "class MyClass" in rendered
-    assert "my_method" in rendered
+    assert "Class" in rendered
+    assert "A test class" in rendered
+    assert "my_method(arg1: int) -> None" in rendered
 
 
 def test_rename_response_format():
