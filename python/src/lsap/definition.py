@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import cached_property
-from typing import TYPE_CHECKING, Protocol, Sequence, override, runtime_checkable
+from typing import Protocol, Sequence, override, runtime_checkable
 
 from lsap_schema.definition import DefinitionRequest, DefinitionResponse
 from lsp_client.capability.request import (
