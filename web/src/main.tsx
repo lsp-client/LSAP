@@ -7,7 +7,7 @@ import './styles/global.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/LSAP">
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/docs/:docId" element={<DocsPage />} />
