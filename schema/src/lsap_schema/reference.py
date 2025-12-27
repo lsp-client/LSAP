@@ -18,10 +18,10 @@ class ReferenceRequest(LocateRequest, PaginatedRequest):
     mode: Literal["references", "implementations"] = "references"
     """Whether to find references or concrete implementations."""
 
-    include_hover: bool = True
-    """Whether to include documentation for each item."""
+    include_hover: bool = False
+    """Whether to include documentation for each item. Default to False to save tokens."""
 
-    include_content: bool = False
+    include_content: bool = True
     """Whether to include the source code snippet for each item."""
 
 

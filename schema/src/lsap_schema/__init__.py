@@ -15,10 +15,8 @@ from .completion import CompletionItem, CompletionRequest, CompletionResponse
 
 # Definition
 from .definition import (
-    DeclarationRequest,
     DefinitionRequest,
     DefinitionResponse,
-    TypeDefinitionRequest,
 )
 
 # Diagnostics
@@ -26,6 +24,25 @@ from .diagnostics import (
     Diagnostic,
     FileDiagnosticsRequest,
     FileDiagnosticsResponse,
+)
+
+# Inlay hint
+from .inlay_hint import (
+    DecoratedContentResponse,
+    InlayHintItem,
+    InlayHintRequest,
+    InlineValueItem,
+    InlineValueRequest,
+)
+
+# Locate
+from .locate import (
+    LocateRequest,
+    LocateResponse,
+    LocateSymbol,
+    LocateText,
+    Position,
+    Range,
 )
 
 # Reference
@@ -82,10 +99,8 @@ __all__ = [
     "CompletionRequest",
     "CompletionResponse",
     # Definition
-    "DeclarationRequest",
     "DefinitionRequest",
     "DefinitionResponse",
-    "TypeDefinitionRequest",
     # Diagnostics
     "Diagnostic",
     "FileDiagnosticsRequest",

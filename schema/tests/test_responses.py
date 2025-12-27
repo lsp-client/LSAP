@@ -5,6 +5,7 @@ from lsap_schema.locate import LocateResponse, Position, Range
 from lsap_schema.symbol import SymbolResponse, ParameterInfo
 from lsap_schema.workspace import WorkspaceSymbolResponse, WorkspaceSymbolItem
 from lsap_schema.reference import ReferenceResponse
+from lsap_schema.definition import DefinitionResponse
 from lsap_schema.diagnostics import FileDiagnosticsResponse, Diagnostic
 from lsap_schema.symbol_outline import SymbolOutlineResponse, SymbolOutlineItem
 from lsap_schema.rename import RenameResponse, RenameFileChange, RenameDiff
@@ -238,6 +239,24 @@ def test_type_hierarchy_response_format():
     rendered = resp.format()
     assert "Base" in rendered
     assert "Sub" in rendered
+
+
+def test_definition_response_format():
+    resp = DefinitionResponse(
+        file_path=Path("test.py"),
+        symbol_path=["test"],
+        symbol_content="test_content",
+        hover="test_hover",
+        mode="definition",
+    )
+    rendered = resp.format()
+    assert "Definition Result" in rendered
+    assert "test_hover" in rendered
+    assert "test_content" in rendered
+
+    resp.mode = "type_definition"
+    rendered = resp.format()
+    assert "Type definition Result" in rendered
 
 
 def test_format_invalid_template():

@@ -36,16 +36,16 @@ class CompletionRequest(LocateRequest, PaginatedRequest):
 
 
 markdown_template: Final = """
-# Code Completion at the requested location
+# Code Completion
 
+{% if items.size == 0 -%}
+No completion suggestions found.
+{%- else -%}
 {% if items[0].documentation != nil %}
 ## Top Suggestion Detail: `{{ items[0].label }}`
 {{ items[0].documentation }}
 {% endif %}
 
-{% if items.size == 0 -%}
-No completion suggestions found.
-{%- else -%}
 | Symbol | Kind | Detail |
 | :--- | :--- | :--- |
 {%- for item in items %}

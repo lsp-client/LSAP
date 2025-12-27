@@ -49,7 +49,7 @@ markdown_template: Final = """
 {%- endif %}
 
 {% if symbol_content -%}
-## Implementation
+## Content
 ```
 {{ symbol_content }}
 ```

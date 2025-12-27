@@ -49,17 +49,17 @@ class CallHierarchyRequest(LocateRequest):
 
 
 markdown_template: Final = """
-### Call Hierarchy for `{{ root.name }}` (Depth: {{ depth }}, Direction: {{ direction }})
+# Call Hierarchy for `{{ root.name }}` (Depth: {{ depth }}, Direction: {{ direction }})
 
 {% if direction == "incoming" or direction == "both" %}
-#### Incoming Calls (Who calls this?)
+## Incoming Calls (Who calls this?)
 {% for item in calls_in %}
 {% for i in (1..item.level) %}  {% endfor %}- {{ item.name }} (`{{ item.kind }}`) in `{{ item.file_path }}`{% if item.is_cycle %} (recursive cycle){% endif %}
 {% endfor %}
 {% endif %}
 
 {% if direction == "outgoing" or direction == "both" %}
-#### Outgoing Calls (What does this call?)
+## Outgoing Calls (What does this call?)
 {% for item in calls_out %}
 {% for i in (1..item.level) %}  {% endfor %}- {{ item.name }} (`{{ item.kind }}`) in `{{ item.file_path }}`{% if item.is_cycle %} (recursive cycle){% endif %}
 {% endfor %}

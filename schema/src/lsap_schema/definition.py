@@ -1,4 +1,4 @@
-from typing import Final
+from typing import Final, Literal
 
 from pydantic import ConfigDict
 
@@ -6,51 +6,26 @@ from .locate import LocateRequest
 from .symbol import SymbolResponse
 
 
-class DeclarationRequest(LocateRequest):
-    """
-    Finds the declaration site of a symbol.
-
-    Use this when you need to find where a symbol is declared (e.g. in a header or interface).
-    """
-
-    include_hover: bool = True
-    """Whether to include documentation for the declaration"""
-
-    include_content: bool = True
-    """Whether to include the source code of the declaration"""
-
-
 class DefinitionRequest(LocateRequest):
     """
-    Finds the definition/implementation site of a symbol.
+    Finds the definition, declaration, or type definition of a symbol.
 
-    Use this when you need to jump to the actual source code where a function,
-    class, or variable is defined.
+    Use this to jump to the actual source code where a symbol is defined,
+    its declaration site, or the definition of its type/class.
     """
+
+    mode: Literal["definition", "declaration", "type_definition"] = "definition"
+    """The type of location to find."""
 
     include_hover: bool = True
-    """Whether to include documentation for the definition"""
+    """Whether to include documentation for the result."""
 
     include_content: bool = True
-    """Whether to include the source code of the definition"""
-
-
-class TypeDefinitionRequest(LocateRequest):
-    """
-    Finds the type definition of a symbol.
-
-    Use this when you are at a variable and want to see the definition of its type/class.
-    """
-
-    include_hover: bool = True
-    """Whether to include documentation for the type definition"""
-
-    include_content: bool = True
-    """Whether to include the source code of the type definition"""
+    """Whether to include the source code of the result."""
 
 
 markdown_template: Final = """
-# Navigation Result
+# {{ mode | replace: "_", " " | capitalize }} Result
 
 {% if hover != nil -%}
 ## Documentation
@@ -58,7 +33,7 @@ markdown_template: Final = """
 {%- endif %}
 
 {% if symbol_content != nil -%}
-## Implementation / Declaration
+## Content
 ```
 {{ symbol_content }}
 ```
@@ -67,6 +42,9 @@ markdown_template: Final = """
 
 
 class DefinitionResponse(SymbolResponse):
+    mode: Literal["definition", "declaration", "type_definition"] = "definition"
+    """The mode used for this response."""
+
     model_config = ConfigDict(
         json_schema_extra={
             "markdown": markdown_template,
