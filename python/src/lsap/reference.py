@@ -20,6 +20,7 @@ from lsap.utils.symbol import symbol_at
 
 from .abc import Capability, Protocol
 from .locate import LocateCapability
+from .utils.cache import PaginationCache
 
 
 @runtime_checkable
@@ -36,45 +37,55 @@ class ReferenceClient(
 class ReferenceCapability(
     Capability[ReferenceClient, ReferenceRequest, ReferenceResponse]
 ):
+    _cache: PaginationCache[list[ReferenceItem]] = PaginationCache()
+
     @cached_property
     def locate(self) -> LocateCapability:
         return LocateCapability(client=self.client)
 
     async def __call__(self, req: ReferenceRequest) -> ReferenceResponse | None:
-        if not (loc_resp := await self.locate(req)):
-            return None
+        pagination_id = req.pagination_id
+        if pagination_id and (cached := self._cache.get(pagination_id)) is not None:
+            items = cached
+        else:
+            if not (loc_resp := await self.locate(req)):
+                return None
 
-        file_path, lsp_pos = loc_resp.file_path, loc_resp.position.to_lsp()
-        locations: list[Location | LocationLink] = []
+            file_path, lsp_pos = loc_resp.file_path, loc_resp.position.to_lsp()
+            locations: list[Location | LocationLink] = []
 
-        if req.mode == "references":
-            if refs := await self.client.request_references(
-                file_path, lsp_pos, include_declaration=True
-            ):
-                locations.extend(refs)
-        elif req.mode == "implementations":
-            if impls := await self.client.request_implementation(file_path, lsp_pos):
-                if isinstance(impls, (Location, LocationLink)):
-                    locations.append(impls)
-                else:
-                    locations.extend(impls)
+            if req.mode == "references":
+                if refs := await self.client.request_references(
+                    file_path, lsp_pos, include_declaration=True
+                ):
+                    locations.extend(refs)
+            elif req.mode == "implementations":
+                if impls := await self.client.request_implementation(
+                    file_path, lsp_pos
+                ):
+                    if isinstance(impls, (Location, LocationLink)):
+                        locations.append(impls)
+                    else:
+                        locations.extend(impls)
 
-        if not locations:
-            return ReferenceResponse(
-                request=req,
-                items=[],
-                start_index=req.start_index,
-                max_items=req.max_items,
-                total=0,
-                has_more=False,
-            )
+            if not locations:
+                return ReferenceResponse(
+                    request=req,
+                    items=[],
+                    start_index=req.start_index,
+                    max_items=req.max_items,
+                    total=0,
+                    has_more=False,
+                )
 
-        items: list[ReferenceItem] = []
-        async with asyncer.create_task_group() as tg:
-            for loc in locations:
-                tg.soonify(self._process_reference)(loc, req.context_lines, items)
+            items = []
+            async with asyncer.create_task_group() as tg:
+                for loc in locations:
+                    tg.soonify(self._process_reference)(loc, req.context_lines, items)
 
-        items.sort(key=lambda x: (x.file_path, x.line))
+            items.sort(key=lambda x: (x.file_path, x.line))
+            pagination_id = self._cache.put(items)
+
         total, start, limit = len(items), req.start_index, req.max_items
         paginated = items[start : start + limit] if limit is not None else items[start:]
 
@@ -85,6 +96,7 @@ class ReferenceCapability(
             max_items=limit,
             total=total,
             has_more=(start + len(paginated)) < total,
+            pagination_id=pagination_id if (start + len(paginated)) < total else None,
         )
 
     async def _process_reference(

@@ -13,7 +13,7 @@ from lsap_schema.locate import LocateText
 
 
 class MockReferenceClient:
-    def read_file(self, file_path: Path) -> str:
+    async def read_file(self, file_path: Path) -> str:
         return "class A:\n    def foo(self):\n        pass\n\na = A()\na.foo()"
 
     async def request_hover(self, file_path: Path, position: LSPPosition):
@@ -92,3 +92,32 @@ async def test_reference():
     assert resp.items[0].symbol.path == ["A", "foo"]
     assert resp.items[0].code is not None
     assert "def foo(self):" in resp.items[0].code
+
+
+@pytest.mark.asyncio
+async def test_reference_pagination():
+    client = MockReferenceClient()
+    capability = ReferenceCapability(client=client)  # type: ignore
+
+    # First page
+    req1 = ReferenceRequest(
+        locate=LocateText(file_path=Path("test.py"), line=1, find="foo"), max_items=1
+    )
+    resp1 = await capability(req1)
+    assert resp1 is not None
+    assert len(resp1.items) == 1
+    assert resp1.pagination_id is not None
+    assert resp1.has_more is True
+
+    # Second page
+    req2 = ReferenceRequest(
+        locate=LocateText(file_path=Path("test.py"), line=1, find="foo"),
+        pagination_id=resp1.pagination_id,
+        start_index=1,
+        max_items=1,
+    )
+    resp2 = await capability(req2)
+    assert resp2 is not None
+    assert len(resp2.items) == 1
+    assert resp2.has_more is False
+    assert resp2.pagination_id is None
