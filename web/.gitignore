@@ -6,6 +6,9 @@ out
 dist
 *.tgz
 
+# copied docs (from root)
+public/docs
+
 # code coverage
 coverage
 *.lcov

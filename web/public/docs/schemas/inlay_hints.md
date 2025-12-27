@@ -25,15 +25,19 @@ Dynamic markers showing runtime values, typically used during debugging or error
 
 Fetches static hints for a range.
 
-- `file_path`: Path to the file.
-- `range`: Optional range to focus on.
+| Field       | Type            | Default  | Description                 |
+| :---------- | :-------------- | :------- | :-------------------------- |
+| `file_path` | `string`        | Required | Path to the file.           |
+| `range`     | `Range \| null` | `null`   | Optional range to focus on. |
 
 ### InlineValueRequest
 
 Fetches runtime values for a range.
 
-- `file_path`: Path to the file.
-- `range`: Required range (execution context).
+| Field       | Type     | Default  | Description                         |
+| :---------- | :------- | :------- | :---------------------------------- |
+| `file_path` | `string` | Required | Path to the file.                   |
+| `range`     | `Range`  | Required | Required range (execution context). |
 
 ## Response: DecoratedContentResponse
 
@@ -68,6 +72,7 @@ client.post(/* url:= */ "https://api.com", /* data:= */ payload, /* verify:= */ 
 ```
 
 ---
+
 > [!NOTE]
 > Annotations like `/* :type */` or `/* param:= */` are injected for clarity.
 > Runtime values (if any) are shown as `// value: x=42`.
@@ -98,6 +103,7 @@ def process(items):
 ```
 
 ---
+
 > [!NOTE]
 > Annotations like `/* :type */` or `/* param:= */` are injected for clarity.
 > Runtime values (if any) are shown as `// value: x=42`.

@@ -24,6 +24,10 @@ export default {
           DEFAULT: "hsl(210 16% 96%)",
           foreground: "hsl(210 12% 50%)",
         },
+        card: {
+          DEFAULT: "hsl(0 0% 100%)",
+          foreground: "hsl(210 24% 20%)",
+        },
         accent: {
           DEFAULT: "hsl(210 24% 60%)",
           foreground: "hsl(0 0% 100%)",

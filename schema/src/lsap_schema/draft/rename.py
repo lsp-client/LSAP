@@ -3,8 +3,8 @@ from typing import Final
 
 from pydantic import BaseModel, ConfigDict
 
-from .abc import Response
-from .locate import LocateRequest
+from ..abc import Response
+from ..locate import LocateRequest
 
 
 class RenameDiff(BaseModel):

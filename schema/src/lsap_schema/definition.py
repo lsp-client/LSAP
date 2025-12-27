@@ -3,10 +3,11 @@ from typing import Final, Literal
 from pydantic import ConfigDict
 
 from .abc import Response, SymbolInfoRequest
+from .locate import LocateRequest
 from .types import SymbolInfo
 
 
-class DefinitionRequest(SymbolInfoRequest):
+class DefinitionRequest(LocateRequest, SymbolInfoRequest):
     """
     Finds the definition, declaration, or type definition of a symbol.
 

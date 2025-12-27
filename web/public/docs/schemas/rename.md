@@ -4,12 +4,10 @@ The Rename API provides a safe, workspace-wide symbol renaming capability. It au
 
 ## RenameRequest
 
-Inherits from `LocateRequest`.
-
-| Field      | Type                         | Default  | Description                           |
-| :--------- | :--------------------------- | :------- | :------------------------------------ |
-| `locate`   | `LocateText \| LocateSymbol` | Required | The location of the symbol to rename. |
-| `new_name` | `string`                     | Required | The target name for the symbol.       |
+| Field      | Type                                                     | Default  | Description                           |
+| :--------- | :------------------------------------------------------- | :------- | :------------------------------------ |
+| `locate`   | [`LocateText`](locate.md) \| [`LocateSymbol`](locate.md) | Required | The location of the symbol to rename. |
+| `new_name` | `string`                                                 | Required | The target name for the symbol.       |
 
 ## RenameResponse
 
@@ -25,7 +23,18 @@ LSAP focuses on providing a **Preview** of the changes to help the Agent verify 
 
 ### RenameFileChange
 
-Contains `file_path` and a list of `RenameDiff` objects (line number, original text, modified text).
+| Field       | Type           | Description                             |
+| :---------- | :------------- | :-------------------------------------- |
+| `file_path` | `string`       | Relative path to the modified file.     |
+| `diffs`     | `RenameDiff[]` | List of text replacements in this file. |
+
+### RenameDiff
+
+| Field      | Type     | Description                          |
+| :--------- | :------- | :----------------------------------- |
+| `line`     | `number` | Line number where the change occurs. |
+| `original` | `string` | The text before the rename.          |
+| `modified` | `string` | The text after the rename.           |
 
 ## Example Usage
 
@@ -51,17 +60,19 @@ Contains `file_path` and a list of `RenameDiff` objects (line number, original t
 Summary: Affects 2 files and 3 occurrences.
 
 ## File: `src/client.py`
+
 - Line 10:
   - `def fetch_data(self, id):`
-  + `def get_resource(self, id):`
+  * `def get_resource(self, id):`
 
 ## File: `src/main.py`
+
 - Line 42:
   - `data = client.fetch_data(1)`
-  + `data = client.get_resource(1)`
+  * `data = client.get_resource(1)`
 - Line 50:
   - `logger.info("Fetched", client.fetch_data(2))`
-  + `logger.info("Fetched", client.get_resource(2))`
+  * `logger.info("Fetched", client.get_resource(2))`
 
 ---
 

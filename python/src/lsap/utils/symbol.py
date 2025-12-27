@@ -1,7 +1,7 @@
 from collections.abc import Iterator
 from typing import Sequence
 
-from lsap_schema.abc import SymbolPath
+from lsap_schema.types import SymbolPath
 from lsprotocol.types import DocumentSymbol, Position, Range
 
 

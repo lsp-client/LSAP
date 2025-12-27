@@ -26,7 +26,7 @@ export default function Header() {
               Documentation
             </Link>
             <a 
-              href="https://github.com/yourusername/lsap" 
+              href="https://github.com/lsp-client/LSAP" 
               target="_blank" 
               rel="noopener noreferrer"
               className="font-mono text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"

@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from lsap_schema.abc import Symbol, SymbolPath
+from lsap_schema.types import Symbol, SymbolPath
 from lsap_schema.symbol import SymbolRequest
 from lsprotocol.types import DocumentSymbol, SymbolKind
 from lsprotocol.types import Position as LSPPosition
@@ -15,7 +15,7 @@ class MockSymbolClient:
     async def request_hover(self, file_path: Path, position: LSPPosition):
         return None
 
-    def read_file(self, file_path: Path) -> str:
+    async def read_file(self, file_path: Path) -> str:
         return "class A:\n    def foo(self):\n        pass"
 
     async def request_document_symbol_list(
@@ -67,10 +67,10 @@ async def test_symbol_from_path():
 
     resp = await capability(req)
     assert resp is not None
-    assert resp.symbol_path == ["A", "foo"]
-    assert resp.symbol_content is not None
-    assert "def foo(self):" in resp.symbol_content
-    assert "pass" in resp.symbol_content
+    assert resp.path == ["A", "foo"]
+    assert resp.code is not None
+    assert "def foo(self):" in resp.code
+    assert "pass" in resp.code
 
 
 @pytest.mark.asyncio
@@ -84,9 +84,9 @@ async def test_symbol_from_text():
 
     resp = await capability(req)
     assert resp is not None
-    assert resp.symbol_path == ["A", "foo"]
-    assert resp.symbol_content is not None
-    assert "def foo(self):" in resp.symbol_content
+    assert resp.path == ["A", "foo"]
+    assert resp.code is not None
+    assert "def foo(self):" in resp.code
 
 
 def test_iter_symbols():
@@ -117,10 +117,9 @@ def test_iter_symbols():
     )
 
     symbols = [a_symbol]
-    client = MockSymbolClient()
-    capability = SymbolCapability(client=client)  # type: ignore
+    from lsap.utils.symbol import iter_symbols
 
-    results = list(capability.iter_symbols(symbols))
+    results = list(iter_symbols(symbols))
     assert len(results) == 2
     assert results[0][0] == ["A"]
     assert results[0][1].name == "A"

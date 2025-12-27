@@ -13,7 +13,7 @@ from lsap_schema.symbol_outline import SymbolOutlineRequest
 
 
 class MockSymbolOutlineClient:
-    def read_file(self, file_path: Path) -> str:
+    async def read_file(self, file_path: Path) -> str:
         return "class A:\n    def foo(self):\n        pass"
 
     async def request_document_symbol_list(
@@ -56,17 +56,17 @@ async def test_symbol_outline():
     client = MockSymbolOutlineClient()
     capability = SymbolOutlineCapability(client=client)  # type: ignore
 
-    req = SymbolOutlineRequest(file_path=Path("test.py"), include_content=True)
+    req = SymbolOutlineRequest(file_path=Path("test.py"), include_code=True)
 
     resp = await capability(req)
     assert resp is not None
     assert len(resp.items) == 2
 
     assert resp.items[0].name == "A"
-    assert resp.items[0].level == 0
-    assert resp.items[0].content is not None
+    assert len(resp.items[0].path) == 1
+    assert resp.items[0].code is not None
 
     assert resp.items[1].name == "foo"
-    assert resp.items[1].level == 1
-    assert resp.items[1].content is not None
-    assert "def foo(self):" in resp.items[1].content
+    assert len(resp.items[1].path) == 2
+    assert resp.items[1].code is not None
+    assert "def foo(self):" in resp.items[1].code

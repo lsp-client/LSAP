@@ -3,8 +3,8 @@ from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from .abc import Response
-from .locate import LocateRequest, Position
+from ..abc import Response
+from ..locate import LocateRequest, Position
 
 
 class CallHierarchyNode(BaseModel):

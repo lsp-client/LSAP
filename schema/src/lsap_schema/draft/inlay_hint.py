@@ -3,8 +3,8 @@ from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from .abc import Request, Response
-from .types import Range
+from ..abc import Request, Response
+from ..types import Range
 
 
 class InlayHintItem(BaseModel):

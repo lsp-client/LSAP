@@ -4,7 +4,7 @@ The Navigation API provides the ability to jump from a symbol usage to its prima
 
 ## Navigation Requests
 
-All navigation requests inherit from `LocateRequest` and identify a starting position in the code.
+All navigation requests inherit from [`LocateRequest`](locate.md) and identify a starting position in the code.
 
 ### 1. DeclarationRequest
 
@@ -20,15 +20,23 @@ Finds the **type definition** of a symbol. For an instance variable, this leads 
 
 ## Common Fields
 
-| Field             | Type                         | Default  | Description                            |
-| :---------------- | :--------------------------- | :------- | :------------------------------------- |
-| `locate`          | `LocateText \| LocateSymbol` | Required | The starting location (the reference). |
-| `include_hover`   | `boolean`                    | `true`   | Whether to include documentation.      |
-| `include_content` | `boolean`                    | `true`   | Whether to include source code.        |
+| Field             | Type                                                     | Default  | Description                            |
+| :---------------- | :------------------------------------------------------- | :------- | :------------------------------------- |
+| `locate`          | [`LocateText`](locate.md) \| [`LocateSymbol`](locate.md) | Required | The starting location (the reference). |
+| `include_hover`   | `boolean`                                                | `true`   | Whether to include documentation.      |
+| `include_content` | `boolean`                                                | `true`   | Whether to include source code.        |
 
 ## DefinitionResponse
 
-Inherits from `SymbolResponse`. Returns the target file, symbol path, content, and documentation.
+Inherits from [`SymbolResponse`](symbol.md).
+
+| Field            | Type               | Description                                          |
+| :--------------- | :----------------- | :--------------------------------------------------- |
+| `file_path`      | `string`           | Relative path to the file containing the definition. |
+| `symbol_path`    | `string[]`         | Hierarchy of the symbol.                             |
+| `symbol_content` | `string \| null`   | The source code of the definition.                   |
+| `hover`          | `string \| null`   | Markdown documentation for the symbol.               |
+| `parameters`     | `ParameterInfo[]?` | Structured parameter info.                           |
 
 ## Example Usage
 

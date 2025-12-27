@@ -4,13 +4,12 @@ The Call Hierarchy API allows tracing the relationships between functions, showi
 
 ## CallHierarchyRequest
 
-Inherits from `LocateRequest`.
-
-| Field              | Type                                 | Default  | Description                                          |
-| :----------------- | :----------------------------------- | :------- | :--------------------------------------------------- |
-| `direction`        | `"incoming" \| "outgoing" \| "both"` | `"both"` | Direction of the trace.                              |
-| `depth`            | `number`                             | `2`      | Maximum number of hops to trace.                     |
-| `include_external` | `boolean`                            | `false`  | Whether to include calls to/from external libraries. |
+| Field              | Type                                                     | Default  | Description                                          |
+| :----------------- | :------------------------------------------------------- | :------- | :--------------------------------------------------- |
+| `locate`           | [`LocateText`](locate.md) \| [`LocateSymbol`](locate.md) | Required | The symbol to trace callers/callees for.             |
+| `direction`        | `"incoming" \| "outgoing" \| "both"`                     | `"both"` | Direction of the trace.                              |
+| `depth`            | `number`                                                 | `2`      | Maximum number of hops to trace.                     |
+| `include_external` | `boolean`                                                | `false`  | Whether to include calls to/from external libraries. |
 
 ## CallHierarchyResponse
 
@@ -23,11 +22,21 @@ Inherits from `LocateRequest`.
 
 ### CallHierarchyNode
 
-Contains `id`, `name`, `kind`, `file_path`, and `range_start`.
+| Field         | Type       | Description                               |
+| :------------ | :--------- | :---------------------------------------- |
+| `id`          | `string`   | Unique identifier for the node.           |
+| `name`        | `string`   | Name of the function.                     |
+| `kind`        | `string`   | Symbol kind (e.g., `Function`, `Method`). |
+| `file_path`   | `string`   | Relative path to the file.                |
+| `range_start` | `Position` | Start coordinates of the definition.      |
 
 ### CallEdge
 
-Contains `from_node_id`, `to_node_id`, and `call_sites` (list of positions).
+| Field          | Type         | Description                              |
+| :------------- | :----------- | :--------------------------------------- |
+| `from_node_id` | `string`     | ID of the calling node.                  |
+| `to_node_id`   | `string`     | ID of the called node.                   |
+| `call_sites`   | `Position[]` | List of positions where the call occurs. |
 
 ## Example Usage
 
@@ -55,6 +64,7 @@ Contains `from_node_id`, `to_node_id`, and `call_sites` (list of positions).
 - setup_routes (`Function`) in `src/routes.py`
 
 ---
+
 > [!NOTE]
 > Tree is truncated at depth 1. Use `depth` parameter to explore further.
 ```

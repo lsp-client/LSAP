@@ -30,6 +30,9 @@ jobs:
       - name: Install dependencies
         run: cd web && bun install
 
+      - name: Copy docs to public
+        run: mkdir -p web/public/docs && cp -r docs/schemas web/public/docs/
+
       - name: Build
         run: cd web && bun run build
 

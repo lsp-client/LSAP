@@ -4,12 +4,11 @@ The Type Hierarchy API allows exploring the inheritance relationships of a class
 
 ## TypeHierarchyRequest
 
-Inherits from `LocateRequest`.
-
-| Field       | Type                                   | Default  | Description                        |
-| :---------- | :------------------------------------- | :------- | :--------------------------------- |
-| `direction` | `"supertypes" \| "subtypes" \| "both"` | `"both"` | Direction of the hierarchy trace.  |
-| `depth`     | `number`                               | `2`      | Maximum number of levels to trace. |
+| Field       | Type                                                     | Default  | Description                            |
+| :---------- | :------------------------------------------------------- | :------- | :------------------------------------- |
+| `locate`    | [`LocateText`](locate.md) \| [`LocateSymbol`](locate.md) | Required | The symbol to trace the hierarchy for. |
+| `direction` | `"supertypes" \| "subtypes" \| "both"`                   | `"both"` | Direction of the hierarchy trace.      |
+| `depth`     | `number`                                                 | `2`      | Maximum number of levels to trace.     |
 
 ## TypeHierarchyResponse
 
@@ -22,11 +21,22 @@ Inherits from `LocateRequest`.
 
 ### TypeHierarchyNode
 
-Contains `id`, `name`, `kind`, `file_path`, `range_start`, and optional `detail` (e.g., base class names).
+| Field         | Type             | Description                               |
+| :------------ | :--------------- | :---------------------------------------- |
+| `id`          | `string`         | Unique identifier for the node.           |
+| `name`        | `string`         | Name of the type.                         |
+| `kind`        | `string`         | Symbol kind (e.g., `Class`, `Interface`). |
+| `file_path`   | `string`         | Relative path to the file.                |
+| `range_start` | `Position`       | Start coordinates of the definition.      |
+| `detail`      | `string \| null` | Optional detail (e.g., base class names). |
 
 ### TypeEdge
 
-Contains `from_node_id`, `to_node_id`, and `relationship` (`extends` or `implements`).
+| Field          | Type                        | Description                   |
+| :------------- | :-------------------------- | :---------------------------- |
+| `from_node_id` | `string`                    | ID of the child/derived node. |
+| `to_node_id`   | `string`                    | ID of the parent/base node.   |
+| `relationship` | `"extends" \| "implements"` | Type of inheritance.          |
 
 ## Example Usage
 
@@ -55,6 +65,7 @@ Contains `from_node_id`, `to_node_id`, and `relationship` (`extends` or `impleme
   - Order (`Class`) in `order.py`
 
 ---
+
 > [!NOTE]
 > Tree is truncated at depth 1. Increase `depth` parameter to explore further if needed.
 ```
