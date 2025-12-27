@@ -28,28 +28,6 @@ from .diagnostics import (
     FileDiagnosticsResponse,
 )
 
-# Implementation
-from .implementation import ImplementationRequest, ImplementationResponse
-
-# Inlay hint
-from .inlay_hint import (
-    DecoratedContentResponse,
-    InlayHintItem,
-    InlayHintRequest,
-    InlineValueItem,
-    InlineValueRequest,
-)
-
-# Locate
-from .locate import (
-    LocateRequest,
-    LocateResponse,
-    LocateSymbol,
-    LocateText,
-    Position,
-    Range,
-)
-
 # Reference
 from .reference import ReferenceRequest, ReferenceResponse
 
@@ -112,9 +90,6 @@ __all__ = [
     "Diagnostic",
     "FileDiagnosticsRequest",
     "FileDiagnosticsResponse",
-    # Implementation
-    "ImplementationRequest",
-    "ImplementationResponse",
     # Inlay hint
     "DecoratedContentResponse",
     "InlayHintItem",

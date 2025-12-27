@@ -1,4 +1,4 @@
-from typing import Final
+from typing import Final, Literal
 
 from pydantic import ConfigDict
 
@@ -9,27 +9,33 @@ from .symbol import SymbolResponse
 
 class ReferenceRequest(LocateRequest, PaginatedRequest):
     """
-    Finds all references (usages) of a symbol.
+    Finds all references (usages) or concrete implementations of a symbol.
 
     Use this to see where a function, class, or variable is used across the codebase,
-    which is essential for refactoring or understanding the impact of a change.
+    or to find how an interface is implemented in subclasses.
     """
 
-    include_hover: bool = False
-    """Whether to include hover/documentation for each reference. Default to False to save tokens."""
+    mode: Literal["references", "implementations"] = "references"
+    """Whether to find references or concrete implementations."""
 
-    include_content: bool = True
-    """Whether to include the source code snippet for each reference."""
+    include_hover: bool = True
+    """Whether to include documentation for each item."""
+
+    include_content: bool = False
+    """Whether to include the source code snippet for each item."""
 
 
 markdown_template: Final = """
-# References Found
+# {{ mode | capitalize }} Found
 
 {% if total != nil -%}
-Total references: {{ total }} | Showing: {{ items.size }}{% if max_items != nil %} (Offset: {{ start_index }}, Limit: {{ max_items }}){% endif %}
+Total {{ mode }}: {{ total }} | Showing: {{ items.size }}{% if max_items != nil %} (Offset: {{ start_index }}, Limit: {{ max_items }}){% endif %}
 {%- endif %}
 
-{% for item in items -%}
+{% if items.size == 0 -%}
+No {{ mode }} found.
+{%- else -%}
+{%- for item in items %}
 - `{{ item.file_path }}` - `{{ item.symbol_path | join: "." }}`
 {% if item.hover != nil -%}
   {{ item.hover | indent: 2 }}
@@ -44,17 +50,21 @@ Total references: {{ total }} | Showing: {{ items.size }}{% if max_items != nil 
 {% if has_more -%}
 ---
 > [!TIP]
-> More references available.
+> More {{ mode }} available.
 {%- if pagination_id != nil %}
 > Use `pagination_id="{{ pagination_id }}"` to fetch the next page.
 {%- else %}
 > To see more, specify a `max_items` and use: `start_index={% assign step = max_items | default: items.size %}{{ start_index | plus: step }}`
 {%- endif %}
 {%- endif %}
+{%- endif %}
 """
 
 
 class ReferenceResponse(PaginatedResponse):
+    mode: Literal["references", "implementations"] = "references"
+    """The mode used for this response."""
+
     items: list[SymbolResponse]
 
     model_config = ConfigDict(

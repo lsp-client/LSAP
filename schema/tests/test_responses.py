@@ -5,7 +5,6 @@ from lsap_schema.locate import LocateResponse, Position, Range
 from lsap_schema.symbol import SymbolResponse, ParameterInfo
 from lsap_schema.workspace import WorkspaceSymbolResponse, WorkspaceSymbolItem
 from lsap_schema.reference import ReferenceResponse
-from lsap_schema.implementation import ImplementationResponse
 from lsap_schema.diagnostics import FileDiagnosticsResponse, Diagnostic
 from lsap_schema.symbol_outline import SymbolOutlineResponse, SymbolOutlineItem
 from lsap_schema.rename import RenameResponse, RenameFileChange, RenameDiff
@@ -67,8 +66,8 @@ def test_workspace_symbol_response_format():
                 kind="Class",
                 file_path=Path("test.py"),
                 range=Range(
-                    start=Position(line=0, character=0),
-                    end=Position(line=1, character=0),
+                    start=Position(line=1, character=1),
+                    end=Position(line=2, character=1),
                 ),
             )
         ],
@@ -85,8 +84,11 @@ def test_reference_response_format():
     symbol_resp = SymbolResponse(
         file_path=Path("test.py"), symbol_path=["test"], symbol_content="test_content"
     )
-    resp = ReferenceResponse(items=[symbol_resp], start_index=0, has_more=False)
+    resp = ReferenceResponse(
+        items=[symbol_resp], start_index=0, has_more=False, mode="references"
+    )
     rendered = resp.format()
+    assert "References Found" in rendered
     assert "test.py" in rendered
     assert "test_content" in rendered
 
@@ -95,8 +97,11 @@ def test_implementation_response_format():
     symbol_resp = SymbolResponse(
         file_path=Path("test.py"), symbol_path=["test"], symbol_content="test_content"
     )
-    resp = ImplementationResponse(items=[symbol_resp], start_index=0, has_more=False)
+    resp = ReferenceResponse(
+        items=[symbol_resp], start_index=0, has_more=False, mode="implementations"
+    )
     rendered = resp.format()
+    assert "Implementations Found" in rendered
     assert "test.py" in rendered
     assert "test_content" in rendered
 
@@ -107,8 +112,8 @@ def test_diagnostics_response_format():
         diagnostics=[
             Diagnostic(
                 range=Range(
-                    start=Position(line=0, character=0),
-                    end=Position(line=0, character=5),
+                    start=Position(line=1, character=1),
+                    end=Position(line=1, character=5),
                 ),
                 severity="Error",
                 message="test error",
@@ -131,8 +136,8 @@ def test_symbol_outline_response_format():
                 name="MyClass",
                 kind="Class",
                 range=Range(
-                    start=Position(line=0, character=0),
-                    end=Position(line=10, character=0),
+                    start=Position(line=1, character=1),
+                    end=Position(line=10, character=1),
                 ),
                 level=0,
                 symbol_content="class MyClass: pass",
@@ -189,7 +194,7 @@ def test_call_hierarchy_response_format():
         name="root",
         kind="Function",
         file_path=Path("test.py"),
-        range_start=Position(line=0, character=0),
+        range_start=Position(line=1, character=1),
     )
     item = CallHierarchyItem(
         name="caller", kind="Function", file_path=Path("test.py"), level=1
@@ -215,7 +220,7 @@ def test_type_hierarchy_response_format():
         name="Base",
         kind="Class",
         file_path=Path("test.py"),
-        range_start=Position(line=0, character=0),
+        range_start=Position(line=1, character=1),
     )
     item = TypeHierarchyItem(
         name="Sub", kind="Class", file_path=Path("test.py"), level=1

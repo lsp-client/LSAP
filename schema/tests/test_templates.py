@@ -1,6 +1,5 @@
 import pytest
 from liquid import Environment
-from liquid.extra import MacroTag, CallTag
 import importlib
 import pkgutil
 import lsap_schema
@@ -13,8 +12,14 @@ def get_templates():
         package.__path__, package.__name__ + "."
     ):
         module = importlib.import_module(module_name)
-        if hasattr(module, "markdown_template"):
-            templates.append((module_name, getattr(module, "markdown_template")))
+        # Check for any variable ending with _markdown_template or exactly markdown_template
+        for attr_name in dir(module):
+            if attr_name == "markdown_template" or attr_name.endswith(
+                "_markdown_template"
+            ):
+                attr_value = getattr(module, attr_name)
+                if isinstance(attr_value, str):
+                    templates.append((f"{module_name}.{attr_name}", attr_value))
     return templates
 
 
