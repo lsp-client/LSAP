@@ -2,11 +2,7 @@ from typing import Protocol, override
 
 from asyncer import create_task_group
 from lsap_schema.locate import Position, Range
-from lsap_schema.symbol_outline import (
-    SymbolOutlineItem,
-    SymbolOutlineRequest,
-    SymbolOutlineResponse,
-)
+from lsap_schema.symbol_outline import SymbolOutlineRequest, SymbolOutlineResponse
 from lsp_client.capability.request import WithRequestDocumentSymbol, WithRequestHover
 from lsp_client.protocol import CapabilityClientProtocol
 from lsprotocol.types import DocumentSymbol
@@ -33,11 +29,8 @@ class SymbolOutlineCapability(
         if symbols is None:
             return None
 
-        reader = (
-            DocumentReader(self.client.read_file(req.file_path))
-            if req.include_content
-            else None
-        )
+        document = await self.client.read_file(req.file_path)
+        reader = DocumentReader(document) if req.include_code else None
         items: list[SymbolOutlineItem] = []
 
         async def fill_hover(it: SymbolOutlineItem, sym: DocumentSymbol) -> None:

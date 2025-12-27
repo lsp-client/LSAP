@@ -1,0 +1,18 @@
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import HomePage from './pages/HomePage'
+import DocsPage from './pages/DocsPage'
+import './styles/global.css'
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/docs/:docId" element={<DocsPage />} />
+        <Route path="/docs" element={<DocsPage />} />
+      </Routes>
+    </BrowserRouter>
+  </React.StrictMode>,
+)

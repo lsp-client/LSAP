@@ -35,7 +35,8 @@ class LocateCapability(Capability[LocateClient, LocateRequest, LocateResponse]):
             case LocateText(
                 file_path=file_path, line=line, find=find, find_end=find_end
             ):
-                reader = DocumentReader(self.client.read_file(file_path))
+                document = await self.client.read_file(file_path)
+                reader = DocumentReader(document)
                 start, end = (line, line) if isinstance(line, int) else line
 
                 content = reader.read(
