@@ -601,22 +601,36 @@ export default function HomePage() {
               <FeatureCard
                 icon="🌐"
                 title="Discovery & Resolution"
-                items={["Workspace Search", "Locate Symbols"]}
+                items={[
+                  { label: "Workspace Search", href: "/docs/workspace" },
+                  { label: "Locate Symbols", href: "/docs/locate" },
+                ]}
               />
               <FeatureCard
                 icon="🔍"
                 title="Deep Inspection"
-                items={["Symbol Info", "Symbol Outline", "Inlay Hints"]}
+                items={[
+                  { label: "Symbol Info", href: "/docs/symbol" },
+                  { label: "Symbol Outline", href: "/docs/symbol_outline" },
+                  { label: "Inlay Hints", href: "/docs/inlay_hints" },
+                ]}
               />
               <FeatureCard
                 icon="🔗"
                 title="Relational Mapping"
-                items={["References", "Call Hierarchy", "Type Hierarchy"]}
+                items={[
+                  { label: "References", href: "/docs/reference" },
+                  { label: "Call Hierarchy", href: "/docs/call_hierarchy" },
+                  { label: "Type Hierarchy", href: "/docs/type_hierarchy" },
+                ]}
               />
               <FeatureCard
                 icon="🩺"
                 title="Environmental Awareness"
-                items={["Diagnostics", "Rename Analysis"]}
+                items={[
+                  { label: "Diagnostics", href: "/docs/diagnostics" },
+                  { label: "Rename Analysis", href: "/docs/rename" },
+                ]}
               />
             </div>
           </section>
@@ -642,7 +656,7 @@ function FeatureCard({
 }: {
   icon: string;
   title: string;
-  items: string[];
+  items: { label: string; href: string }[];
 }) {
   return (
     <Card className="hover:border-primary/20 transition-colors">
@@ -657,7 +671,12 @@ function FeatureCard({
               key={idx}
               className="font-mono text-xs text-muted-foreground pl-4 relative before:content-['·'] before:absolute before:left-0 before:text-primary"
             >
-              {item}
+              <Link
+                to={item.href}
+                className="hover:text-primary transition-colors"
+              >
+                {item.label}
+              </Link>
             </li>
           ))}
         </ul>
