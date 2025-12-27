@@ -1,15 +1,6 @@
 # Base classes
 from .abc import PaginatedRequest, PaginatedResponse, Request, Response
 
-# Call hierarchy
-from .call_hierarchy import (
-    CallEdge,
-    CallHierarchyItem,
-    CallHierarchyNode,
-    CallHierarchyRequest,
-    CallHierarchyResponse,
-)
-
 # Completion
 from .completion import CompletionItem, CompletionRequest, CompletionResponse
 
@@ -26,17 +17,43 @@ from .diagnostics import (
     FileDiagnosticsResponse,
 )
 
-# Hover
-from .hover import HoverRequest, HoverResponse
+# Call hierarchy
+from .draft.call_hierarchy import (
+    CallEdge,
+    CallHierarchyItem,
+    CallHierarchyNode,
+    CallHierarchyRequest,
+    CallHierarchyResponse,
+)
 
 # Inlay hint
-from .inlay_hint import (
+from .draft.inlay_hint import (
     DecoratedContentResponse,
     InlayHintItem,
     InlayHintRequest,
     InlineValueItem,
     InlineValueRequest,
 )
+
+# Rename
+from .draft.rename import (
+    RenameDiff,
+    RenameFileChange,
+    RenameRequest,
+    RenameResponse,
+)
+
+# Type hierarchy
+from .draft.type_hierarchy import (
+    TypeEdge,
+    TypeHierarchyItem,
+    TypeHierarchyNode,
+    TypeHierarchyRequest,
+    TypeHierarchyResponse,
+)
+
+# Hover
+from .hover import HoverRequest, HoverResponse
 
 # Locate
 from .locate import (
@@ -49,14 +66,6 @@ from .locate import (
 # Reference
 from .reference import ReferenceItem, ReferenceRequest, ReferenceResponse
 
-# Rename
-from .rename import (
-    RenameDiff,
-    RenameFileChange,
-    RenameRequest,
-    RenameResponse,
-)
-
 # Symbol
 from .symbol import SymbolRequest, SymbolResponse
 
@@ -64,16 +73,6 @@ from .symbol import SymbolRequest, SymbolResponse
 from .symbol_outline import (
     SymbolOutlineRequest,
     SymbolOutlineResponse,
-)
-
-
-# Type hierarchy
-from .type_hierarchy import (
-    TypeEdge,
-    TypeHierarchyItem,
-    TypeHierarchyNode,
-    TypeHierarchyRequest,
-    TypeHierarchyResponse,
 )
 
 # Types

@@ -2,35 +2,30 @@ from functools import cached_property
 from typing import runtime_checkable
 
 import asyncer
-from lsap_schema.reference import ReferenceRequest, ReferenceResponse
-from lsap_schema.symbol import SymbolResponse
+from lsap_schema.reference import ReferenceItem, ReferenceRequest, ReferenceResponse
+from lsap_schema.types import SymbolInfo, SymbolKind
 from lsp_client.capability.request import (
     WithRequestDocumentSymbol,
     WithRequestHover,
+    WithRequestImplementation,
     WithRequestReferences,
 )
 from lsp_client.protocol import CapabilityClientProtocol
-from lsprotocol.types import (
-    Location,
-)
-from lsprotocol.types import (
-    Position as LSPPosition,
-)
-from lsprotocol.types import (
-    Range as LSPRange,
-)
+from lsprotocol.types import Location, LocationLink
+from lsprotocol.types import Position as LSPPosition
+from lsprotocol.types import Range as LSPRange
 
 from lsap.utils.content import DocumentReader
 from lsap.utils.symbol import symbol_at
 
 from .abc import Capability, Protocol
 from .locate import LocateCapability
-from .symbol import SymbolCapability
 
 
 @runtime_checkable
 class ReferenceClient(
     WithRequestReferences,
+    WithRequestImplementation,
     WithRequestDocumentSymbol,
     WithRequestHover,
     CapabilityClientProtocol,
@@ -45,68 +40,95 @@ class ReferenceCapability(
     def locate(self) -> LocateCapability:
         return LocateCapability(client=self.client)
 
-    @cached_property
-    def symbol(self) -> SymbolCapability:
-        return SymbolCapability(client=self.client)
-
     async def __call__(self, req: ReferenceRequest) -> ReferenceResponse | None:
-        resp = await self.locate(req)
-        if not resp:
+        if not (loc_resp := await self.locate(req)):
             return None
 
-        lsp_pos = LSPPosition(
-            line=resp.position.line, character=resp.position.character
-        )
-        ref_result = await self.client.request_references(
-            file_path=req.locate.file_path,
-            position=lsp_pos,
-            include_declaration=True,
-        )
-        if not ref_result:
-            return None
+        file_path, lsp_pos = loc_resp.file_path, loc_resp.position.to_lsp()
+        locations: list[Location | LocationLink] = []
 
-        items: list[SymbolResponse] = []
+        if req.mode == "references":
+            if refs := await self.client.request_references(
+                file_path, lsp_pos, include_declaration=True
+            ):
+                locations.extend(refs)
+        elif req.mode == "implementations":
+            if impls := await self.client.request_implementation(file_path, lsp_pos):
+                if isinstance(impls, (Location, LocationLink)):
+                    locations.append(impls)
+                else:
+                    locations.extend(impls)
 
+        if not locations:
+            return ReferenceResponse(
+                request=req,
+                items=[],
+                start_index=req.start_index,
+                max_items=req.max_items,
+                total=0,
+                has_more=False,
+            )
+
+        items: list[ReferenceItem] = []
         async with asyncer.create_task_group() as tg:
-            for loc in ref_result:
-                tg.soonify(self._process_reference)(loc, items)
+            for loc in locations:
+                tg.soonify(self._process_reference)(loc, req.context_lines, items)
+
+        items.sort(key=lambda x: (x.file_path, x.line))
+        total, start, limit = len(items), req.start_index, req.max_items
+        paginated = items[start : start + limit] if limit is not None else items[start:]
 
         return ReferenceResponse(
-            items=items,
-            start_index=req.start_index,
-            max_items=req.max_items,
-            total=len(items),
-            has_more=False,
+            request=req,
+            items=paginated,
+            start_index=start,
+            max_items=limit,
+            total=total,
+            has_more=(start + len(paginated)) < total,
         )
 
     async def _process_reference(
-        self, loc: Location, items: list[SymbolResponse]
+        self,
+        loc: Location | LocationLink,
+        context_lines: int,
+        items: list[ReferenceItem],
     ) -> None:
-        file_path = self.client.from_uri(loc.uri)
-        symbols = await self.client.request_document_symbol_list(file_path)
-        reader = DocumentReader(self.client.read_file(file_path))
+        uri, range_ = (
+            (loc.target_uri, loc.target_range)
+            if isinstance(loc, LocationLink)
+            else (loc.uri, loc.range)
+        )
+        file_path = self.client.from_uri(uri)
+        content = await self.client.read_file(file_path)
+        reader = DocumentReader(content)
 
-        match = symbol_at(symbols, loc.range.start) if symbols else None
-
-        if match:
-            path, symbol = match
-            snippet = reader.read(symbol.range)
-        else:
-            path = []
-            snippet = reader.read(
-                LSPRange(
-                    start=LSPPosition(line=loc.range.start.line, character=0),
-                    end=LSPPosition(line=loc.range.start.line + 1, character=0),
-                )
-            )
-
-        if not snippet:
+        line = range_.start.line
+        context_range = LSPRange(
+            start=LSPPosition(line=max(0, line - context_lines), character=0),
+            end=LSPPosition(line=line + context_lines + 1, character=0),
+        )
+        if not (snippet := reader.read(context_range)):
             return
 
+        symbol: SymbolInfo | None = None
+        if symbols := await self.client.request_document_symbol_list(file_path):
+            if match := symbol_at(symbols, range_.start):
+                path, sym = match
+                kind = SymbolKind.from_lsp(sym.kind)
+
+                symbol = SymbolInfo(
+                    file_path=file_path,
+                    name=sym.name,
+                    path=path,
+                    kind=kind,
+                    detail=sym.detail,
+                )
+
         items.append(
-            SymbolResponse(
+            ReferenceItem(
                 file_path=file_path,
-                symbol_path=path,
-                symbol_content=snippet.content,
+                line=line + 1,
+                code=snippet.content,
+                symbol=symbol,
             )
         )

@@ -1,3 +1,4 @@
+import re
 from typing import Protocol
 
 from lsap_schema.locate import (
@@ -44,16 +45,29 @@ class LocateCapability(Capability[LocateClient, LocateRequest, LocateResponse]):
                     )
                 )
 
-                if not content or (idx := content.exact_content.find(find)) == -1:
+                if not content:
                     return
 
-                if content.exact_content.find(find, idx + 1) != -1:
+                # Build a regex to match characters while ignoring any interleaving whitespace.
+                # This ensures that "abc" matches "a b c" in the document.
+                chars = [re.escape(c) for c in find if not c.isspace()]
+                if not chars:
+                    return
+
+                pattern = r"\s*".join(chars)
+                matches = list(re.finditer(pattern, content.exact_content))
+
+                if not matches:
+                    return
+
+                if len(matches) > 1:
                     raise AmbiguousError(
                         f"Multiple matches for {find!r} in {file_path}:{line}. "
                         "Provide a more precise 'find' string."
                     )
 
-                offset = idx + (len(find) if find_end == "end" else 0)
+                match = matches[0]
+                offset = match.end() if find_end == "end" else match.start()
                 position = reader.offset_to_position(content.range.start, offset)
 
             case LocateSymbol(file_path=file_path, symbol_path=symbol_path):

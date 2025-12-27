@@ -47,6 +47,7 @@ async def test_locate_text_single_match():
             file_path=Path("test.py"),
             line=(0, 1),
             find="def",
+            find_end="start",
         )
     )
 

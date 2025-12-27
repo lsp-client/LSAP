@@ -43,7 +43,8 @@ class DocumentReader:
         """
         if not self._lines:
             return Range(
-                start=Position(line=0, character=0), end=Position(line=0, character=0)
+                start=Position(line=0, character=0),
+                end=Position(line=0, character=0),
             )
 
         last_line_idx = len(self._lines) - 1

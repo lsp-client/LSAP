@@ -5,12 +5,16 @@ from lsap_schema.abc import SymbolPath
 from lsprotocol.types import DocumentSymbol, Position, Range
 
 
+def _pos(p: Position) -> tuple[int, int]:
+    return (p.line, p.character)
+
+
 def _contains(range: Range, position: Position) -> bool:
-    return (
-        (range.start.line, range.start.character)
-        <= (position.line, position.character)
-        < (range.end.line, range.end.character)
-    )
+    return _pos(range.start) <= _pos(position) < _pos(range.end)
+
+
+def _is_narrower(inner: Range, outer: Range) -> bool:
+    return _pos(inner.start) >= _pos(outer.start) and _pos(inner.end) <= _pos(outer.end)
 
 
 def iter_symbols(
@@ -31,16 +35,7 @@ def symbol_at(
 ) -> tuple[SymbolPath, DocumentSymbol] | None:
     best_match: tuple[SymbolPath, DocumentSymbol] | None = None
     for path, symbol in iter_symbols(symbols):
-        if (
-            (symbol.range.start.line, symbol.range.start.character)
-            <= (position.line, position.character)
-            < (symbol.range.end.line, symbol.range.end.character)
-        ):
-            if best_match is None or (
-                (symbol.range.start.line, symbol.range.start.character)
-                >= (best_match[1].range.start.line, best_match[1].range.start.character)
-                and (symbol.range.end.line, symbol.range.end.character)
-                <= (best_match[1].range.end.line, best_match[1].range.end.character)
-            ):
+        if _contains(symbol.range, position):
+            if best_match is None or _is_narrower(symbol.range, best_match[1].range):
                 best_match = (path, symbol)
     return best_match

@@ -88,6 +88,7 @@ async def test_reference():
     resp = await capability(req)
     assert resp is not None
     assert len(resp.items) == 2
-    assert resp.items[0].symbol_path == ["A", "foo"]
-    assert resp.items[0].symbol_content is not None
-    assert "def foo(self):" in resp.items[0].symbol_content
+    assert resp.items[0].symbol is not None
+    assert resp.items[0].symbol.path == ["A", "foo"]
+    assert resp.items[0].code is not None
+    assert "def foo(self):" in resp.items[0].code
