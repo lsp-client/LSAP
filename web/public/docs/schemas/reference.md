@@ -7,26 +7,40 @@ The Reference API finds all locations where a specific symbol is used across the
 | Field             | Type                                                     | Default  | Description                                          |
 | :---------------- | :------------------------------------------------------- | :------- | :--------------------------------------------------- |
 | `locate`          | [`LocateText`](locate.md) \| [`LocateSymbol`](locate.md) | Required | The symbol to find references for.                   |
-| `include_hover`   | `boolean`                                                | `false`  | Whether to include docs for each reference.          |
-| `include_content` | `boolean`                                                | `true`   | Whether to include code snippets for each reference. |
+| `mode`            | `"references" \| "implementations"`                     | `"references"` | Whether to find references or concrete implementations. |
+| `context_lines`   | `number`                                                 | `2`      | Number of lines around the match to include.        |
+| `include_hover`   | `boolean`                                                | `true`   | Whether to include docs for each reference.          |
+| `include_code`    | `boolean`                                                | `true`   | Whether to include code snippets for each reference. |
 | `max_items`       | `number \| null`                                         | `null`   | Maximum number of references to return.              |
 | `start_index`     | `number`                                                 | `0`      | Number of items to skip for pagination.              |
 | `pagination_id`   | `string \| null`                                         | `null`   | Token to retrieve the next page of results.          |
 
 ## ReferenceResponse
 
-| Field           | Type                            | Description                                       |
-| :-------------- | :------------------------------ | :------------------------------------------------ |
-| `items`         | [`SymbolResponse`](symbol.md)[] | List of locations where the symbol is referenced. |
-| `start_index`   | `number`                        | Offset of the current page.                       |
-| `max_items`     | `number?`                       | Number of items per page (if specified).          |
-| `total`         | `number?`                       | Total number of references (if available).        |
-| `has_more`      | `boolean`                       | Whether more references exist beyond the limit.   |
-| `pagination_id` | `string?`                       | Token for retrieving the next page.               |
+| Field           | Type                 | Description                                       |
+| :-------------- | :------------------- | :------------------------------------------------ |
+| `request`       | `ReferenceRequest`   | The original request.                             |
+| `items`         | `ReferenceItem[]`     | List of locations where the symbol is referenced. |
+| `start_index`   | `number`             | Offset of the current page.                       |
+| `max_items`     | `number?`            | Number of items per page (if specified).          |
+| `total`         | `number?`            | Total number of references (if available).        |
+| `has_more`      | `boolean`            | Whether more references exist beyond the limit.   |
+| `pagination_id` | `string?`            | Token for retrieving the next page.               |
+
+### ReferenceItem
+
+| Field       | Type               | Description                                             |
+| :---------- | :----------------- | :------------------------------------------------------ |
+| `file_path` | `string`           | Relative path to the file.                              |
+| `line`      | `number`           | 1-based line number.                                    |
+| `code`      | `string`           | Surrounding code snippet.                                |
+| `symbol`    | `SymbolInfo \| null`| The symbol containing this reference (optional).       |
 
 ## Example Usage
 
-### Request
+### Scenario 1: Finding all references of a function
+
+#### Request
 
 ```json
 {
@@ -38,20 +52,22 @@ The Reference API finds all locations where a specific symbol is used across the
 }
 ```
 
-### Markdown Rendered for LLM
+#### Markdown Rendered for LLM
 
 ````markdown
 # References Found
 
 Total references: 45 | Showing: 10 (Offset: 0, Limit: 10)
 
-- `src/ui/header.py` - `Header.render`
+### `src/ui/header.py`:28
+In `Header.render` (`Method`)
 
 ```python
 formatted = format_date(user.last_login)
 ```
 
-- `src/api/views.py` - `UserDetail.get`
+### `src/api/views.py`:42
+In `UserDetail.get` (`Method`)
 
 ```python
 return {"date": format_date(obj.created_at)}
@@ -62,4 +78,58 @@ return {"date": format_date(obj.created_at)}
 > [!TIP]
 > More references available.
 > To see more, specify a `max_items` and use: `start_index=10`
+````
+
+### Scenario 2: Finding all implementations of an interface method
+
+#### Request
+
+```json
+{
+  "locate": {
+    "file_path": "src/base.py",
+    "symbol_path": ["DatabaseConnection", "connect"]
+  },
+  "mode": "implementations",
+  "max_items": 5
+}
+```
+
+#### Markdown Rendered for LLM
+
+````markdown
+# Implementations Found
+
+Total implementations: 8 | Showing: 5 (Offset: 0, Limit: 5)
+
+### `src/mysql.py`:15
+In `MySQLConnection.connect` (`Method`)
+
+```python
+def connect(self):
+    self.pool = mysql.connector.connect(
+        host=self.host,
+        user=self.user,
+        password=self.password
+    )
+```
+
+### `src/postgres.py`:18
+In `PostgresConnection.connect` (`Method`)
+
+```python
+def connect(self):
+    self.conn = psycopg2.connect(
+        host=self.host,
+        user=self.user,
+        password=self.password,
+        database=self.database
+    )
+```
+
+---
+
+> [!TIP]
+> More implementations available.
+> To see more, specify a `max_items` and use: `start_index=5`
 ````
