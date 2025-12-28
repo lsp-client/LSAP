@@ -144,8 +144,8 @@ requires-dist = [
     { name = "asyncer", specifier = ">=0.0.11" },
     { name = "attrs", specifier = ">=25.4.0" },
     { name = "cattrs", specifier = ">=25.3.0" },
-    { name = "lsap-schema", editable = "../schema" },
-    { name = "lsp-client", editable = "../../python-sdk" },
+    { name = "lsap-schema", git = "https://github.com/lsp-client/LSAP.git?subdirectory=schema" },
+    { name = "lsp-client", git = "https://github.com/lsp-client/python-sdk.git" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "python-liquid", specifier = ">=2.1.0" },
 ]
@@ -159,27 +159,17 @@ dev = [
 [[package]]
 name = "lsap-schema"
 version = "0.1.0"
-source = { editable = "../schema" }
+source = { git = "https://github.com/lsp-client/LSAP.git?subdirectory=schema#e26977f78ede2a5380af05e8c5fa7b9da729a4f6" }
 dependencies = [
     { name = "lsprotocol" },
     { name = "pydantic" },
     { name = "python-liquid" },
 ]
 
-[package.metadata]
-requires-dist = [
-    { name = "lsprotocol", specifier = ">=2025.0.0" },
-    { name = "pydantic", specifier = ">=2.12.5" },
-    { name = "python-liquid", specifier = ">=2.1.0" },
-]
-
-[package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=9.0.2" }]
-
 [[package]]
 name = "lsp-client"
 version = "0.1.0"
-source = { editable = "../../python-sdk" }
+source = { git = "https://github.com/lsp-client/python-sdk.git#fb27e07fa3946a24e9723f73ee7879ce1a9fc67b" }
 dependencies = [
     { name = "aioshutil" },
     { name = "anyio" },
@@ -189,29 +179,6 @@ dependencies = [
     { name = "lsprotocol" },
     { name = "semver" },
     { name = "tenacity" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "aioshutil", specifier = ">=1.6" },
-    { name = "anyio", specifier = ">=4.10.0" },
-    { name = "asyncer", specifier = ">=0.0.10" },
-    { name = "attrs", specifier = ">=25.3.0" },
-    { name = "loguru", specifier = ">=0.7.3" },
-    { name = "lsprotocol", specifier = ">=2025.0.0" },
-    { name = "semver", specifier = ">=3.0.4" },
-    { name = "tenacity", specifier = ">=9.1.2" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "aiofiles", specifier = ">=24.1.0" },
-    { name = "httpx", specifier = ">=0.28.1" },
-    { name = "pdoc", specifier = ">=16.0.0" },
-    { name = "pytest", specifier = ">=8.4.1" },
-    { name = "pytest-asyncio", specifier = ">=1.0.0" },
-    { name = "pytest-cov", specifier = ">=6.0.0" },
-    { name = "ruff", specifier = ">=0.8.0" },
 ]
 
 [[package]]
