@@ -27,33 +27,42 @@ LSAP acts as a sophisticated orchestrator, converting high-level agent intents i
 ```mermaid
 sequenceDiagram
     participant Agent as LLM Coding Agent
-    participant LSAP as LSAP Layer
+    participant LSAP as LSAP SymbolCapability
+    participant Locate as LocateCapability
     participant LSP as Language Server (LSP)
 
     Note over Agent, LSP: Task: "Understand this method's implementation"
 
-    Agent->>LSAP: request_symbol_info(text="process_data")
+    Agent->>LSAP: SymbolRequest(locate={symbol_path: ["process_data"]})
 
     activate LSAP
-    LSAP->>LSP: textDocument/definition
-    LSP-->>LSAP: Location (file.py, line 42)
+    LSAP->>Locate: LocateRequest
+
+    activate Locate
+    Locate->>LSP: textDocument/documentSymbol
+    LSP-->>Locate: DocumentSymbol[]
+
+    Locate-->>LSAP: file_path, position
+    deactivate Locate
 
     par Parallel Deep Inspection
         LSAP->>LSP: textDocument/hover
-        LSAP->>LSP: textDocument/signatureHelp
-        LSAP->>LSP: custom/readRange (source code)
+        LSAP->>LSP: textDocument/documentSymbol
+        LSAP->>LSP: read file content
     end
 
-    LSP-->>LSAP: Documentation / Markdown
-    LSP-->>LSAP: Parameter Details
-    LSP-->>LSAP: Implementation Snippet
+    LSP-->>LSAP: Hover documentation
+    LSP-->>LSAP: DocumentSymbol[]
+    LSP-->>LSAP: Source code content
 
-    LSAP->>LSAP: Aggregate into Markdown Snapshot
+    LSAP->>LSAP: Find symbol from DocumentSymbol
+    LSAP->>LSAP: Extract code snippet using DocumentReader
+    LSAP->>LSAP: Aggregate into Markdown
 
-    LSAP-->>Agent: High-Density Response (Progressive Disclosure)
+    LSAP-->>Agent: SymbolResponse (Markdown)
     deactivate LSAP
 
-    Note over Agent: Agent now has full context to reason<br/>without further round-trips.
+    Note over Agent: Agent receives structured markdown<br/>with documentation + source code
 ```
 
 ---
@@ -100,6 +109,7 @@ The LSAP specification categorizes capabilities into functional layers, facilita
 | :-------------------- | :-------------------------------------------------------------------------------- |
 | 🔍 **Symbol Info**    | High-density retrieval of documentation, signatures, and source code for symbols. |
 | 🗂 **Symbol Outline** | Generate a hierarchical map (AST-lite) of all symbols within a file.              |
+| 💬 **Hover**          | Quick access to documentation and type information at a specific location.        |
 | 💡 **Inlay Hints**    | Augment source code with static types and runtime values for enhanced reasoning.  |
 
 ### 🔗 Relational Mapping
@@ -127,8 +137,8 @@ LSAP provides a high-level API for agents to interact with codebases.
 ### Python
 
 ```python
-from lsap.protocol.symbol import SymbolCapability
-from lsap_schema.schema.symbol import SymbolRequest
+from lsap.symbol import SymbolCapability
+from lsap_schema import SymbolRequest
 from lsp_client.clients.pyright import PyrightClient
 
 async with PyrightClient() as lsp_client:
@@ -137,7 +147,7 @@ async with PyrightClient() as lsp_client:
 
     # Request high-density information about a symbol
     response = await symbol_info(SymbolRequest(
-        locate={"file_path": "src/main.py", "text": "my_function"}
+        locate={"file_path": "src/main.py", "symbol_path": ["my_function"]}
     ))
 
     if response:
@@ -161,8 +171,9 @@ These SDKs allow you to treat LSAP capabilities as standard "Tools" within your 
 LSAP is a cross-language protocol ecosystem:
 
 - **`schema/`**: The source of truth. Formal protocol definitions and data models.
-- **`python/`**: Reference implementation of the LSAP server and client, built on a production-ready async LSP client.
-- **`typescript/`**: Zod-based schema definitions and utilities for TypeScript/Node.js agent environments.
+- **`python/`**: Core LSAP Python implementation and its schema.
+- **`typescript/`**: Zod-based schema definitions and utilities for TypeScript/Node.js.
+- **`web/`**: Minimalist, developer-focused protocol explorer and documentation viewer.
 - **`docs/schemas/`**: Detailed specifications for each protocol method and data model.
 
 ## 🛠 Protocol Integrity
@@ -189,11 +200,11 @@ For detailed information on each capability, request/response models, and the co
 ### Individual Capability Specs:
 
 - [Locate](docs/schemas/locate.md) | [Symbol](docs/schemas/symbol.md) | [Symbol Outline](docs/schemas/symbol_outline.md)
-- [Definition](docs/schemas/definition.md) | [Call Hierarchy](docs/schemas/call_hierarchy.md) | [Type Hierarchy](docs/schemas/type_hierarchy.md)
+- [Definition](docs/schemas/definition.md) | [Hover](docs/schemas/hover.md) | [Workspace Search](docs/schemas/workspace.md)
 - [References](docs/schemas/reference.md) | [Implementation](docs/schemas/implementation.md)
-- [Workspace Search](docs/schemas/workspace.md) | [Diagnostics](docs/schemas/diagnostics.md)
-- [Completion](docs/schemas/completion.md) | [Rename](docs/schemas/rename.md)
-- [Inlay Hints & Inline Values](docs/schemas/inlay_hints.md)
+- [Call Hierarchy](docs/schemas/call_hierarchy.md) | [Type Hierarchy](docs/schemas/type_hierarchy.md)
+- [Completion](docs/schemas/completion.md) | [Diagnostics](docs/schemas/diagnostics.md)
+- [Rename](docs/schemas/rename.md) | [Inlay Hints](docs/schemas/inlay_hints.md)
 
 ---
 
