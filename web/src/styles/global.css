@@ -5,6 +5,42 @@
 @layer base {
   :root {
     --radius: 0.25rem;
+    
+    /* Light mode colors */
+    --background: 210 17% 98%;
+    --foreground: 210 24% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 210 24% 20%;
+    --primary: 210 24% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 16% 93%;
+    --secondary-foreground: 210 24% 30%;
+    --muted: 210 16% 96%;
+    --muted-foreground: 210 12% 50%;
+    --accent: 210 24% 60%;
+    --accent-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 210 24% 60%;
+  }
+  
+  .dark {
+    /* Dark mode colors */
+    --background: 222 47% 11%;
+    --foreground: 213 31% 91%;
+    --card: 224 71% 4%;
+    --card-foreground: 213 31% 91%;
+    --primary: 210 40% 70%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 222 47% 15%;
+    --secondary-foreground: 213 31% 91%;
+    --muted: 223 47% 16%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 216 34% 25%;
+    --accent-foreground: 213 31% 91%;
+    --border: 216 34% 17%;
+    --input: 216 34% 17%;
+    --ring: 210 40% 70%;
   }
   
   * {
@@ -14,5 +50,6 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
