@@ -51,5 +51,12 @@
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
     transition: background-color 0.3s ease, color 0.3s ease;
+    overflow-x: hidden;
+  }
+
+  /* Ensure no horizontal overflow on mobile */
+  html, body {
+    max-width: 100vw;
+    overflow-x: hidden;
   }
 }

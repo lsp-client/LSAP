@@ -163,10 +163,10 @@ export default function HomePage() {
       <main>
         <section className="py-16 lg:py-24 border-b border-border/40 bg-gradient-to-br from-primary/[0.15] via-primary/[0.08] to-background/50 relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent" />
-          <div className="relative container max-w-6xl mx-auto px-6 lg:px-8">
+          <div className="relative container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
-                <h1 className="font-serif text-5xl lg:text-6xl font-normal leading-tight mb-6">
+                <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-normal leading-tight mb-6">
                   Language Server
                   <br />
                   <span className="text-primary font-semibold">
@@ -174,7 +174,7 @@ export default function HomePage() {
                   </span>
                 </h1>
 
-                <p className="font-serif text-lg lg:text-xl text-muted-foreground leading-relaxed mb-10">
+                <p className="font-serif text-base sm:text-lg lg:text-xl text-muted-foreground leading-relaxed mb-10">
                   Semantic abstraction layer transforming LSP into an
                   agent-native cognitive framework. Progressive disclosure of
                   codebase intelligence for autonomous reasoning.
@@ -250,19 +250,19 @@ export default function HomePage() {
           </div>
         </section>
 
-        <div className="container max-w-6xl mx-auto px-6 lg:px-8">
+        <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <section className="py-16 lg:py-24 border-b border-border/40">
             <div className="mb-16">
-              <h2 className="font-serif text-3xl lg:text-4xl font-normal mb-4">
+              <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-normal mb-4">
                 See It In Action
               </h2>
-              <p className="font-serif text-muted-foreground max-w-2xl">
+              <p className="font-serif text-sm sm:text-base text-muted-foreground max-w-2xl">
                 Real-world examples of how LSAP transforms agent-codebase
                 interaction
               </p>
             </div>
 
-            <div className="flex gap-2 mb-8 border-b border-border/40 overflow-x-auto">
+            <div className="flex gap-2 mb-8 border-b border-border/40 overflow-x-auto -mx-6 px-6 lg:mx-0 lg:px-0">
               {EXAMPLES.map((ex, idx) => {
                 const TabIcon = ex.icon;
                 return (
@@ -270,8 +270,8 @@ export default function HomePage() {
                     key={ex.id}
                     onClick={() => setActiveExample(idx)}
                     className={`
-                    font-mono text-sm px-4 py-3 border-b-2 transition-all whitespace-nowrap
-                    flex items-center gap-2
+                    font-mono text-xs sm:text-sm px-3 sm:px-4 py-3 border-b-2 transition-all whitespace-nowrap
+                    flex items-center gap-1.5 sm:gap-2 flex-shrink-0
                     ${
                       activeExample === idx
                         ? "border-primary text-primary"
@@ -279,8 +279,9 @@ export default function HomePage() {
                     }
                   `}
                   >
-                    <TabIcon className="h-4 w-4" />
-                    {ex.title}
+                    <TabIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">{ex.title}</span>
+                    <span className="sm:hidden">{ex.title.split(' ')[0]}</span>
                   </button>
                 );
               })}
@@ -288,7 +289,7 @@ export default function HomePage() {
 
             <div className="space-y-6">
               {/* Row 1: Intent + Request */}
-              <div className="grid lg:grid-cols-2 gap-4">
+              <div className="grid lg:grid-cols-2 gap-3 sm:gap-4">
                 <Card
                   className={`transition-all duration-300 ${
                     animationStep >= 0
@@ -374,7 +375,7 @@ export default function HomePage() {
               </div>
 
               {/* Row 2: Processing + Result */}
-              <div className="grid lg:grid-cols-2 gap-4">
+              <div className="grid lg:grid-cols-2 gap-3 sm:gap-4">
                 <Card
                   className={`transition-all duration-300 delay-100 ${
                     animationStep >= 2
@@ -595,11 +596,11 @@ export default function HomePage() {
           </section>
 
           <section className="py-16 lg:py-24">
-            <h2 className="font-serif text-3xl lg:text-4xl font-normal mb-12">
+            <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-normal mb-12">
               Core Capabilities
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               <FeatureCard
                 icon="🌐"
                 title="Discovery & Resolution"
