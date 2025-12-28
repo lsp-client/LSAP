@@ -169,7 +169,7 @@ dependencies = [
 [[package]]
 name = "lsp-client"
 version = "0.1.0"
-source = { git = "https://github.com/lsp-client/python-sdk.git#fb27e07fa3946a24e9723f73ee7879ce1a9fc67b" }
+source = { git = "https://github.com/lsp-client/python-sdk.git#409e6f1d6615dae62355714fba550d9ae0c8c309" }
 dependencies = [
     { name = "aioshutil" },
     { name = "anyio" },
