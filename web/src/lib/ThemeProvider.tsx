@@ -12,8 +12,13 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
-    const stored = localStorage.getItem('theme') as Theme | null
-    return stored || 'system'
+    try {
+      const stored = localStorage.getItem('theme') as Theme | null
+      return stored || 'system'
+    } catch (e) {
+      // If localStorage is unavailable, default to system
+      return 'system'
+    }
   })
 
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light')
@@ -41,7 +46,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme)
-    localStorage.setItem('theme', newTheme)
+    try {
+      localStorage.setItem('theme', newTheme)
+    } catch (e) {
+      // If localStorage fails, continue with in-memory theme state
+      console.warn('Failed to save theme preference to localStorage:', e)
+    }
   }
 
   return (
