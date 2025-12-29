@@ -8,6 +8,7 @@ This directory contains the specifications for the LLM-friendly LSP (Language Se
 - [**Symbol**](symbol.md): Retrieve detailed information, documentation, and source code for specific symbols.
 - [**Symbol Outline**](symbol_outline.md): Get a hierarchical overview of all symbols in a file.
 - [**Definition**](definition.md): Navigate from a symbol usage to its declaration or definition.
+- [**Hover**](hover.md): Quick access to documentation and type information at a specific location.
 - [**Workspace**](workspace.md): Global search for symbols across the entire project with pagination.
 - [**Completion**](completion.md): Get code completion suggestions at a specific position.
 - [**Reference**](reference.md): Find all usages of a symbol in the project.

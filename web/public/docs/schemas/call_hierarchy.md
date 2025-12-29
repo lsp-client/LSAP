@@ -40,7 +40,9 @@ The Call Hierarchy API allows tracing the relationships between functions, showi
 
 ## Example Usage
 
-### Request
+### Scenario 1: Finding outgoing calls (what does this function call?)
+
+#### Request
 
 ```json
 {
@@ -53,18 +55,86 @@ The Call Hierarchy API allows tracing the relationships between functions, showi
 }
 ```
 
-### Markdown Rendered for LLM
+#### Markdown Rendered for LLM
 
 ```markdown
-### Call Hierarchy for `start_server` (Depth: 1, Direction: outgoing)
+# Call Hierarchy for `start_server` (Depth: 1, Direction: outgoing)
 
-#### Outgoing Calls (What does this call?)
-
+## Outgoing Calls (What does this call?)
 - initialize_db (`Function`) in `src/db.py`
 - setup_routes (`Function`) in `src/routes.py`
+- start_listening (`Method`) in `src/app.py`
 
 ---
 
 > [!NOTE]
 > Tree is truncated at depth 1. Use `depth` parameter to explore further.
+```
+
+### Scenario 2: Finding incoming calls (what calls this function?)
+
+#### Request
+
+```json
+{
+  "locate": {
+    "file_path": "src/db.py",
+    "symbol_path": ["initialize_db"]
+  },
+  "direction": "incoming",
+  "depth": 2
+}
+```
+
+#### Markdown Rendered for LLM
+
+```markdown
+# Call Hierarchy for `initialize_db` (Depth: 2, Direction: incoming)
+
+## Incoming Calls (Who calls this?)
+- start_server (`Function`) in `src/app.py`
+  - main (`Function`) in `src/main.py`
+- run_tests (`Function`) in `tests/setup.py`
+
+---
+
+> [!NOTE]
+> Tree is truncated at depth 2. Use `depth` parameter to explore further.
+```
+
+### Scenario 3: Exploring both directions with deeper depth
+
+#### Request
+
+```json
+{
+  "locate": {
+    "file_path": "src/controllers.py",
+    "symbol_path": ["handle_request"]
+  },
+  "direction": "both",
+  "depth": 3,
+  "include_external": false
+}
+```
+
+#### Markdown Rendered for LLM
+
+```markdown
+# Call Hierarchy for `handle_request` (Depth: 3, Direction: both)
+
+## Incoming Calls (Who calls this?)
+- router.dispatch (`Method`) in `src/router.py`
+  - app.run (`Method`) in `src/app.py`
+
+## Outgoing Calls (What does this call?)
+- validate_input (`Function`) in `src/utils.py`
+  - is_valid_email (`Function`) in `src/validators.py`
+  - sanitize_string (`Function`) in `src/sanitizer.py`
+- process_data (`Method`) in `src/controllers.py`
+
+---
+
+> [!NOTE]
+> Tree is truncated at depth 3. Use `depth` parameter to explore further.
 ```

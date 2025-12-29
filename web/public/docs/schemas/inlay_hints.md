@@ -50,14 +50,17 @@ Instead of returning raw JSON lists of positions (which are hard for LLMs to rea
 
 ## Example Usage
 
-### Scenario: Understanding a complex function call
+### Scenario 1: Getting type hints for a function
 
 #### Request (InlayHintRequest)
 
 ```json
 {
   "file_path": "src/api.py",
-  "range": { ... }
+  "range": {
+    "start": {"line": 10, "character": 0},
+    "end": {"line": 15, "character": 0}
+  }
 }
 ```
 
@@ -67,8 +70,12 @@ Instead of returning raw JSON lists of positions (which are hard for LLMs to rea
 # Code with Annotations: `src/api.py`
 
 ```python
-# The hints help the Agent know which argument is which
-client.post(/* url:= */ "https://api.com", /* data:= */ payload, /* verify:= */ False)
+def process_data(items /* :list */):
+    result /* :dict */ = {}
+    for item /* :dict */ in items:
+        key /* :str */ = item['id']
+        result[key] = item['value']
+    return result
 ```
 
 ---
@@ -78,14 +85,47 @@ client.post(/* url:= */ "https://api.com", /* data:= */ payload, /* verify:= */ 
 > Runtime values (if any) are shown as `// value: x=42`.
 ````
 
-### Scenario: Debugging an Error
+### Scenario 2: Getting parameter hints for a function call
+
+#### Request (InlayHintRequest)
+
+```json
+{
+  "file_path": "src/utils.py",
+  "range": {
+    "start": {"line": 20, "character": 0},
+    "end": {"line": 20, "character": 80}
+  }
+}
+```
+
+#### Markdown Rendered for LLM
+
+````markdown
+# Code with Annotations: `src/utils.py`
+
+```python
+response = api_client.post(/* url:= */ "https://api.com/data", /* json:= */ payload, /* timeout:= */ 30, /* verify:= */ False)
+```
+
+---
+
+> [!NOTE]
+> Annotations like `/* :type */` or `/* param:= */` are injected for clarity.
+> Runtime values (if any) are shown as `// value: x=42`.
+````
+
+### Scenario 3: Debugging an error with runtime values
 
 #### Request (InlineValueRequest)
 
 ```json
 {
   "file_path": "src/logic.py",
-  "range": { "start": {"line": 10, ...}, "end": {"line": 20, ...} }
+  "range": {
+    "start": {"line": 10, "character": 0},
+    "end": {"line": 20, "character": 0}
+  }
 }
 ```
 
@@ -96,10 +136,46 @@ client.post(/* url:= */ "https://api.com", /* data:= */ payload, /* verify:= */ 
 
 ```python
 def process(items):
+    total = 0  // value: total = 0
     for i in items:
-        # The value is injected at the end of the line
-        total += i.price  // value: i.price = None
-        # Agent can now see that i.price is None, causing the crash!
+        price = i.price  // value: i.price = None
+        total += price  // value: total = None
+    return total  // value: total = None
+```
+
+---
+
+> [!NOTE]
+> Annotations like `/* :type */` or `/* param:= */` are injected for clarity.
+> Runtime values (if any) are shown as `// value: x=42`.
+````
+
+### Scenario 4: Combined type and parameter hints
+
+#### Request (InlayHintRequest)
+
+```json
+{
+  "file_path": "src/service.py"
+}
+```
+
+#### Markdown Rendered for LLM
+
+````markdown
+# Code with Annotations: `src/service.py`
+
+```python
+class DataService:
+    def __init__(self):
+        self.client /* :APIClient */ = APIClient()
+        self.cache /* :dict */ = {}
+
+    def get_user(self, user_id /* :int */) /* :Optional[User] */:
+        if user_id /* :int */ in self.cache /* :dict */:
+            return self.cache[user_id]
+        user = self.client.get(/* endpoint:= */ f'/users/{user_id}')
+        return user
 ```
 
 ---
