@@ -24,6 +24,7 @@ import { useTheme } from "../lib/ThemeProvider";
 interface Example {
   id: string;
   title: string;
+  mobileTitle: string;
   icon: typeof Search;
   agentIntent: string;
   flowSteps: { label: string; value: string; highlight?: boolean }[];
@@ -35,6 +36,7 @@ const EXAMPLES: Example[] = [
   {
     id: "locate",
     title: "Locate Symbol",
+    mobileTitle: "Locate",
     icon: Search,
     agentIntent: "Find the implementation of the `process_data` function",
     flowSteps: [
@@ -62,6 +64,7 @@ def process_data(items: List[Item]) -> DataFrame:
   {
     id: "symbol",
     title: "Symbol Deep Inspection",
+    mobileTitle: "Symbol",
     icon: Code2,
     agentIntent: "Understand what `authenticate_user` does and how to use it",
     flowSteps: [
@@ -99,6 +102,7 @@ async def authenticate_user(
   {
     id: "call-hierarchy",
     title: "Call Hierarchy Graph",
+    mobileTitle: "Call",
     icon: Network,
     agentIntent: "Show me all functions that call `save_to_database`",
     flowSteps: [
@@ -262,13 +266,14 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="flex gap-2 mb-8 border-b border-border/40 overflow-x-auto -mx-6 px-6 lg:mx-0 lg:px-0">
+            <div className="flex gap-2 mb-8 border-b border-border/40 overflow-x-auto">
               {EXAMPLES.map((ex, idx) => {
                 const TabIcon = ex.icon;
                 return (
                   <button
                     key={ex.id}
                     onClick={() => setActiveExample(idx)}
+                    aria-label={ex.title}
                     className={`
                     font-mono text-xs sm:text-sm px-3 sm:px-4 py-3 border-b-2 transition-all whitespace-nowrap
                     flex items-center gap-1.5 sm:gap-2 flex-shrink-0
@@ -281,7 +286,7 @@ export default function HomePage() {
                   >
                     <TabIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     <span className="hidden sm:inline">{ex.title}</span>
-                    <span className="sm:hidden">{ex.title.split(' ')[0]}</span>
+                    <span className="sm:hidden">{ex.mobileTitle}</span>
                   </button>
                 );
               })}
@@ -289,7 +294,7 @@ export default function HomePage() {
 
             <div className="space-y-6">
               {/* Row 1: Intent + Request */}
-              <div className="grid lg:grid-cols-2 gap-3 sm:gap-4">
+              <div className="grid lg:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                 <Card
                   className={`transition-all duration-300 ${
                     animationStep >= 0
@@ -375,7 +380,7 @@ export default function HomePage() {
               </div>
 
               {/* Row 2: Processing + Result */}
-              <div className="grid lg:grid-cols-2 gap-3 sm:gap-4">
+              <div className="grid lg:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                 <Card
                   className={`transition-all duration-300 delay-100 ${
                     animationStep >= 2
@@ -600,7 +605,7 @@ export default function HomePage() {
               Core Capabilities
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
               <FeatureCard
                 icon="🌐"
                 title="Discovery & Resolution"

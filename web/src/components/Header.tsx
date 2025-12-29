@@ -22,6 +22,7 @@ export default function Header() {
           <nav className="flex items-center gap-3 sm:gap-6">
             <Link 
               to="/docs" 
+              aria-label="Documentation"
               className="font-mono text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-primary after:transition-all hover:after:w-full"
             >
               <span className="hidden sm:inline">Documentation</span>
@@ -31,6 +32,7 @@ export default function Header() {
               href="https://github.com/lsp-client/LSAP" 
               target="_blank" 
               rel="noopener noreferrer"
+              aria-label="GitHub"
               className="font-mono text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 sm:gap-2"
             >
               <Github className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
