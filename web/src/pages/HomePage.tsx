@@ -266,7 +266,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="flex gap-2 mb-8 border-b border-border/40 overflow-x-auto">
+            <div className="flex gap-2 mb-8 border-b border-border/40 overflow-x-auto -mx-6 px-6 lg:mx-0 lg:px-0">
               {EXAMPLES.map((ex, idx) => {
                 const TabIcon = ex.icon;
                 return (
@@ -286,7 +286,7 @@ export default function HomePage() {
                   >
                     <TabIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     <span className="hidden sm:inline">{ex.title}</span>
-                    <span className="sm:hidden">{ex.mobileTitle}</span>
+                    <span className="sm:hidden">{ex.title.split(' ')[0]}</span>
                   </button>
                 );
               })}
@@ -294,7 +294,7 @@ export default function HomePage() {
 
             <div className="space-y-6">
               {/* Row 1: Intent + Request */}
-              <div className="grid lg:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
+              <div className="grid lg:grid-cols-2 gap-3 sm:gap-4">
                 <Card
                   className={`transition-all duration-300 ${
                     animationStep >= 0
@@ -380,7 +380,7 @@ export default function HomePage() {
               </div>
 
               {/* Row 2: Processing + Result */}
-              <div className="grid lg:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
+              <div className="grid lg:grid-cols-2 gap-3 sm:gap-4">
                 <Card
                   className={`transition-all duration-300 delay-100 ${
                     animationStep >= 2
@@ -605,7 +605,7 @@ export default function HomePage() {
               Core Capabilities
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               <FeatureCard
                 icon="🌐"
                 title="Discovery & Resolution"
