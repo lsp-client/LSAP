@@ -12,4 +12,6 @@
 - Imports & Formatting: use ruff
 - Async: Use async/await, `asyncer.TaskGroup` for concurrency
 
-## Implement Capabilities
+## Testing
+
+- Run `uv sync --upgrade` before testing and fixing type errors

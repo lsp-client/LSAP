@@ -1,7 +1,8 @@
 from functools import cached_property
-from typing import runtime_checkable
+from typing import Protocol, runtime_checkable
 
 import asyncer
+from attrs import Factory, define
 from lsap_schema.reference import ReferenceItem, ReferenceRequest, ReferenceResponse
 from lsap_schema.types import SymbolInfo, SymbolKind
 from lsp_client.capability.request import (
@@ -16,9 +17,10 @@ from lsprotocol.types import Position as LSPPosition
 from lsprotocol.types import Range as LSPRange
 
 from lsap.utils.content import DocumentReader
+from lsap.utils.pagination import paginate
 from lsap.utils.symbol import symbol_at
 
-from .abc import Capability, Protocol
+from .abc import Capability
 from .locate import LocateCapability
 from .utils.cache import PaginationCache
 
@@ -34,20 +36,18 @@ class ReferenceClient(
 ): ...
 
 
+@define
 class ReferenceCapability(
     Capability[ReferenceClient, ReferenceRequest, ReferenceResponse]
 ):
-    _cache: PaginationCache[list[ReferenceItem]] = PaginationCache()
+    _cache: PaginationCache[ReferenceItem] = Factory(PaginationCache)
 
     @cached_property
     def locate(self) -> LocateCapability:
         return LocateCapability(client=self.client)
 
     async def __call__(self, req: ReferenceRequest) -> ReferenceResponse | None:
-        pagination_id = req.pagination_id
-        if pagination_id and (cached := self._cache.get(pagination_id)) is not None:
-            items = cached
-        else:
+        async def fetcher() -> list[ReferenceItem] | None:
             if not (loc_resp := await self.locate(req)):
                 return None
 
@@ -69,14 +69,7 @@ class ReferenceCapability(
                         locations.extend(impls)
 
             if not locations:
-                return ReferenceResponse(
-                    request=req,
-                    items=[],
-                    start_index=req.start_index,
-                    max_items=req.max_items,
-                    total=0,
-                    has_more=False,
-                )
+                return []
 
             items = []
             async with asyncer.create_task_group() as tg:
@@ -84,19 +77,20 @@ class ReferenceCapability(
                     tg.soonify(self._process_reference)(loc, req.context_lines, items)
 
             items.sort(key=lambda x: (x.file_path, x.line))
-            pagination_id = self._cache.put(items)
+            return items
 
-        total, start, limit = len(items), req.start_index, req.max_items
-        paginated = items[start : start + limit] if limit is not None else items[start:]
+        result = await paginate(req, self._cache, fetcher)
+        if result is None:
+            return None
 
         return ReferenceResponse(
             request=req,
-            items=paginated,
-            start_index=start,
-            max_items=limit,
-            total=total,
-            has_more=(start + len(paginated)) < total,
-            pagination_id=pagination_id if (start + len(paginated)) < total else None,
+            items=result.items,
+            start_index=req.start_index,
+            max_items=req.max_items,
+            total=result.total,
+            has_more=result.has_more,
+            pagination_id=result.pagination_id,
         )
 
     async def _process_reference(

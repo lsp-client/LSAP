@@ -3,17 +3,18 @@ from __future__ import annotations
 from typing import Protocol, override, runtime_checkable
 
 from attrs import Factory, define
-from lsap_schema.diagnostics import (
+from lsap_schema import (
     Diagnostic,
     FileDiagnosticsRequest,
     FileDiagnosticsResponse,
 )
-from lsap_schema.types import Position, Range
+from lsap_schema import Position, Range
 from lsp_client.capability.request.pull_diagnostic import WithRequestPullDiagnostic
 from lsprotocol.types import DiagnosticSeverity
 
-from .abc import Capability, ClientProtocol
-from .utils.cache import PaginationCache
+from ..abc import Capability, ClientProtocol
+from ..utils.cache import PaginationCache
+from ..utils.pagination import paginate
 
 
 @runtime_checkable
@@ -28,16 +29,13 @@ class DiagnosticsClient(
 class DiagnosticsCapability(
     Capability[DiagnosticsClient, FileDiagnosticsRequest, FileDiagnosticsResponse]
 ):
-    _cache: PaginationCache[list[Diagnostic]] = Factory(PaginationCache)
+    _cache: PaginationCache[Diagnostic] = Factory(PaginationCache)
 
     @override
     async def __call__(
         self, req: FileDiagnosticsRequest
     ) -> FileDiagnosticsResponse | None:
-        pagination_id = req.pagination_id
-        if pagination_id and (cached := self._cache.get(pagination_id)) is not None:
-            diagnostics = cached
-        else:
+        async def fetcher() -> list[Diagnostic] | None:
             lsp_diagnostics = await self.client.request_diagnostics(req.file_path)
             if lsp_diagnostics is None:
                 return None
@@ -66,20 +64,18 @@ class DiagnosticsCapability(
                             code=d.code if isinstance(d.code, (str, int)) else None,
                         )
                     )
+            return diagnostics
 
-            pagination_id = self._cache.put(diagnostics)
-
-        start = req.start_index
-        end = start + req.max_items if req.max_items else len(diagnostics)
-        paginated_diagnostics = diagnostics[start:end]
-        has_more = end < len(diagnostics)
+        result = await paginate(req, self._cache, fetcher)
+        if result is None:
+            return None
 
         return FileDiagnosticsResponse(
             file_path=req.file_path,
-            diagnostics=paginated_diagnostics,
-            total=len(diagnostics),
-            start_index=start,
+            diagnostics=result.items,
+            total=result.total,
+            start_index=req.start_index,
             max_items=req.max_items,
-            has_more=has_more,
-            pagination_id=pagination_id if has_more else None,
+            has_more=result.has_more,
+            pagination_id=result.pagination_id,
         )

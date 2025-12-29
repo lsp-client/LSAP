@@ -1,6 +1,7 @@
 from typing import Protocol, override
 
 import asyncer
+from attrs import define
 from lsap_schema.symbol_outline import SymbolOutlineRequest, SymbolOutlineResponse
 from lsap_schema.types import SymbolInfo, SymbolKind
 from lsp_client.capability.request import WithRequestDocumentSymbol, WithRequestHover
@@ -20,6 +21,7 @@ class SymbolOutlineClient(
 ): ...
 
 
+@define
 class SymbolOutlineCapability(
     Capability[SymbolOutlineClient, SymbolOutlineRequest, SymbolOutlineResponse]
 ):

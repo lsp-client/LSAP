@@ -1,6 +1,7 @@
 import re
 from typing import Protocol
 
+from attrs import define
 from lsap_schema.locate import (
     LocateRequest,
     LocateResponse,
@@ -27,6 +28,7 @@ class LocateClient(
 ): ...
 
 
+@define
 class LocateCapability(Capability[LocateClient, LocateRequest, LocateResponse]):
     async def __call__(self, req: LocateRequest) -> LocateResponse | None:
         position: LSPPosition | None = None

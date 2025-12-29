@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Sequence
 
 import pytest
-from lsap_schema.diagnostics import FileDiagnosticsRequest
+from lsap_schema import FileDiagnosticsRequest
 from lsprotocol.types import (
     Diagnostic as LSPDiagnostic,
     DiagnosticSeverity,
@@ -10,7 +10,7 @@ from lsprotocol.types import (
     Range as LSPRange,
 )
 
-from lsap.diagnostics import DiagnosticsCapability
+from lsap.draft.diagnostics import DiagnosticsCapability
 
 
 class MockDiagnosticsClient:

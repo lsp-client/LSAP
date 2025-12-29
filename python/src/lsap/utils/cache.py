@@ -11,9 +11,9 @@ class PaginationCache[T]:
     """
 
     capacity: int = 128
-    _cache: OrderedDict[str, T] = Factory(OrderedDict)
+    _cache: OrderedDict[str, list[T]] = Factory(OrderedDict)
 
-    def get(self, pagination_id: str) -> T | None:
+    def get(self, pagination_id: str) -> list[T] | None:
         """
         Retrieve data from the cache and move it to the end (MRU).
         """
@@ -22,7 +22,7 @@ class PaginationCache[T]:
         self._cache.move_to_end(pagination_id)
         return self._cache[pagination_id]
 
-    def put(self, data: T) -> str:
+    def put(self, data: list[T]) -> str:
         """
         Store data in the cache and return a new pagination ID.
         """

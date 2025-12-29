@@ -2,6 +2,12 @@ version = 1
 revision = 3
 requires-python = ">=3.12"
 
+[manifest]
+members = [
+    "lsap",
+    "lsap-schema",
+]
+
 [[package]]
 name = "aioshutil"
 version = "1.6"
@@ -35,15 +41,15 @@ wheels = [
 
 [[package]]
 name = "asyncer"
-version = "0.0.11"
+version = "0.0.12"
 source = { registry = "https://mirrors.aliyun.com/pypi/simple" }
 dependencies = [
     { name = "anyio" },
     { name = "sniffio" },
 ]
-sdist = { url = "https://mirrors.aliyun.com/pypi/packages/76/91/0ee25acf9faa42bbe08e1ed79261dc7734b7dc9d4b8a9c32a932e0983a46/asyncer-0.0.11.tar.gz", hash = "sha256:c66c3f0700d12d89551b56f4bc867b4bd61601fd650e474b550ac874110062f1" }
+sdist = { url = "https://mirrors.aliyun.com/pypi/packages/33/3a/e3d6919a41328f837a1c73ac057a8be35276c350046a79af588c536bd0fc/asyncer-0.0.12.tar.gz", hash = "sha256:4ceaa472bf40f3778caa3bd7f7dfcbafec0a948a9688e3c90a1796469ebe5e19" }
 wheels = [
-    { url = "https://mirrors.aliyun.com/pypi/packages/d2/17/aae04a8e87b266581206af94159d5aa2899b006581033db7c64af8538403/asyncer-0.0.11-py3-none-any.whl", hash = "sha256:cdcda69773d042cc17bf45a69827b82fa89012def6ae24f8b3cd0ea70c44bb2d" },
+    { url = "https://mirrors.aliyun.com/pypi/packages/54/f6/ebdca24b43151ed2a7dcf98bab4b61fdfc50dbd7224b9b4de195099fa65e/asyncer-0.0.12-py3-none-any.whl", hash = "sha256:2eb8bb255bdecf04a81df2d47cf168401df1f65a5f62e1bccc1f86ba375c9913" },
 ]
 
 [[package]]
@@ -144,7 +150,7 @@ requires-dist = [
     { name = "asyncer", specifier = ">=0.0.11" },
     { name = "attrs", specifier = ">=25.4.0" },
     { name = "cattrs", specifier = ">=25.3.0" },
-    { name = "lsap-schema", git = "https://github.com/lsp-client/LSAP.git?subdirectory=schema" },
+    { name = "lsap-schema", editable = "packages/lsap-schema" },
     { name = "lsp-client", git = "https://github.com/lsp-client/python-sdk.git" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "python-liquid", specifier = ">=2.1.0" },
@@ -159,12 +165,27 @@ dev = [
 [[package]]
 name = "lsap-schema"
 version = "0.1.0"
-source = { git = "https://github.com/lsp-client/LSAP.git?subdirectory=schema#e26977f78ede2a5380af05e8c5fa7b9da729a4f6" }
+source = { editable = "packages/lsap-schema" }
 dependencies = [
     { name = "lsprotocol" },
     { name = "pydantic" },
     { name = "python-liquid" },
 ]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "lsprotocol", specifier = ">=2025.0.0" },
+    { name = "pydantic", specifier = ">=2.12.5" },
+    { name = "python-liquid", specifier = ">=2.1.0" },
+]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest", specifier = ">=9.0.2" }]
 
 [[package]]
 name = "lsp-client"

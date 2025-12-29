@@ -3,6 +3,7 @@ from __future__ import annotations
 from functools import cached_property
 from typing import Protocol, Sequence, override, runtime_checkable
 
+from attrs import define
 from lsap_schema.definition import DefinitionRequest, DefinitionResponse
 from lsp_client.capability.request import (
     WithRequestDeclaration,
@@ -30,6 +31,7 @@ class DefinitionClient(
 ): ...
 
 
+@define
 class DefinitionCapability(
     Capability[DefinitionClient, DefinitionRequest, DefinitionResponse]
 ):

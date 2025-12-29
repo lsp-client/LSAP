@@ -3,11 +3,9 @@ from __future__ import annotations
 from functools import cached_property
 from typing import Protocol, override, runtime_checkable
 
+from attrs import define
 from lsap_schema.hover import HoverRequest, HoverResponse
-from lsp_client.capability.request import (
-    WithRequestDocumentSymbol,
-    WithRequestHover,
-)
+from lsp_client.capability.request import WithRequestDocumentSymbol, WithRequestHover
 
 from .abc import Capability, ClientProtocol
 from .locate import LocateCapability
@@ -22,6 +20,7 @@ class HoverClient(
 ): ...
 
 
+@define
 class HoverCapability(Capability[HoverClient, HoverRequest, HoverResponse]):
     @cached_property
     def locate(self) -> LocateCapability:
@@ -40,5 +39,4 @@ class HoverCapability(Capability[HoverClient, HoverRequest, HoverResponse]):
 
         return HoverResponse(
             contents=hover.value,
-            range=None,
         )

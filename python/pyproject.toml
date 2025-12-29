@@ -20,12 +20,13 @@ requires = ["uv_build>=0.9.9,<0.10.0"]
 build-backend = "uv_build"
 
 [tool.uv.sources]
-lsap-schema = { git = "https://github.com/lsp-client/LSAP.git", subdirectory = "schema" }
+lsap-schema = { workspace = true }
 lsp-client = { git = "https://github.com/lsp-client/python-sdk.git" }
 
 [tool.uv.workspace]
 members = [
     "packages/lsp-client",
+    "packages/lsap-schema",
 ]
 
 [dependency-groups]

@@ -21,6 +21,7 @@ def iter_symbols(
     nodes: Sequence[DocumentSymbol],
     symbol_path: SymbolPath | None = None,
 ) -> Iterator[tuple[SymbolPath, DocumentSymbol]]:
+    """DFS iterate hierarchy of DocumentSymbol."""
     if symbol_path is None:
         symbol_path = []
     for node in nodes:
@@ -33,6 +34,7 @@ def iter_symbols(
 def symbol_at(
     symbols: Sequence[DocumentSymbol], position: Position
 ) -> tuple[SymbolPath, DocumentSymbol] | None:
+    """Find the most specific DocumentSymbol containing the given position."""
     best_match: tuple[SymbolPath, DocumentSymbol] | None = None
     for path, symbol in iter_symbols(symbols):
         if _contains(symbol.range, position):

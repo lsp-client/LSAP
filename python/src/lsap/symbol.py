@@ -4,6 +4,7 @@ from functools import cached_property
 from pathlib import Path
 from typing import Protocol, override
 
+from attrs import define
 from lsap_schema.symbol import SymbolRequest, SymbolResponse
 from lsap_schema.types import SymbolKind
 from lsp_client.capability.request import (
@@ -11,13 +12,12 @@ from lsp_client.capability.request import (
     WithRequestHover,
 )
 from lsp_client.protocol import CapabilityClientProtocol
+from lsprotocol.types import Position as LSPPosition
 
 from lsap.abc import Capability
 from lsap.locate import LocateCapability
 from lsap.utils.content import DocumentReader
 from lsap.utils.symbol import symbol_at
-
-from lsprotocol.types import Position as LSPPosition
 
 
 class SymbolClient(
@@ -28,6 +28,7 @@ class SymbolClient(
 ): ...
 
 
+@define
 class SymbolCapability(Capability[SymbolClient, SymbolRequest, SymbolResponse]):
     @cached_property
     def locate(self) -> LocateCapability:
