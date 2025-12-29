@@ -1,14 +1,11 @@
 from pathlib import Path
 
 import pytest
+from lsap_schema.locate import LocateRequest, LocateText
 
-from lsap.exception import AmbiguousError
+from lsap.error import AmbiguousError
 from lsap.locate import (
     LocateCapability,
-)
-from lsap_schema.locate import (
-    LocateRequest,
-    LocateText,
 )
 
 

@@ -19,6 +19,7 @@ class Snippet:
     """The exact text within the specified range."""
 
     range: Range
+    """The exact range of the snippet in the document."""
 
 
 @define
