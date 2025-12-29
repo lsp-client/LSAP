@@ -1,6 +1,6 @@
 from typing import Protocol, override
 
-from asyncer import create_task_group
+import asyncer
 from lsap_schema.symbol_outline import SymbolOutlineRequest, SymbolOutlineResponse
 from lsap_schema.types import SymbolInfo, SymbolKind
 from lsp_client.capability.request import WithRequestDocumentSymbol, WithRequestHover
@@ -39,7 +39,7 @@ class SymbolOutlineCapability(
             ):
                 it.hover = hover.value
 
-        async with create_task_group() as tg:
+        async with asyncer.create_task_group() as tg:
             for path, symbol in iter_symbols(symbols):
                 item = SymbolInfo(
                     file_path=req.file_path,

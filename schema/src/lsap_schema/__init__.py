@@ -15,6 +15,9 @@ from .diagnostics import (
     Diagnostic,
     FileDiagnosticsRequest,
     FileDiagnosticsResponse,
+    WorkspaceDiagnosticItem,
+    WorkspaceDiagnosticsRequest,
+    WorkspaceDiagnosticsResponse,
 )
 
 # Call hierarchy
@@ -76,7 +79,7 @@ from .symbol_outline import (
 )
 
 # Types
-from .types import Position, Range
+from .types import Position, Range, SymbolInfo, SymbolKind
 
 # Workspace
 from .workspace import (
@@ -108,6 +111,9 @@ __all__ = [
     "Diagnostic",
     "FileDiagnosticsRequest",
     "FileDiagnosticsResponse",
+    "WorkspaceDiagnosticItem",
+    "WorkspaceDiagnosticsRequest",
+    "WorkspaceDiagnosticsResponse",
     # Hover
     "HoverRequest",
     "HoverResponse",
@@ -124,6 +130,8 @@ __all__ = [
     "LocateText",
     "Position",
     "Range",
+    "SymbolInfo",
+    "SymbolKind",
     # Reference
     "ReferenceItem",
     "ReferenceRequest",

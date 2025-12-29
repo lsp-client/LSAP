@@ -3,8 +3,8 @@ from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from .abc import PaginatedRequest, PaginatedResponse
-from .types import Range
+from lsap_schema.abc import PaginatedRequest, PaginatedResponse
+from lsap_schema.types import Range
 
 
 class Diagnostic(BaseModel):
@@ -64,5 +64,60 @@ class FileDiagnosticsResponse(PaginatedResponse):
     model_config = ConfigDict(
         json_schema_extra={
             "markdown": markdown_template,
+        }
+    )
+
+
+class WorkspaceDiagnosticItem(Diagnostic):
+    file_path: Path
+
+
+class WorkspaceDiagnosticsRequest(PaginatedRequest):
+    """
+    Retrieves diagnostics (errors, warnings, hints) across the entire workspace.
+
+    Use this to get a high-level overview of project health and identify
+    all existing issues.
+    """
+
+    min_severity: Literal["Error", "Warning", "Information", "Hint"] = "Hint"
+    """Minimum severity to include. Default to 'Hint' (all)."""
+
+
+workspace_markdown_template: Final = """
+# Workspace Diagnostics
+{% if total != nil -%}
+Total issues: {{ total }} | Showing: {{ items.size }}{% if max_items != nil %} (Offset: {{ start_index }}, Limit: {{ max_items }}){% endif %}
+{%- endif %}
+
+{% if items.size == 0 -%}
+No issues found in the workspace.
+{%- else -%}
+| File | Line:Col | Severity | Message |
+| :--- | :--- | :--- | :--- |
+{%- for item in items %}
+| `{{ item.file_path }}` | {{ item.range.start.line }}:{{ item.range.start.character }} | {{ item.severity }} | {{ item.message }} |
+{%- endfor %}
+
+{% if has_more -%}
+---
+> [!TIP]
+> More issues available.
+{%- if pagination_id != nil %}
+> Use `pagination_id="{{ pagination_id }}"` to fetch the next page.
+{%- else %}
+> To see the rest, specify a `max_items` and use: `start_index={% assign step = max_items | default: items.size %}{{ start_index | plus: step }}`
+{%- endif %}
+{%- endif %}
+{%- endif %}
+"""
+
+
+class WorkspaceDiagnosticsResponse(PaginatedResponse):
+    items: list[WorkspaceDiagnosticItem]
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "markdown": workspace_markdown_template,
         }
     )

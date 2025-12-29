@@ -1,21 +1,16 @@
 import argparse
-import json
 import inspect
+import json
 from pathlib import Path
-from pydantic import BaseModel
-import lsap_schema
 
-...
+from pydantic import BaseModel
+
+import lsap_schema
 
 
 def export_schemas(output_root: Path):
     output_root.mkdir(parents=True, exist_ok=True)
-
-    # Get package name once
     package_name = lsap_schema.__name__
-
-    # Import all exported classes from lsap_schema
-    # These are manually defined in __init__.py
     for name in lsap_schema.__all__:
         obj = getattr(lsap_schema, name)
 

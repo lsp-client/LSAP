@@ -2,27 +2,35 @@ from pathlib import Path
 
 import pytest
 
-from lsap_schema.call_hierarchy import (
+from lsap_schema import (
     CallHierarchyItem,
     CallHierarchyNode,
     CallHierarchyResponse,
-)
-from lsap_schema.completion import CompletionItem, CompletionResponse
-from lsap_schema.definition import DefinitionResponse
-from lsap_schema.diagnostics import Diagnostic, FileDiagnosticsResponse
-from lsap_schema.inlay_hint import DecoratedContentResponse
-from lsap_schema.locate import LocateResponse, Position, Range
-from lsap_schema.reference import ReferenceResponse
-from lsap_schema.rename import RenameDiff, RenameFileChange, RenameResponse
-from lsap_schema.symbol import SymbolResponse
-from lsap_schema.symbol_outline import SymbolOutlineResponse
-from lsap_schema.types import SymbolInfo, SymbolKind
-from lsap_schema.type_hierarchy import (
+    CompletionItem,
+    CompletionResponse,
+    DefinitionResponse,
+    Diagnostic,
+    FileDiagnosticsResponse,
+    DecoratedContentResponse,
+    LocateResponse,
+    Position,
+    Range,
+    ReferenceResponse,
+    RenameDiff,
+    RenameFileChange,
+    RenameResponse,
+    SymbolResponse,
+    SymbolOutlineResponse,
+    SymbolInfo,
+    SymbolKind,
     TypeHierarchyItem,
     TypeHierarchyNode,
     TypeHierarchyResponse,
+    WorkspaceSymbolItem,
+    WorkspaceSymbolResponse,
+    WorkspaceDiagnosticItem,
+    WorkspaceDiagnosticsResponse,
 )
-from lsap_schema.workspace import WorkspaceSymbolItem, WorkspaceSymbolResponse
 
 
 def test_completion_response_format():
@@ -283,10 +291,11 @@ def test_type_hierarchy_response_format():
 
 
 def test_definition_response_format():
-    from lsap_schema.definition import DefinitionRequest
+    from lsap_schema import DefinitionRequest, LocateText
 
     req = DefinitionRequest(
         mode="definition",
+        locate=LocateText(file_path=Path("test.py"), line=1, find="test"),
     )
     resp = DefinitionResponse(
         file_path=Path("test.py"),
@@ -305,6 +314,29 @@ def test_definition_response_format():
     req.mode = "type_definition"
     rendered = resp.format()
     assert "Type definition Result" in rendered
+
+
+def test_workspace_diagnostics_response_format():
+    resp = WorkspaceDiagnosticsResponse(
+        items=[
+            WorkspaceDiagnosticItem(
+                file_path=Path("test.py"),
+                range=Range(
+                    start=Position(line=1, character=1),
+                    end=Position(line=1, character=5),
+                ),
+                severity="Error",
+                message="workspace error",
+            )
+        ],
+        start_index=0,
+        has_more=False,
+    )
+    rendered = resp.format()
+    assert "Workspace Diagnostics" in rendered
+    assert "test.py" in rendered
+    assert "Error" in rendered
+    assert "workspace error" in rendered
 
 
 def test_format_invalid_template():
