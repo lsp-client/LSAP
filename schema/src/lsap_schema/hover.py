@@ -4,7 +4,6 @@ from pydantic import ConfigDict
 
 from .abc import Response
 from .locate import LocateRequest
-from .types import Range
 
 
 class HoverRequest(LocateRequest):
@@ -26,9 +25,6 @@ markdown_template: Final = """
 class HoverResponse(Response):
     contents: str
     """The hover content, usually markdown."""
-
-    range: Range | None = None
-    """The range to which this hover applies."""
 
     model_config = ConfigDict(
         json_schema_extra={
