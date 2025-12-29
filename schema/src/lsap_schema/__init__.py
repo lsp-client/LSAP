@@ -11,7 +11,7 @@ from .definition import (
 )
 
 # Diagnostics
-from .diagnostics import (
+from .draft.diagnostics import (
     Diagnostic,
     FileDiagnosticsRequest,
     FileDiagnosticsResponse,
@@ -82,7 +82,7 @@ from .symbol_outline import (
 from .types import Position, Range, SymbolInfo, SymbolKind
 
 # Workspace
-from .workspace import (
+from .workspace_symbol import (
     WorkspaceSymbolItem,
     WorkspaceSymbolRequest,
     WorkspaceSymbolResponse,
