@@ -22,10 +22,7 @@ export default function Header() {
           <nav className="flex items-center gap-3 sm:gap-6">
             <Link 
               to="/docs" 
-<<<<<<< HEAD
-=======
               aria-label="Documentation"
->>>>>>> afd5677 (Address code review feedback: add explicit mobile labels, aria-labels, reduce padding, remove overflow-x hidden)
               className="font-mono text-xs sm:text-sm text-muted-foreground hover:text-foreground transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-primary after:transition-all hover:after:w-full"
             >
               <span className="hidden sm:inline">Documentation</span>

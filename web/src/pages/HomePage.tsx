@@ -315,6 +315,12 @@ export default function HomePage() {
                     <p className="font-serif text-sm italic text-foreground leading-relaxed">
                       {example.agentIntent}
                     </p>
+                    
+                    {/* Subtle indicator showing this is user input */}
+                    <div className="mt-4 pt-3 border-t border-border/30 flex items-center gap-2 text-xs text-muted-foreground">
+                      <div className="h-1.5 w-1.5 rounded-full bg-primary/60" />
+                      <span className="font-mono">Natural language query</span>
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -398,11 +404,11 @@ export default function HomePage() {
                     </div>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <div className="space-y-2">
+                    <div className="space-y-2.5">
                       {example.processing.map((step, idx) => (
                         <div
                           key={idx}
-                          className="font-mono text-xs text-muted-foreground flex items-center gap-2 transition-all duration-200"
+                          className="flex items-center gap-3 transition-all duration-200"
                           style={{
                             opacity: animationStep >= 2 ? 1 : 0,
                             transform:
@@ -412,10 +418,25 @@ export default function HomePage() {
                             transitionDelay: `${idx * 50}ms`,
                           }}
                         >
-                          <span className="text-primary">•</span>
-                          {step}
+                          {/* Step number badge */}
+                          <div className="flex-shrink-0 w-5 h-5 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+                            <span className="font-mono text-[10px] font-semibold text-primary">
+                              {idx + 1}
+                            </span>
+                          </div>
+                          
+                          {/* Step content */}
+                          <p className="font-mono text-xs text-foreground leading-relaxed">
+                            {step}
+                          </p>
                         </div>
                       ))}
+                    </div>
+                    
+                    {/* Processing status indicator */}
+                    <div className="mt-4 pt-3 border-t border-border/30 flex items-center gap-2 text-xs text-muted-foreground">
+                      <div className="h-1.5 w-1.5 rounded-full bg-green-500/60 animate-pulse" />
+                      <span className="font-mono">Processing complete</span>
                     </div>
                   </CardContent>
                 </Card>
