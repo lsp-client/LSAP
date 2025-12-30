@@ -2,12 +2,6 @@ version = 1
 revision = 3
 requires-python = ">=3.12"
 
-[manifest]
-members = [
-    "lsap",
-    "lsap-schema",
-]
-
 [[package]]
 name = "aioshutil"
 version = "1.6"
@@ -150,7 +144,7 @@ requires-dist = [
     { name = "asyncer", specifier = ">=0.0.11" },
     { name = "attrs", specifier = ">=25.4.0" },
     { name = "cattrs", specifier = ">=25.3.0" },
-    { name = "lsap-schema", editable = "packages/lsap-schema" },
+    { name = "lsap-schema", git = "https://github.com/lsp-client/LSAP.git?subdirectory=schema" },
     { name = "lsp-client", git = "https://github.com/lsp-client/python-sdk.git" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "python-liquid", specifier = ">=2.1.0" },
@@ -165,27 +159,12 @@ dev = [
 [[package]]
 name = "lsap-schema"
 version = "0.1.0"
-source = { editable = "packages/lsap-schema" }
+source = { git = "https://github.com/lsp-client/LSAP.git?subdirectory=schema#cb3a66d38d23ea462e9e15e6b116e37df21437bf" }
 dependencies = [
     { name = "lsprotocol" },
     { name = "pydantic" },
     { name = "python-liquid" },
 ]
-
-[package.dev-dependencies]
-dev = [
-    { name = "pytest" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "lsprotocol", specifier = ">=2025.0.0" },
-    { name = "pydantic", specifier = ">=2.12.5" },
-    { name = "python-liquid", specifier = ">=2.1.0" },
-]
-
-[package.metadata.requires-dev]
-dev = [{ name = "pytest", specifier = ">=9.0.2" }]
 
 [[package]]
 name = "lsp-client"
