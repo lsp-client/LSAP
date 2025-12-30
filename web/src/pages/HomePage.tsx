@@ -5,6 +5,8 @@ import {
   Code2,
   Network,
   Search,
+  Quote,
+  CheckCircle2,
 } from "lucide-react";
 import { isValidElement, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -296,13 +298,17 @@ export default function HomePage() {
               {/* Row 1: Intent + Request */}
               <div className="grid lg:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                 <Card
-                  className={`transition-all duration-300 ${
+                  className={`transition-all duration-300 relative overflow-hidden ${
                     animationStep >= 0
                       ? "opacity-100 translate-y-0"
                       : "opacity-0 translate-y-4"
                   }`}
                 >
-                  <CardHeader className="pb-4">
+                  {/* Background decoration */}
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -translate-y-16 translate-x-16" />
+                  <div className="absolute bottom-0 left-0 w-24 h-24 bg-primary/5 rounded-full translate-y-12 -translate-x-12" />
+                  
+                  <CardHeader className="pb-4 relative">
                     <div className="flex items-center gap-3">
                       <span className="font-mono text-xs text-muted-foreground font-medium">
                         01
@@ -311,10 +317,21 @@ export default function HomePage() {
                       <Icon className="h-4 w-4 text-primary ml-auto" />
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-0">
-                    <p className="font-serif text-sm italic text-foreground leading-relaxed">
-                      {example.agentIntent}
-                    </p>
+                  <CardContent className="pt-0 relative">
+                    {/* Large decorative quote mark */}
+                    <Quote className="h-8 w-8 text-primary/10 absolute -top-2 -left-1" />
+                    
+                    <div className="pl-6 relative">
+                      <p className="font-serif text-sm italic text-foreground leading-relaxed">
+                        {example.agentIntent}
+                      </p>
+                      
+                      {/* Visual indicator showing this is user input */}
+                      <div className="mt-4 pt-3 border-t border-border/30 flex items-center gap-2 text-xs text-muted-foreground">
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary/60" />
+                        <span className="font-mono">Natural language query</span>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -382,13 +399,16 @@ export default function HomePage() {
               {/* Row 2: Processing + Result */}
               <div className="grid lg:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                 <Card
-                  className={`transition-all duration-300 delay-100 ${
+                  className={`transition-all duration-300 delay-100 relative overflow-hidden ${
                     animationStep >= 2
                       ? "opacity-100 translate-y-0"
                       : "opacity-0 translate-y-4"
                   }`}
                 >
-                  <CardHeader className="pb-4">
+                  {/* Background decoration - gradient flow */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent" />
+                  
+                  <CardHeader className="pb-4 relative">
                     <div className="flex items-center gap-3">
                       <span className="font-mono text-xs text-muted-foreground font-medium">
                         03
@@ -397,12 +417,12 @@ export default function HomePage() {
                       <Activity className="h-4 w-4 text-primary ml-auto animate-pulse" />
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="space-y-2">
+                  <CardContent className="pt-0 relative">
+                    <div className="space-y-3">
                       {example.processing.map((step, idx) => (
                         <div
                           key={idx}
-                          className="font-mono text-xs text-muted-foreground flex items-center gap-2 transition-all duration-200"
+                          className="relative"
                           style={{
                             opacity: animationStep >= 2 ? 1 : 0,
                             transform:
@@ -412,10 +432,37 @@ export default function HomePage() {
                             transitionDelay: `${idx * 50}ms`,
                           }}
                         >
-                          <span className="text-primary">•</span>
-                          {step}
+                          <div className="flex items-start gap-3 group">
+                            {/* Step number badge */}
+                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center mt-0.5">
+                              <span className="font-mono text-[10px] font-semibold text-primary">
+                                {idx + 1}
+                              </span>
+                            </div>
+                            
+                            {/* Step content */}
+                            <div className="flex-1 pt-0.5">
+                              <p className="font-mono text-xs text-foreground leading-relaxed">
+                                {step}
+                              </p>
+                            </div>
+                            
+                            {/* Completion check mark */}
+                            <CheckCircle2 className="h-3.5 w-3.5 text-primary/40 flex-shrink-0 mt-0.5" />
+                          </div>
+                          
+                          {/* Connecting line between steps */}
+                          {idx < example.processing.length - 1 && (
+                            <div className="ml-3 h-3 w-px bg-gradient-to-b from-primary/20 to-transparent" />
+                          )}
                         </div>
                       ))}
+                    </div>
+                    
+                    {/* Processing time indicator */}
+                    <div className="mt-4 pt-3 border-t border-border/30 flex items-center gap-2 text-xs text-muted-foreground">
+                      <div className="h-1.5 w-1.5 rounded-full bg-green-500/60 animate-pulse" />
+                      <span className="font-mono">Processing complete</span>
                     </div>
                   </CardContent>
                 </Card>
