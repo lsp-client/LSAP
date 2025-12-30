@@ -3,7 +3,8 @@ from bisect import bisect_right
 from functools import cached_property
 
 from attrs import define, frozen
-from lsprotocol.types import Position, Range
+from lsprotocol.types import Position as LSPPosition
+from lsprotocol.types import Range as LSPRange
 
 
 @frozen
@@ -18,7 +19,7 @@ class Snippet:
     exact_content: str
     """The exact text within the specified range."""
 
-    range: Range
+    range: LSPRange
     """The exact range of the snippet in the document."""
 
 
@@ -38,23 +39,25 @@ class DocumentReader:
         return starts
 
     @property
-    def full_range(self) -> Range:
+    def full_range(self) -> LSPRange:
         """
         The Range covering the entire document.
         """
         if not self._lines:
-            return Range(
-                start=Position(line=0, character=0),
-                end=Position(line=0, character=0),
+            return LSPRange(
+                start=LSPPosition(line=0, character=0),
+                end=LSPPosition(line=0, character=0),
             )
 
         last_line_idx = len(self._lines) - 1
-        return Range(
-            start=Position(line=0, character=0),
-            end=Position(line=last_line_idx, character=len(self._lines[last_line_idx])),
+        return LSPRange(
+            start=LSPPosition(line=0, character=0),
+            end=LSPPosition(
+                line=last_line_idx, character=len(self._lines[last_line_idx])
+            ),
         )
 
-    def position_to_offset(self, position: Position) -> int:
+    def position_to_offset(self, position: LSPPosition) -> int:
         """
         Convert a Position to a character offset.
         """
@@ -62,7 +65,7 @@ class DocumentReader:
         offset = self._line_starts[line_idx] + position.character
         return min(offset, self._line_starts[-1])
 
-    def offset_to_position(self, start: Position, offset: int) -> Position:
+    def offset_to_position(self, start: LSPPosition, offset: int) -> LSPPosition:
         """
         Convert a relative offset from a start position to an absolute Position.
         """
@@ -70,9 +73,9 @@ class DocumentReader:
         line_idx = bisect_right(self._line_starts, abs_offset) - 1
         line_idx = max(0, min(line_idx, len(self._lines) - 1))
         char_idx = abs_offset - self._line_starts[line_idx]
-        return Position(line=line_idx, character=char_idx)
+        return LSPPosition(line=line_idx, character=char_idx)
 
-    def read(self, read_range: Range) -> Snippet | None:
+    def read(self, read_range: LSPRange) -> Snippet | None:
         if not self._lines:
             return
 

@@ -2,18 +2,20 @@ from collections.abc import Iterator
 from typing import Sequence
 
 from lsap_schema.types import SymbolPath
-from lsprotocol.types import DocumentSymbol, Position, Range
+from lsprotocol.types import DocumentSymbol
+from lsprotocol.types import Position as LSPPosition
+from lsprotocol.types import Range as LSPRange
 
 
-def _pos(p: Position) -> tuple[int, int]:
+def _pos(p: LSPPosition) -> tuple[int, int]:
     return (p.line, p.character)
 
 
-def _contains(range: Range, position: Position) -> bool:
+def _contains(range: LSPRange, position: LSPPosition) -> bool:
     return _pos(range.start) <= _pos(position) < _pos(range.end)
 
 
-def _is_narrower(inner: Range, outer: Range) -> bool:
+def _is_narrower(inner: LSPRange, outer: LSPRange) -> bool:
     return _pos(inner.start) >= _pos(outer.start) and _pos(inner.end) <= _pos(outer.end)
 
 
@@ -32,7 +34,7 @@ def iter_symbols(
 
 
 def symbol_at(
-    symbols: Sequence[DocumentSymbol], position: Position
+    symbols: Sequence[DocumentSymbol], position: LSPPosition
 ) -> tuple[SymbolPath, DocumentSymbol] | None:
     """Find the most specific DocumentSymbol containing the given position."""
     best_match: tuple[SymbolPath, DocumentSymbol] | None = None

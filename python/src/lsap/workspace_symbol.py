@@ -16,7 +16,7 @@ from lsp_client.capability.request import (
     WithRequestWorkspaceSymbol,
 )
 from lsp_client.protocol import CapabilityClientProtocol
-from lsprotocol.types import SymbolInformation, WorkspaceSymbol
+from lsprotocol.types import Location, SymbolInformation, WorkspaceSymbol
 
 from lsap.abc import Capability
 from lsap.utils.cache import PaginationCache
@@ -80,10 +80,9 @@ class WorkspaceSymbolCapability(
     ) -> None:
         location = symbol.location
         uri = location.uri
-        range_ = getattr(location, "range", None)
+        range_ = location.range if isinstance(location, Location) else None
 
         file_path = self.client.from_uri(uri)
-        container_name = getattr(symbol, "container_name", None)
 
         hover_text = None
         if req.include_hover and range_:
@@ -108,8 +107,8 @@ class WorkspaceSymbolCapability(
                 file_path=file_path,
                 name=symbol.name,
                 kind=SymbolKind.from_lsp(symbol.kind),
-                container_name=container_name,
-                detail=getattr(symbol, "detail", None),
+                container_name=symbol.container_name,
+                detail=None,
                 path=symbol_path,
                 hover=hover_text,
                 code=symbol_content,
