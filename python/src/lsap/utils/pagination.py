@@ -27,8 +27,9 @@ async def paginate[T](
     fetcher: ItemsFetcher[T],
 ) -> Page[T] | None:
     """
-    Common logic for handling paginated requests with caching.
+    paginated requests with caching.
     """
+
     pagination_id = req.pagination_id
     if pagination_id and (cached := cache.get(pagination_id)) is not None:
         items = cached
