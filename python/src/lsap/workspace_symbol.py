@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Protocol, override
+from typing import Protocol, override, runtime_checkable
 
 import asyncer
 from attrs import Factory, define
@@ -25,6 +25,7 @@ from lsap.utils.pagination import paginate
 from lsap.utils.symbol import symbol_at
 
 
+@runtime_checkable
 class WorkspaceSymbolClient(
     WithRequestWorkspaceSymbol,
     WithRequestDocumentSymbol,

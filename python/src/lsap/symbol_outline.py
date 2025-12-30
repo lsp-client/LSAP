@@ -1,4 +1,4 @@
-from typing import Protocol, override
+from typing import Protocol, override, runtime_checkable
 
 import asyncer
 from attrs import define
@@ -13,6 +13,7 @@ from lsap.utils.content import DocumentReader
 from lsap.utils.symbol import iter_symbols
 
 
+@runtime_checkable
 class SymbolOutlineClient(
     WithRequestDocumentSymbol,
     WithRequestHover,
