@@ -4,15 +4,12 @@ The Completion API (IntelliSense) provides context-aware code suggestions at a s
 
 ## CompletionRequest
 
-| Field           | Type                                                     | Default  | Description                                 |
-| :-------------- | :------------------------------------------------------- | :------- | :------------------------------------------ |
-| `locate`        | [`LocateText`](locate.md) \| [`LocateSymbol`](locate.md) | Required | Where to trigger the completion.            |
-| `max_items`     | `number \| null`                                         | `15`     | Maximum number of suggestions to return.    |
-| `start_index`   | `number`                                                 | `0`      | Number of items to skip.                    |
-| `pagination_id` | `string \| null`                                         | `null`   | Token to retrieve the next page of results. |
-
-> [!TIP]
-> To trigger completion after a dot (e.g., `user.`), use [`LocateText`](locate.md) with `find="user."` and `find_end="end"`.
+| Field           | Type                      | Default  | Description                                 |
+| :-------------- | :------------------------ | :------- | :------------------------------------------ |
+| `locate`        | [`Locate`](locate.md)     | Required | Where to trigger the completion.            |
+| `max_items`     | `number \| null`          | `15`     | Maximum number of suggestions to return.    |
+| `start_index`   | `number`                  | `0`      | Number of items to skip.                    |
+| `pagination_id` | `string \| null`          | `null`   | Token to retrieve the next page of results. |
 
 ## CompletionResponse
 
@@ -33,6 +30,7 @@ The Completion API (IntelliSense) provides context-aware code suggestions at a s
 | `kind`          | `string`  | Type (Method, Property, Class, etc.).     |
 | `detail`        | `string?` | Short info like signature or type.        |
 | `documentation` | `string?` | Full markdown documentation for the item. |
+| `insert_text`   | `string?` | The actual snippet that would be inserted.|
 
 ## Example Usage
 
@@ -44,9 +42,7 @@ The Completion API (IntelliSense) provides context-aware code suggestions at a s
 {
   "locate": {
     "file_path": "src/main.py",
-    "line": 15,
-    "find": "client.",
-    "find_end": "end"
+    "find": "client."
   },
   "max_items": 5
 }
@@ -71,6 +67,11 @@ Establishes a connection to the server using the configured credentials. Returns
 ---
 
 > [!TIP]
+> More results available. Use `start_index` to fetch more.
+
+---
+
+> [!TIP]
 > Use these symbols to construct your next code edit. You can focus on a specific method to get more details.
 ```
 
@@ -82,9 +83,7 @@ Establishes a connection to the server using the configured credentials. Returns
 {
   "locate": {
     "file_path": "src/api.py",
-    "line": 42,
-    "find": "response.",
-    "find_end": "end"
+    "find": "response."
   },
   "max_items": 10,
   "start_index": 0
@@ -116,6 +115,11 @@ Returns the response body parsed as JSON. Raises JSONDecodeError if invalid.
 
 > [!TIP]
 > Use `pagination_id="abc123"` to fetch more suggestions.
+
+---
+
+> [!TIP]
+> Use these symbols to construct your next code edit. You can focus on a specific method to get more details.
 ```
 
 ### Scenario 3: No completion suggestions available
@@ -126,9 +130,7 @@ Returns the response body parsed as JSON. Raises JSONDecodeError if invalid.
 {
   "locate": {
     "file_path": "src/main.py",
-    "line": 100,
-    "find": "unknown_var.",
-    "find_end": "end"
+    "find": "unknown_var."
   }
 }
 ```

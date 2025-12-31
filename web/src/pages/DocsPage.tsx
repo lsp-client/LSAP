@@ -3,13 +3,45 @@ import { isValidElement, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Link, useParams } from "react-router-dom";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneLight, oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import {
+  oneDark,
+  oneLight,
+} from "react-syntax-highlighter/dist/esm/styles/prism";
 import remarkGfm from "remark-gfm";
 import Header from "../components/Header";
 import { Card } from "../components/ui/card";
 import { useTheme } from "../lib/ThemeProvider";
 
-const DOCS = [
+type DocEntry = {
+  id: string;
+  title: string;
+  path: string;
+  draft?: boolean;
+};
+
+function hrefToDocsRoute(href: string) {
+  const normalized = href.replace(/^\.\//, "");
+
+  const isSchemasPath =
+    normalized.startsWith("/docs/schemas/") ||
+    normalized.startsWith("schemas/");
+  const isDraftPath =
+    normalized.includes("/schemas/draft/") ||
+    normalized.startsWith("draft/") ||
+    normalized.startsWith("/docs/schemas/draft/") ||
+    normalized.startsWith("schemas/draft/");
+
+  const filenameMatch = /([^/]+)\.md$/.exec(normalized);
+  if (!filenameMatch) return href;
+
+  const docBaseName = filenameMatch[1];
+  const docId = isDraftPath ? `draft_${docBaseName}` : docBaseName;
+
+  if (isSchemasPath || isDraftPath) return `/docs/${docId}`;
+  return `/docs/${docId}`;
+}
+
+const DOCS: DocEntry[] = [
   { id: "README", title: "Overview", path: "/docs/schemas/README.md" },
   { id: "locate", title: "Locate", path: "/docs/schemas/locate.md" },
   { id: "symbol", title: "Symbol", path: "/docs/schemas/symbol.md" },
@@ -56,6 +88,42 @@ const DOCS = [
     title: "Inlay Hints",
     path: "/docs/schemas/inlay_hints.md",
   },
+  {
+    id: "draft_implementation",
+    title: "Implementation",
+    path: "/docs/schemas/draft/implementation.md",
+    draft: true,
+  },
+  {
+    id: "draft_call_hierarchy",
+    title: "Call Hierarchy",
+    path: "/docs/schemas/draft/call_hierarchy.md",
+    draft: true,
+  },
+  {
+    id: "draft_type_hierarchy",
+    title: "Type Hierarchy",
+    path: "/docs/schemas/draft/type_hierarchy.md",
+    draft: true,
+  },
+  {
+    id: "draft_diagnostics",
+    title: "Diagnostics",
+    path: "/docs/schemas/draft/diagnostics.md",
+    draft: true,
+  },
+  {
+    id: "draft_rename",
+    title: "Rename",
+    path: "/docs/schemas/draft/rename.md",
+    draft: true,
+  },
+  {
+    id: "draft_inlay_hints",
+    title: "Inlay Hints",
+    path: "/docs/schemas/draft/inlay_hints.md",
+    draft: true,
+  },
 ];
 
 export default function DocsPage() {
@@ -66,6 +134,13 @@ export default function DocsPage() {
 
   const cleanDocId = docId?.replace(/\.md$/, "");
   const currentDoc = DOCS.find((d) => d.id === cleanDocId) ?? DOCS[0];
+
+  useEffect(() => {
+    const titleSuffix = currentDoc?.draft ? " (draft)" : "";
+    document.title = `${
+      currentDoc?.title ?? "Documentation"
+    }${titleSuffix} | LSAP`;
+  }, [currentDoc?.id]);
 
   useEffect(() => {
     if (!currentDoc) return;
@@ -119,6 +194,15 @@ export default function DocsPage() {
                   >
                     <FileText className="h-3.5 w-3.5" />
                     <span className="font-mono text-xs">{doc.title}</span>
+                    {doc.draft && (
+                      <span
+                        title="Draft: content may change"
+                        aria-label="Draft: content may change"
+                        className="ml-1 cursor-help rounded-sm border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground"
+                      >
+                        draft
+                      </span>
+                    )}
                     {currentDoc.id === doc.id && (
                       <ChevronRight className="h-3.5 w-3.5 ml-auto" />
                     )}
@@ -146,7 +230,20 @@ export default function DocsPage() {
                         <h1
                           className="font-serif text-4xl font-light text-foreground mb-6 pb-4 border-b border-border"
                           {...props}
-                        />
+                        >
+                          <span className="inline-flex items-baseline gap-3">
+                            <span>{props.children}</span>
+                            {currentDoc.draft && (
+                              <span
+                                title="Draft: content may change"
+                                aria-label="Draft: content may change"
+                                className="cursor-help rounded-sm border border-border bg-muted px-2 py-1 font-mono text-xs uppercase tracking-wider text-muted-foreground"
+                              >
+                                draft
+                              </span>
+                            )}
+                          </span>
+                        </h1>
                       ),
                       h2: ({ node, ...props }) => (
                         <h2
@@ -191,7 +288,11 @@ export default function DocsPage() {
                             return (
                               <div className="my-6">
                                 <SyntaxHighlighter
-                                  style={resolvedTheme === 'dark' ? oneDark : oneLight}
+                                  style={
+                                    resolvedTheme === "dark"
+                                      ? oneDark
+                                      : oneLight
+                                  }
                                   language={match[1]}
                                   PreTag="div"
                                   className="rounded-md border border-border"
@@ -268,8 +369,8 @@ export default function DocsPage() {
                           !href.startsWith("#");
                         if (isInternal) {
                           const to = href.startsWith("/")
-                            ? href
-                            : `/docs/${href.replace(/\.md$/, "")}`;
+                            ? hrefToDocsRoute(href)
+                            : hrefToDocsRoute(href);
                           return (
                             <Link
                               to={to}
