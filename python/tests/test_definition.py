@@ -15,23 +15,29 @@ class MockDefinitionClient:
     def from_uri(self, uri: str) -> Path:
         return Path(uri.replace("file://", ""))
 
-    async def request_definition(
+    async def request_definition_locations(
         self, file_path: Path, position: LSPPosition
-    ) -> Location | Sequence[Location] | None:
+    ) -> Sequence[Location] | None:
         if "main.py" in str(file_path):
-            return Location(
-                uri="file:///lib.py",
-                range=LSPRange(
-                    start=LSPPosition(line=0, character=4),
-                    end=LSPPosition(line=0, character=7),
-                ),
-            )
+            return [
+                Location(
+                    uri="file:///lib.py",
+                    range=LSPRange(
+                        start=LSPPosition(line=0, character=4),
+                        end=LSPPosition(line=0, character=7),
+                    ),
+                )
+            ]
         return None
 
-    async def request_declaration(self, file_path: Path, position: LSPPosition):
+    async def request_declaration_locations(
+        self, file_path: Path, position: LSPPosition
+    ):
         return None
 
-    async def request_type_definition(self, file_path: Path, position: LSPPosition):
+    async def request_type_definition_locations(
+        self, file_path: Path, position: LSPPosition
+    ):
         return None
 
     async def request_hover(self, file_path: Path, position: LSPPosition):

@@ -12,7 +12,7 @@ from lsp_client.capability.request import (
     WithRequestHover,
     WithRequestTypeDefinition,
 )
-from lsprotocol.types import Location, LocationLink
+from lsprotocol.types import Location
 
 from .abc import Capability, ClientProtocol
 from .locate import LocateCapability
@@ -49,35 +49,27 @@ class DefinitionCapability(
             return None
 
         file_path, lsp_pos = loc_resp.file_path, loc_resp.position.to_lsp()
-        locations: Location | Sequence[Location] | Sequence[LocationLink] | None = None
+        locations: Sequence[Location] | None = None
 
         match req.mode:
             case "definition":
-                locations = await self.client.request_definition(file_path, lsp_pos)
+                locations = await self.client.request_definition_locations(
+                    file_path, lsp_pos
+                )
             case "declaration":
-                locations = await self.client.request_declaration(file_path, lsp_pos)
+                locations = await self.client.request_declaration_locations(
+                    file_path, lsp_pos
+                )
             case "type_definition":
-                locations = await self.client.request_type_definition(
+                locations = await self.client.request_type_definition_locations(
                     file_path, lsp_pos
                 )
 
         if not locations:
             return None
 
-        if isinstance(locations, Location):
-            loc = locations
-        elif isinstance(locations, LocationLink):
-            loc = locations
-        elif isinstance(locations, (list, tuple)) and locations:
-            loc = locations[0]
-        else:
-            return None
-
-        uri, range_ = (
-            (loc.target_uri, loc.target_selection_range)
-            if isinstance(loc, LocationLink)
-            else (loc.uri, loc.range)
-        )
+        loc = locations[0]
+        uri, range_ = loc.uri, loc.range
 
         target_file_path = self.client.from_uri(uri)
         symbol_info = await self.symbol.resolve(

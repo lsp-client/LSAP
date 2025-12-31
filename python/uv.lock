@@ -179,7 +179,7 @@ dev = [{ name = "pytest", specifier = ">=9.0.2" }]
 [[package]]
 name = "lsp-client"
 version = "0.1.0"
-source = { git = "https://github.com/lsp-client/python-sdk.git#409e6f1d6615dae62355714fba550d9ae0c8c309" }
+source = { git = "https://github.com/lsp-client/python-sdk.git#1d26c7bc79fafce49cc3fcd9a89fd8386a9bab09" }
 dependencies = [
     { name = "aioshutil" },
     { name = "anyio" },

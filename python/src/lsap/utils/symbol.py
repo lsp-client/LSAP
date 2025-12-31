@@ -11,11 +11,11 @@ def _pos(p: LSPPosition) -> tuple[int, int]:
     return (p.line, p.character)
 
 
-def _contains(range: LSPRange, position: LSPPosition) -> bool:
+def contains(range: LSPRange, position: LSPPosition) -> bool:
     return _pos(range.start) <= _pos(position) < _pos(range.end)
 
 
-def _is_narrower(inner: LSPRange, outer: LSPRange) -> bool:
+def is_narrower(inner: LSPRange, outer: LSPRange) -> bool:
     return _pos(inner.start) >= _pos(outer.start) and _pos(inner.end) <= _pos(outer.end)
 
 
@@ -39,7 +39,7 @@ def symbol_at(
     """Find the most specific DocumentSymbol containing the given position."""
     best_match: tuple[SymbolPath, DocumentSymbol] | None = None
     for path, symbol in iter_symbols(symbols):
-        if _contains(symbol.range, position):
-            if best_match is None or _is_narrower(symbol.range, best_match[1].range):
+        if contains(symbol.range, position):
+            if best_match is None or is_narrower(symbol.range, best_match[1].range):
                 best_match = (path, symbol)
     return best_match

@@ -10,7 +10,7 @@ from lsap.locate import (
 
 
 class MockClient:
-    def read_file(self, file_path: Path) -> str:
+    async def read_file(self, file_path: Path) -> str:
         return "abc\ndef abc\nghi"
 
 
