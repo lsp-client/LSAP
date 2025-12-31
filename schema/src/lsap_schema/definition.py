@@ -22,28 +22,36 @@ class DefinitionRequest(LocateRequest, SymbolInfoRequest):
 markdown_template: Final = """
 # {{ request.mode | replace: "_", " " | capitalize }} Result
 
-### `{{ file_path }}`: {{ path | join: "." }} (`{{ kind }}`)
+{% if items.size == 0 -%}
+No {{ request.mode | replace: "_", " " }} found.
+{%- else -%}
+{%- for item in items -%}
+## `{{ item.file_path }}`: {{ item.path | join: "." }} (`{{ item.kind }}`)
 
-{% if detail -%}
-{{ detail }}
-{%- endif %}
+{% if item.detail -%}
+{{ item.detail }}
 
-{% if hover != nil -%}
-## Documentation
-{{ hover }}
-{%- endif %}
+{% endif -%}
+{% if item.hover != nil -%}
+### Documentation
+{{ item.hover }}
 
-{% if code != nil -%}
-## Content
-```{{ file_path.suffix | remove_first: "." }}
-{{ code }}
+{% endif -%}
+{% if item.code != nil -%}
+### Content
+```{{ item.file_path.suffix | remove_first: "." }}
+{{ item.code }}
 ```
+
+{% endif -%}
+{%- endfor -%}
 {%- endif %}
 """
 
 
-class DefinitionResponse(SymbolInfo, Response):
+class DefinitionResponse(Response):
     request: DefinitionRequest
+    items: list[SymbolInfo]
 
     model_config = ConfigDict(
         json_schema_extra={

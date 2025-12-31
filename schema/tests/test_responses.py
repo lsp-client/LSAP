@@ -70,7 +70,7 @@ def test_symbol_response_format():
 
 
 def test_workspace_symbol_response_format():
-    from lsap_schema.workspace import WorkspaceSymbolRequest
+    from lsap_schema.workspace_symbol import WorkspaceSymbolRequest
 
     req = WorkspaceSymbolRequest(query="test")
     resp = WorkspaceSymbolResponse(
@@ -298,13 +298,17 @@ def test_definition_response_format():
         locate=LocateText(file_path=Path("test.py"), line=1, find="test"),
     )
     resp = DefinitionResponse(
-        file_path=Path("test.py"),
-        name="test",
-        path=["test"],
-        kind=SymbolKind.Function,
         request=req,
-        code="test_content",
-        hover="test_hover",
+        items=[
+            SymbolInfo(
+                file_path=Path("test.py"),
+                name="test",
+                path=["test"],
+                kind=SymbolKind.Function,
+                code="test_content",
+                hover="test_hover",
+            )
+        ],
     )
     rendered = resp.format()
     assert "Definition Result" in rendered
