@@ -3,222 +3,229 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Protocol Version](https://img.shields.io/badge/Protocol-v1.0.0--alpha-blue.svg)]()
 
-**LSAP** (Language Server Agent Protocol) is a semantic abstraction layer that transforms **Language Server Protocol (LSP)** into an agent-native cognitive framework.
+LSAP is an open protocol that defines how AI coding agents interact with Language Servers. Each LSAP capability is designed to be exposed as an **agent tool** - the agent calls it via function calling, and receives Markdown output ready for reasoning.
 
-While traditional LSP was optimized for human-centric, incremental UI updates, LSAP is engineered for the **Progressive Disclosure** of codebase intelligence to LLM Agents. It provides the structured, high-fidelity context necessary for agents to reason about, navigate, and modify complex software systems autonomously.
+```
+┌──────────────┐    function call     ┌──────────────┐      LSP       ┌──────────────┐
+│   AI Agent   │ ──────────────────►  │  LSAP Tool   │ ─────────────► │   Language   │
+│              │ ◄──────────────────  │              │ ◄───────────── │   Server     │
+└──────────────┘    markdown output   └──────────────┘                └──────────────┘
+```
 
----
-
-## 🧠 The Core Philosophy: Agent-Native Progressive Disclosure
-
-The fundamental challenge for Coding Agents is not the lack of information, but the **noise-to-signal ratio**. Standard LSP is often too granular, leading to fragmented context and reasoning failures. LSAP solves this by:
-
-- **Strategic Disclosure**: Dynamically revealing code structure and semantics based on the agent's current task state, ensuring it has _exactly_ what it needs to reason, and nothing more.
-- **Semantic Aggregation**: Collapsing multiple low-level LSP round-trips into high-density "Cognitive Snapshots" (e.g., merging definition, signature help, and implementation into a single atomic context).
-- **Markdown-First Reasoning**: Serving information in structured Markdown templates that leverage the LLM's pre-trained ability to parse documentation, allowing the agent to "read" the codebase rather than just processing tokens.
-- **Contextual Anchoring**: Providing robust "Locating" mechanisms that allow agents to resolve ambiguous intent into precise architectural coordinates.
+This repository contains the protocol specification and a Python reference implementation.
 
 ---
 
-## 🔄 Cognitive Flow: Strategic Aggregation
+## How It Works
 
-LSAP acts as a sophisticated orchestrator, converting high-level agent intents into coordinated language server operations:
+LSAP capabilities are exposed as tools that agents can call. For example, the `Symbol` capability:
 
-```mermaid
-sequenceDiagram
-    participant Agent as LLM Coding Agent
-    participant LSAP as LSAP SymbolCapability
-    participant Locate as LocateCapability
-    participant LSP as Language Server (LSP)
+**Tool Definition** (JSON Schema):
 
-    Note over Agent, LSP: Task: "Understand this method's implementation"
+```json
+{
+  "name": "get_symbol",
+  "description": "Get the source code and documentation of a symbol",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "file_path": { "type": "string" },
+      "symbol_path": { "type": "array", "items": { "type": "string" } }
+    }
+  }
+}
+```
 
-    Agent->>LSAP: SymbolRequest(locate={symbol_path: ["process_data"]})
+**Agent calls the tool**:
 
-    activate LSAP
-    LSAP->>Locate: LocateRequest
+```json
+{
+  "name": "get_symbol",
+  "arguments": {
+    "file_path": "src/auth.py",
+    "symbol_path": ["UserService", "authenticate"]
+  }
+}
+```
 
-    activate Locate
-    Locate->>LSP: textDocument/documentSymbol
-    LSP-->>Locate: DocumentSymbol[]
+**Tool returns Markdown** (directly usable by the agent):
 
-    Locate-->>LSAP: file_path, position
-    deactivate Locate
+````markdown
+# Symbol: `UserService.authenticate` (`Method`) at `src/auth.py`
 
-    par Parallel Deep Inspection
-        LSAP->>LSP: textDocument/hover
-        LSAP->>LSP: textDocument/documentSymbol
-        LSAP->>LSP: read file content
-    end
+## Implementation
 
-    LSP-->>LSAP: Hover documentation
-    LSP-->>LSAP: DocumentSymbol[]
-    LSP-->>LSAP: Source code content
+```python
+def authenticate(self, username: str, password: str) -> Optional[User]:
+    """Verify user credentials and return user if valid."""
+    user = self.db.get_user(username)
+    if user and user.check_password(password):
+        return user
+    return None
+```
+````
 
-    LSAP->>LSAP: Find symbol from DocumentSymbol
-    LSAP->>LSAP: Extract code snippet using DocumentReader
-    LSAP->>LSAP: Aggregate into Markdown
+````
 
-    LSAP-->>Agent: SymbolResponse (Markdown)
-    deactivate LSAP
+The agent receives structured, readable context without needing to parse JSON or understand LSP internals.
 
-    Note over Agent: Agent receives structured markdown<br/>with documentation + source code
+---
+
+## Why Not Raw LSP?
+
+Raw LSP requires `line:column` coordinates and returns fragmented JSON:
+
+```python
+# Agent would need to: read file → find line number → call LSP → parse response → format output
+# This is error-prone and wastes tokens on coordinate calculation
+````
+
+LSAP lets agents reference code by **symbol names** and get **complete, formatted context** in one call.
+
+| LSP                              | LSAP                                 |
+| :------------------------------- | :----------------------------------- |
+| `Position(line=42, character=8)` | `symbol_path: ["MyClass", "method"]` |
+| Multiple round-trips             | Single request                       |
+| Raw JSON for IDEs                | Markdown for LLMs                    |
+
+---
+
+## Capabilities (Agent Tools)
+
+Each capability is a tool the agent can call:
+
+### Stable
+
+| Tool                   | What the agent gets                           | Spec                                   |
+| :--------------------- | :-------------------------------------------- | :------------------------------------- |
+| **get_symbol**         | Source code, signature, docstring of a symbol | [docs](docs/schemas/symbol.md)         |
+| **get_symbol_outline** | List of all symbols in a file                 | [docs](docs/schemas/symbol_outline.md) |
+| **get_references**     | All locations where a symbol is used          | [docs](docs/schemas/reference.md)      |
+| **get_hover**          | Documentation/type info at a position         | [docs](docs/schemas/hover.md)          |
+| **get_definition**     | Where a symbol is defined                     | [docs](docs/schemas/definition.md)     |
+| **search_workspace**   | Find symbols by name across the project       | [docs](docs/schemas/workspace.md)      |
+
+### Experimental
+
+| Tool                   | Status | Spec                                         |
+| :--------------------- | :----- | :------------------------------------------- |
+| **get_call_hierarchy** | Beta   | [docs](docs/schemas/draft/call_hierarchy.md) |
+| **get_type_hierarchy** | Beta   | [docs](docs/schemas/draft/type_hierarchy.md) |
+| **get_diagnostics**    | Alpha  | [docs](docs/schemas/draft/diagnostics.md)    |
+| **rename_symbol**      | Alpha  | [docs](docs/schemas/draft/rename.md)         |
+| **get_inlay_hints**    | Alpha  | [docs](docs/schemas/draft/inlay_hints.md)    |
+| **get_completions**    | Alpha  | [docs](docs/schemas/completion.md)           |
+
+Full spec: [docs/schemas/README.md](docs/schemas/README.md)
+
+---
+
+## Locate: How Agents Reference Code
+
+LSAP's `Locate` abstraction lets agents reference code without coordinates:
+
+```json
+// By symbol path - "get the authenticate method in UserService"
+{"symbol_path": ["UserService", "authenticate"]}
+
+// By text pattern - "find where we call self.db"
+{"text": "self.db.<HERE>"}
+
+// By scope - "lines 10-20 inside the main function"
+{"scope": {"symbol_path": ["main"]}, "line": [10, 20]}
 ```
 
 ---
 
-## 🛠 Case Studies: Agent-Native Design
+## Example: Agent Workflow
 
-LSAP's superiority over standard LSP for coding agents is best demonstrated through its "intent-to-action" mapping:
+A coding agent reviewing a function might:
 
-### 1. 📍 Locate: The "Universal Link" for Cognitive Anchoring
+1. **Call `get_symbol`** to get the function's implementation
+2. **Call `get_references`** to see how it's used
+3. **Reason** over the Markdown output to identify issues
 
-In standard LSP, every request (hover, definition, references) requires a precise `(line, character)` coordinate. However, an LLM agent's "mental model" of the code is often based on **textual evidence** or **symbolic paths**.
+```
+Agent: I need to review the handle_request function.
 
-- **The LSP Way**: The agent must first read the entire file, use its own reasoning to find the line/column of a snippet, and then send a request. This is high-latency, token-expensive, and fragile (a single space change breaks the coordinate).
-- **The LSAP Way**: LSAP introduces a **Unified Locating Layer**. Any request can be anchored using:
-  - **`LocateText`**: Find a position by searching for a code snippet within a file or range.
-  - **`LocateSymbol`**: Resolve a hierarchical path (e.g., `["User", "Profile", "save"]`) to its exact implementation.
-  - **Heuristic Resolution**: LSAP uses fuzzy matching and AST context to ensure that if an agent says _"find the `logger` call near the end of the `try` block"_, it resolves to the correct node regardless of formatting changes.
+→ Tool call: get_symbol(file_path="api.py", symbol_path=["handle_request"])
+← Returns: markdown with source code
 
-This makes `Locate` the universal entry point—the agent no longer needs to worry about "where" things are in terms of raw coordinates, focusing instead on "what" it wants to inspect.
+→ Tool call: get_references(file_path="api.py", symbol_path=["handle_request"])
+← Returns: markdown with all call sites
 
-### 2. 📞 Call Hierarchy: From Stateful Items to Relational Graphs
+Agent: Based on the implementation and usage, I found a potential SQL injection...
+```
 
-LSP's call hierarchy is a stateful, multi-step process: `prepare` -> `incoming` (for each item). Managing these handles across a long-running agent session is complex.
-
-- **The LSP Way**: The agent must manage `CallHierarchyItem` objects and make sequential calls to expand the tree, often losing context or getting stuck in state management.
-- **The LSAP Way**: The agent makes a single `CallHierarchyRequest` specifying a `depth` (e.g., `depth=2`). LSAP recursively traverses the hierarchy and returns a **flattened relational graph** as a single Markdown snapshot. The agent immediately sees the broader architectural impact of a change without needing to manually "click through" nodes.
-
----
-
-## 🛠 Core Capabilities
-
-The LSAP specification categorizes capabilities into functional layers, facilitating progressive disclosure of codebase intelligence:
-
-### 🌐 Discovery & Resolution
-
-| Capability              | Description                                                                |
-| :---------------------- | :------------------------------------------------------------------------- |
-| 🌐 **Workspace Search** | Global, paginated search for symbols across the entire project.            |
-| 📍 **Locate**           | Resolve ambiguous text snippets or symbol paths to exact file coordinates. |
-
-### 🔍 Deep Inspection
-
-| Capability            | Description                                                                       |
-| :-------------------- | :-------------------------------------------------------------------------------- |
-| 🔍 **Symbol Info**    | High-density retrieval of documentation, signatures, and source code for symbols. |
-| 🗂 **Symbol Outline** | Generate a hierarchical map (AST-lite) of all symbols within a file.              |
-| 💬 **Hover**          | Quick access to documentation and type information at a specific location.        |
-| 💡 **Inlay Hints**    | Augment source code with static types and runtime values for enhanced reasoning.  |
-
-### 🔗 Relational Mapping
-
-| Capability            | Description                                                          |
-| :-------------------- | :------------------------------------------------------------------- |
-| 🔗 **References**     | Trace all usages and call sites of a symbol project-wide.            |
-| 🏗 **Implementation** | Discover concrete implementations of interfaces or abstract methods. |
-| 📞 **Call Hierarchy** | Map incoming and outgoing function call relationships.               |
-| 🌳 **Type Hierarchy** | Explore complex inheritance and class relationship trees.            |
-
-### 🩺 Environmental Awareness
-
-| Capability         | Description                                                               |
-| :----------------- | :------------------------------------------------------------------------ |
-| 🩺 **Diagnostics** | Real-time access to linting issues, syntax errors, and suggested fixes.   |
-| 📝 **Rename**      | Predict and execute safe symbol renaming with project-wide diff analysis. |
+The agent never deals with line numbers or JSON parsing - it receives context in a format it can directly reason over.
 
 ---
 
-## 🚀 Quick Start
+## Comparison with Other Approaches
 
-LSAP provides a high-level API for agents to interact with codebases.
+|                    | Claude Code | Serena      | Cursor      | Aider | LSAP          |
+| :----------------- | :---------- | :---------- | :---------- | :---- | :------------ |
+| **Type**           | Proprietary | MCP server  | IDE feature | CLI   | Open protocol |
+| **Position model** | Coordinates | Coordinates | Coordinates | Text  | Symbol paths  |
+| **Output format**  | JSON        | Custom      | Internal    | Text  | Markdown      |
+| **Cold start**     | Low         | High        | Low         | Low   | Low           |
+| **Type precision** | Yes         | Yes         | No          | No    | Yes           |
 
-### Python
+LSAP is a protocol specification, not a product. The schema is open and can be implemented for any agent framework.
+
+---
+
+## Reference Implementation
+
+This repo includes a Python implementation you can use directly or as a reference:
+
+```bash
+pip install lsap lsp-client
+```
 
 ```python
 from lsap.symbol import SymbolCapability
 from lsap_schema import SymbolRequest
 from lsp_client.clients.pyright import PyrightClient
 
-async with PyrightClient() as lsp_client:
-    # Initialize the LSAP capability
-    symbol_info = SymbolCapability(client=lsp_client)
+async def main():
+    async with PyrightClient() as client:
+        symbol = SymbolCapability(client)
 
-    # Request high-density information about a symbol
-    response = await symbol_info(SymbolRequest(
-        locate={"file_path": "src/main.py", "symbol_path": ["my_function"]}
-    ))
+        response = await symbol(SymbolRequest(
+            locate={
+                "file_path": "src/main.py",
+                "symbol_path": ["MyClass", "my_method"]
+            }
+        ))
 
-    if response:
-        # LSAP responses include pre-rendered markdown for LLM consumption
-        print(response.markdown)
+        if response:
+            print(response.markdown)
 ```
 
-## 📦 SDKs & Framework Integration
-
-LSAP provides first-class SDKs for both Python and TypeScript, making it effortless to integrate into modern AI Agent frameworks (such as LangChain, AutoGPT, CrewAI, or custom solutions).
-
-- **Python SDK**: High-performance, async-native implementation. Ideal for server-side agents and research environments.
-- **TypeScript SDK**: Zod-based schema validation and type-safe utilities. Perfect for browser-based IDEs or Node.js agent runtimes.
-
-These SDKs allow you to treat LSAP capabilities as standard "Tools" within your agent's reasoning loop, providing a consistent interface across different programming languages and LSP servers.
-
----
-
-## 🏗 Project Architecture
-
-LSAP is a cross-language protocol ecosystem:
-
-- **`schema/`**: The source of truth. Formal protocol definitions and data models.
-- **`python/`**: Core LSAP Python implementation and its schema.
-- **`typescript/`**: Zod-based schema definitions and utilities for TypeScript/Node.js.
-- **`web/`**: Minimalist, developer-focused protocol explorer and documentation viewer.
-- **`docs/schemas/`**: Detailed specifications for each protocol method and data model.
-
-## 🛠 Protocol Integrity
-
-LSAP is designed as a single-source-of-truth protocol. The core definitions are maintained in the `schema/` package and automatically propagated to other language implementations:
-
-1. **Python**: Core definitions using Pydantic models.
-2. **JSON Schema**: Exported from Python models for cross-language compatibility.
-3. **TypeScript**: Zod schemas automatically generated from the JSON Schema definitions.
-
-Run the codegen pipeline:
+TypeScript schemas are also available:
 
 ```bash
-just codegen
+npm install @lsap/schema
 ```
 
-## 📖 Protocol Specification
+---
 
-For detailed information on each capability, request/response models, and the complete data schema, please refer to our formal documentation:
+## Project Structure
 
-- **[Full API Documentation](docs/schemas/README.md)**: A comprehensive guide to all LSAP methods.
-- **[JSON Schema Definitions](schema/README.md)**: Formal machine-readable specifications.
+```
+LSAP/
+├── src/lsap_schema/     # Protocol schema (Pydantic) - source of truth
+├── python/src/lsap/     # Python reference implementation
+├── typescript/          # TypeScript/Zod schemas (generated)
+├── docs/schemas/        # Capability specifications
+└── web/                 # Documentation viewer
+```
 
-### Individual Capability Specs:
-
-- [Locate](docs/schemas/locate.md) | [Symbol](docs/schemas/symbol.md) | [Symbol Outline](docs/schemas/symbol_outline.md)
-- [Definition](docs/schemas/definition.md) | [Hover](docs/schemas/hover.md) | [Workspace Search](docs/schemas/workspace.md)
-- [References](docs/schemas/reference.md) | [Implementation](docs/schemas/implementation.md)
-- [Call Hierarchy](docs/schemas/call_hierarchy.md) | [Type Hierarchy](docs/schemas/type_hierarchy.md)
-- [Completion](docs/schemas/completion.md) | [Diagnostics](docs/schemas/diagnostics.md)
-- [Rename](docs/schemas/rename.md) | [Inlay Hints](docs/schemas/inlay_hints.md)
+Schema generation: `just codegen` (Python → JSON Schema → TypeScript)
 
 ---
 
-## 🚀 Design Principles
+## License
 
-1. **Cognitive Efficiency**: Maximize information density per token. Every byte returned to the agent should contribute to its reasoning process.
-2. **Task-Oriented Granularity**: Provide information at the level of abstraction relevant to the agent's current goal (from high-level workspace maps to low-level implementation details).
-3. **Deterministic Structure**: Strict schema adherence ensures the agent can rely on a consistent "mental model" of the codebase across different languages and environments.
-4. **Agentic Autonomy**: Proactively provide the metadata (like pagination hints or related symbols) that empowers agents to explore the codebase without needing human intervention.
-
-## 📜 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-Built for the next generation of AI Software Engineers.
+MIT - see [LICENSE](LICENSE)
