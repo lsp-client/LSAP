@@ -40,6 +40,10 @@ class SymbolInfoRequest(Request):
 
 
 class PaginatedRequest(Request):
+    """
+    Base request for paginated results.
+    """
+
     max_items: int | None = None
     """Maximum number of items to return"""
 
