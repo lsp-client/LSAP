@@ -76,10 +76,11 @@ class SymbolInfo(BaseModel):
     name: Symbol
     path: SymbolPath
     kind: SymbolKind
-    detail: str | None = None
 
     range: Range | None = None
     """Source code range of the symbol"""
+
+    detail: str | None = None
 
     hover: str | None = None
     """Markdown formatted hover/documentation information"""

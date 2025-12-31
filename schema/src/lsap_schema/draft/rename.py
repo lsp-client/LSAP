@@ -3,8 +3,8 @@ from typing import Final
 
 from pydantic import BaseModel, ConfigDict
 
-from ..abc import Response
-from ..locate import LocateRequest
+from lsap_schema.abc import Response
+from lsap_schema.locate import LocateRequest
 
 
 class RenameDiff(BaseModel):

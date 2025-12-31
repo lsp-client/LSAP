@@ -35,7 +35,7 @@ class SymbolInfoRequest(Request):
     include_hover: bool = True
     """Whether to include hover/documentation information"""
 
-    include_code: bool = True
+    include_code: bool = False
     """Whether to include the symbol's source code content"""
 
 

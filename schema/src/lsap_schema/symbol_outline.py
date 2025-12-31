@@ -24,16 +24,11 @@ markdown_template: Final = """
 {% for item in items -%}
 {% assign level = item.path | size | plus: 1 -%}
 {% for i in (1..level) %}#{% endfor %} {{ item.path | join: "." }} (`{{ item.kind }}`)
-{%- if item.detail != nil %}
+{%- if item.detail %}
 {{ item.detail }}
 {%- endif %}
-{%- if item.hover != nil %}
+{%- if item.hover %}
 {{ item.hover | strip | truncate: 120 }}
-{%- endif %}
-{%- if item.code != nil %}
-```{{ file_path.suffix | remove_first: "." }}
-{{ item.code }}
-```
 {%- endif %}
 
 {% endfor -%}

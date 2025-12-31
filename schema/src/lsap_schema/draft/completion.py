@@ -2,8 +2,8 @@ from typing import Final
 
 from pydantic import BaseModel, ConfigDict
 
-from .abc import PaginatedRequest, PaginatedResponse
-from .locate import LocateRequest
+from lsap_schema.abc import PaginatedRequest, PaginatedResponse
+from lsap_schema.locate import LocateRequest
 
 
 class CompletionItem(BaseModel):

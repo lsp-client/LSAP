@@ -15,6 +15,12 @@ class SymbolRequest(LocateRequest, SymbolInfoRequest):
     of a symbol to understand its purpose and usage.
     """
 
+    include_hover: bool = False
+    """Whether to include hover/documentation information"""
+
+    include_code: bool = True
+    """Whether to include the symbol's source code content"""
+
 
 markdown_template: Final = """
 # Symbol: `{{ path | join: "." }}` (`{{ kind }}`) at `{{ file_path }}`

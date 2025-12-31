@@ -3,8 +3,8 @@ from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from ..abc import Request, Response
-from ..types import Range
+from lsap_schema.abc import Request, Response
+from lsap_schema.types import Range
 
 
 class InlayHintItem(BaseModel):

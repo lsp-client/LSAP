@@ -192,7 +192,7 @@ def test_symbol_outline_response_format():
                 name="class MyClass",
                 path=["MyClass"],
                 kind=SymbolKind.Class,
-                code="class MyClass: pass",
+                detail="class",
                 hover="A test class",
             ),
             SymbolInfo(
@@ -200,11 +200,13 @@ def test_symbol_outline_response_format():
                 name="my_method(arg1: int) -> None",
                 path=["MyClass", "my_method"],
                 kind=SymbolKind.Method,
+                detail="method",
+                hover="",
             ),
         ],
     )
     rendered = resp.format()
-    assert "class MyClass" in rendered
+    assert "MyClass" in rendered
     assert "class" in rendered
     assert "A test class" in rendered
     assert "my_method" in rendered
