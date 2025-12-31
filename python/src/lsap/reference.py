@@ -3,8 +3,8 @@ from typing import Protocol, runtime_checkable
 
 import asyncer
 from attrs import Factory, define
+from lsap_schema.models import Position, Range, SymbolDetailInfo, SymbolKind
 from lsap_schema.reference import ReferenceItem, ReferenceRequest, ReferenceResponse
-from lsap_schema.types import Position, Range, SymbolDetailInfo, SymbolKind
 from lsp_client.capability.request import (
     WithRequestDocumentSymbol,
     WithRequestHover,
