@@ -296,7 +296,7 @@ export default function HomePage() {
               {/* Row 1: Intent + Request */}
               <div className="grid lg:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                 <Card
-                  className={`transition-all duration-300 ${
+                  className={`min-w-0 transition-all duration-300 ${
                     animationStep >= 0
                       ? "opacity-100 translate-y-0"
                       : "opacity-0 translate-y-4"
@@ -325,7 +325,7 @@ export default function HomePage() {
                 </Card>
 
                 <Card
-                  className={`transition-all duration-300 delay-75 ${
+                  className={`min-w-0 transition-all duration-300 delay-75 ${
                     animationStep >= 1
                       ? "opacity-100 translate-y-0"
                       : "opacity-0 translate-y-4"
@@ -388,7 +388,7 @@ export default function HomePage() {
               {/* Row 2: Processing + Result */}
               <div className="grid lg:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                 <Card
-                  className={`transition-all duration-300 delay-100 ${
+                  className={`min-w-0 transition-all duration-300 delay-100 ${
                     animationStep >= 2
                       ? "opacity-100 translate-y-0"
                       : "opacity-0 translate-y-4"
@@ -442,7 +442,7 @@ export default function HomePage() {
                 </Card>
 
                 <Card
-                  className={`transition-all duration-300 delay-150 border-primary/20 ${
+                  className={`min-w-0 transition-all duration-300 delay-150 border-primary/20 ${
                     animationStep >= 3
                       ? "opacity-100 translate-y-0"
                       : "opacity-0 translate-y-4"
@@ -548,7 +548,7 @@ export default function HomePage() {
 
                               if (match) {
                                 return (
-                                  <div className="my-2 rounded-sm border border-border/40 bg-muted p-2.5">
+                                  <div className="my-2 rounded-sm border border-border/40 bg-muted p-2.5 overflow-x-auto">
                                     <SyntaxHighlighter
                                       style={resolvedTheme === 'dark' ? oneDark : oneLight}
                                       language={match[1]}
