@@ -5,7 +5,7 @@ from typing import Protocol, override, runtime_checkable
 
 import asyncer
 from attrs import Factory, define
-from lsap_schema.types import SymbolDetailInfo, SymbolKind
+from lsap_schema.models import SymbolDetailInfo, SymbolKind
 from lsap_schema.workspace_symbol import (
     WorkspaceSymbolItem,
     WorkspaceSymbolRequest,

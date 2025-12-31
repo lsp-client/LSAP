@@ -8,7 +8,7 @@ from lsap_schema.draft.diagnostics import (
     FileDiagnosticsRequest,
     FileDiagnosticsResponse,
 )
-from lsap_schema.types import Position, Range
+from lsap_schema.models import Position, Range
 from lsp_client.capability.request import WithDocumentDiagnostic
 from lsp_client.protocol import CapabilityClientProtocol
 from lsprotocol.types import DiagnosticSeverity

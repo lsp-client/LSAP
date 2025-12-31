@@ -5,13 +5,8 @@ from pathlib import Path
 from typing import Protocol, override, runtime_checkable
 
 from attrs import define
+from lsap_schema.models import Position, Range, SymbolCodeInfo, SymbolKind
 from lsap_schema.symbol import SymbolRequest, SymbolResponse
-from lsap_schema.types import (
-    Position,
-    Range,
-    SymbolCodeInfo,
-    SymbolKind,
-)
 from lsp_client.capability.request import WithRequestDocumentSymbol, WithRequestHover
 from lsp_client.protocol import CapabilityClientProtocol
 from lsprotocol.types import Position as LSPPosition

@@ -6,17 +6,13 @@ from typing import Protocol, override, runtime_checkable
 
 import asyncer
 from attrs import define
+from lsap_schema.models import Position, Range, SymbolDetailInfo, SymbolKind
 from lsap_schema.symbol_outline import SymbolOutlineRequest, SymbolOutlineResponse
-from lsap_schema.types import (
-    Position,
-    Range,
-    SymbolDetailInfo,
-    SymbolKind,
-    SymbolPath,
-)
+from lsap_schema.types import SymbolPath
 from lsp_client.capability.request import WithRequestDocumentSymbol, WithRequestHover
 from lsp_client.protocol import CapabilityClientProtocol
-from lsprotocol.types import DocumentSymbol, Position as LSPPosition
+from lsprotocol.types import DocumentSymbol
+from lsprotocol.types import Position as LSPPosition
 
 from lsap.abc import Capability
 from lsap.utils.symbol import iter_symbols

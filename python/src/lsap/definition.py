@@ -6,7 +6,7 @@ from typing import Protocol, Sequence, override, runtime_checkable
 import asyncer
 from attrs import define
 from lsap_schema.definition import DefinitionRequest, DefinitionResponse
-from lsap_schema.types import SymbolCodeInfo
+from lsap_schema.models import SymbolCodeInfo
 from lsp_client.capability.request import (
     WithRequestDeclaration,
     WithRequestDefinition,

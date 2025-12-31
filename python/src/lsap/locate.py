@@ -13,7 +13,7 @@ from lsap_schema.locate import (
     LocateResponse,
     SymbolScope,
 )
-from lsap_schema.types import Position, Range
+from lsap_schema.models import Position, Range
 from lsp_client.capability.request import WithRequestDocumentSymbol
 from lsp_client.protocol import CapabilityClientProtocol
 from lsprotocol.types import Position as LSPPosition

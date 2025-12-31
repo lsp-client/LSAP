@@ -127,7 +127,7 @@ class ReferenceCapability(
                     name=sym.name,
                     path=path,
                     kind=kind,
-                    detail=sym.detail or "",
+                    detail=sym.detail,
                     hover="",
                     range=Range(
                         start=Position.from_lsp(sym.range.start),
