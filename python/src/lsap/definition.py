@@ -3,8 +3,10 @@ from __future__ import annotations
 from functools import cached_property
 from typing import Protocol, Sequence, override, runtime_checkable
 
+import asyncer
 from attrs import define
 from lsap_schema.definition import DefinitionRequest, DefinitionResponse
+from lsap_schema.types import SymbolInfo
 from lsp_client.capability.request import (
     WithRequestDeclaration,
     WithRequestDefinition,
@@ -49,8 +51,8 @@ class DefinitionCapability(
             return None
 
         file_path, lsp_pos = loc_resp.file_path, loc_resp.position.to_lsp()
-        locations: Sequence[Location] | None = None
 
+        locations: Sequence[Location] | None = None
         match req.mode:
             case "definition":
                 locations = await self.client.request_definition_locations(
@@ -68,21 +70,21 @@ class DefinitionCapability(
         if not locations:
             return None
 
-        loc = locations[0]
-        uri, range_ = loc.uri, loc.range
+        async with asyncer.create_task_group() as tg:
 
-        target_file_path = self.client.from_uri(uri)
-        symbol_info = await self.symbol.resolve(
-            target_file_path,
-            range_.start,
-            include_hover=req.include_hover,
-            include_code=req.include_code,
-        )
+            async def resolve_item(loc: Location) -> SymbolInfo | None:
+                target_file_path = self.client.from_uri(loc.uri)
+                if symbol_info := await self.symbol.resolve(
+                    target_file_path,
+                    loc.range.start,
+                    include_hover=req.include_hover,
+                    include_code=req.include_code,
+                ):
+                    return symbol_info
 
-        if not symbol_info:
-            return None
+            infos = [tg.soonify(resolve_item)(loc) for loc in locations]
+        items: list[SymbolInfo] = [
+            value for info in infos if (value := info.value) is not None
+        ]
 
-        return DefinitionResponse(
-            **symbol_info.model_dump(),
-            request=req,
-        )
+        return DefinitionResponse(items=items, request=req)

@@ -10,11 +10,10 @@ from lsp_client.capability.request import (
 from lsp_client.protocol import CapabilityClientProtocol
 from lsprotocol.types import CompletionItemKind
 
+from lsap.abc import Capability
+from lsap.locate import LocateCapability
+from lsap.utils.cache import PaginationCache
 from lsap.utils.pagination import paginate
-
-from .abc import Capability
-from .locate import LocateCapability
-from .utils.cache import PaginationCache
 
 
 @runtime_checkable

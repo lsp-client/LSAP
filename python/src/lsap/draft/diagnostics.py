@@ -7,8 +7,9 @@ from lsap_schema import (
     Diagnostic,
     FileDiagnosticsRequest,
     FileDiagnosticsResponse,
+    Position,
+    Range,
 )
-from lsap_schema import Position, Range
 from lsp_client.capability.request.pull_diagnostic import WithRequestPullDiagnostic
 from lsprotocol.types import DiagnosticSeverity
 
