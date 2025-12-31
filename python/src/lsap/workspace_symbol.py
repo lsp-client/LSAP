@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from functools import cached_property
 from typing import Protocol, override, runtime_checkable
 
 import asyncer
@@ -19,10 +20,9 @@ from lsp_client.protocol import CapabilityClientProtocol
 from lsprotocol.types import Location, SymbolInformation, WorkspaceSymbol
 
 from lsap.abc import Capability
+from lsap.symbol import SymbolCapability
 from lsap.utils.cache import PaginationCache
-from lsap.utils.content import DocumentReader
 from lsap.utils.pagination import paginate
-from lsap.utils.symbol import symbol_at
 
 
 @runtime_checkable
@@ -40,6 +40,10 @@ class WorkspaceSymbolCapability(
     Capability[WorkspaceSymbolClient, WorkspaceSymbolRequest, WorkspaceSymbolResponse]
 ):
     _cache: PaginationCache[WorkspaceSymbolItem] = Factory(PaginationCache)
+
+    @cached_property
+    def symbol(self) -> SymbolCapability:
+        return SymbolCapability(self.client)
 
     @override
     async def __call__(
@@ -79,38 +83,32 @@ class WorkspaceSymbolCapability(
         items: list[WorkspaceSymbolItem],
     ) -> None:
         location = symbol.location
-        uri = location.uri
+        file_path = self.client.from_uri(location.uri)
         range_ = location.range if isinstance(location, Location) else None
 
-        file_path = self.client.from_uri(uri)
-
-        hover_text = None
-        if req.include_hover and range_:
-            if hover := await self.client.request_hover(file_path, range_.start):
-                hover_text = hover.value
-
-        symbol_content = None
-        if req.include_code and range_:
-            doc_content = await self.client.read_file(file_path)
-            reader = DocumentReader(doc_content)
-            if snippet := reader.read(range_):
-                symbol_content = snippet.content
-
-        symbol_path = []
+        info = None
         if range_:
-            if doc_symbols := await self.client.request_document_symbol_list(file_path):
-                if match := symbol_at(doc_symbols, range_.start):
-                    symbol_path, _ = match
-
-        items.append(
-            WorkspaceSymbolItem(
-                file_path=file_path,
-                name=symbol.name,
-                kind=SymbolKind.from_lsp(symbol.kind),
-                container_name=symbol.container_name,
-                detail=None,
-                path=symbol_path,
-                hover=hover_text,
-                code=symbol_content,
+            info = await self.symbol.resolve(
+                file_path,
+                range_.start,
+                include_hover=req.include_hover,
+                include_code=req.include_code,
             )
-        )
+
+        if info:
+            items.append(
+                WorkspaceSymbolItem(
+                    **info.model_dump(),
+                    container_name=symbol.container_name,
+                )
+            )
+        else:
+            items.append(
+                WorkspaceSymbolItem(
+                    file_path=file_path,
+                    name=symbol.name,
+                    kind=SymbolKind.from_lsp(symbol.kind),
+                    container_name=symbol.container_name,
+                    path=[],
+                )
+            )
