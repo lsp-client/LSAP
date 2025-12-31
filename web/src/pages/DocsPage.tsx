@@ -169,6 +169,15 @@ export default function DocsPage() {
   const currentDoc =
     DOC_BY_ROUTE.get(canonicalRoute) ?? DOC_BY_ROUTE.get(DEFAULT_ROUTE);
 
+  const generalDocs = useMemo(
+    () => docs.filter(doc => !doc.relativePath.startsWith("schemas/")),
+    [docs]
+  );
+  const schemaDocs = useMemo(
+    () => docs.filter(doc => doc.relativePath.startsWith("schemas/")),
+    [docs]
+  );
+
   useEffect(() => {
     const titleSuffix = currentDoc?.draft ? " (draft)" : "";
     document.title = `${
@@ -210,12 +219,12 @@ export default function DocsPage() {
               </h2>
               <nav className="space-y-1">
                 {/* Root level docs */}
-                {docs.filter(doc => !doc.relativePath.startsWith("schemas/")).length > 0 && (
+                {generalDocs.length > 0 && (
                   <>
                     <div className="px-3 py-2 font-mono text-xs font-medium text-muted-foreground uppercase tracking-wider">
                       General
                     </div>
-                    {docs.filter(doc => !doc.relativePath.startsWith("schemas/")).map((doc) => (
+                    {generalDocs.map((doc) => (
                       <Link
                         key={doc.route}
                         to={doc.route}
@@ -239,12 +248,12 @@ export default function DocsPage() {
                 )}
                 
                 {/* Schema docs */}
-                {docs.filter(doc => doc.relativePath.startsWith("schemas/")).length > 0 && (
+                {schemaDocs.length > 0 && (
                   <>
                     <div className="px-3 py-2 font-mono text-xs font-medium text-muted-foreground uppercase tracking-wider mt-4">
                       Schemas
                     </div>
-                    {docs.filter(doc => doc.relativePath.startsWith("schemas/")).map((doc) => (
+                    {schemaDocs.map((doc) => (
                       <Link
                         key={doc.route}
                         to={doc.route}
