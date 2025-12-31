@@ -6,7 +6,6 @@ from typing import Protocol, override
 
 from attrs import define
 from lsap_schema.symbol import SymbolRequest, SymbolResponse
-from lsap_schema.symbol_outline import SymbolOutlineRequest
 from lsap_schema.types import SymbolInfo
 from lsp_client.capability.request import (
     WithRequestDocumentSymbol,

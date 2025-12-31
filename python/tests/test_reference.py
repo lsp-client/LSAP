@@ -9,7 +9,7 @@ from lsprotocol.types import (
 )
 from lsap.reference import ReferenceCapability
 from lsap_schema.reference import ReferenceRequest
-from lsap_schema.locate import LocateText
+from lsap_schema.locate import LineScope, Locate
 
 
 class MockReferenceClient:
@@ -82,7 +82,7 @@ async def test_reference():
     capability = ReferenceCapability(client=client)  # type: ignore
 
     req = ReferenceRequest(
-        locate=LocateText(file_path=Path("test.py"), line=1, find="foo")
+        locate=Locate(file_path=Path("test.py"), scope=LineScope(line=2), find="foo")
     )
 
     resp = await capability(req)
@@ -101,7 +101,8 @@ async def test_reference_pagination():
 
     # First page
     req1 = ReferenceRequest(
-        locate=LocateText(file_path=Path("test.py"), line=1, find="foo"), max_items=1
+        locate=Locate(file_path=Path("test.py"), scope=LineScope(line=2), find="foo"),
+        max_items=1,
     )
     resp1 = await capability(req1)
     assert resp1 is not None
@@ -111,7 +112,7 @@ async def test_reference_pagination():
 
     # Second page
     req2 = ReferenceRequest(
-        locate=LocateText(file_path=Path("test.py"), line=1, find="foo"),
+        locate=Locate(file_path=Path("test.py"), scope=LineScope(line=2), find="foo"),
         pagination_id=resp1.pagination_id,
         start_index=1,
         max_items=1,

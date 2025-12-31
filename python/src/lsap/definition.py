@@ -70,6 +70,7 @@ class DefinitionCapability(
         if not locations:
             return None
 
+        infos = []
         async with asyncer.create_task_group() as tg:
 
             async def resolve_item(loc: Location) -> SymbolInfo | None:

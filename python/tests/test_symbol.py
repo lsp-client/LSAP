@@ -7,7 +7,7 @@ from lsprotocol.types import DocumentSymbol, SymbolKind
 from lsprotocol.types import Position as LSPPosition
 from lsprotocol.types import Range as LSPRange
 
-from lsap.locate import LocateSymbol, LocateText
+from lsap_schema.locate import LineScope, Locate, SymbolScope
 from lsap.symbol import SymbolCapability
 
 
@@ -59,9 +59,9 @@ async def test_symbol_from_path():
     capability = SymbolCapability(client=client)  # type: ignore
 
     req = SymbolRequest(
-        locate=LocateSymbol(
+        locate=Locate(
             file_path=Path("test.py"),
-            symbol_path=SymbolPath([Symbol("A"), Symbol("foo")]),
+            scope=SymbolScope(symbol_path=SymbolPath([Symbol("A"), Symbol("foo")])),
         )
     )
 
@@ -79,7 +79,11 @@ async def test_symbol_from_text():
     capability = SymbolCapability(client=client)  # type: ignore
 
     req = SymbolRequest(
-        locate=LocateText(file_path=Path("test.py"), line=1, find="foo")
+        locate=Locate(
+            file_path=Path("test.py"),
+            scope=LineScope(line=2),
+            find="foo",
+        )
     )
 
     resp = await capability(req)

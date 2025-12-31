@@ -1,9 +1,8 @@
 from pathlib import Path
 
 import pytest
-from lsap_schema.locate import LocateRequest, LocateText
+from lsap_schema.locate import LineScope, Locate, LocateRequest
 
-from lsap.error import AmbiguousError
 from lsap.locate import (
     LocateCapability,
 )
@@ -19,19 +18,19 @@ async def test_locate_text_ambiguous():
     client = MockClient()
     capability = LocateCapability(client=client)  # type: ignore
 
-    # "abc" appears twice: line 0 and line 1
+    # "abc" appears twice: line 1 and line 2 (1-based)
     req = LocateRequest(
-        locate=LocateText(
+        locate=Locate(
             file_path=Path("test.py"),
-            line=(0, 1),
+            scope=LineScope(line=(1, 2)),
             find="abc",
         )
     )
 
-    with pytest.raises(AmbiguousError) as excinfo:
-        await capability(req)
-
-    assert "Multiple matches for 'abc'" in str(excinfo.value)
+    resp = await capability(req)
+    assert resp is not None
+    assert resp.position.line == 1
+    assert resp.position.character == 1
 
 
 @pytest.mark.asyncio
@@ -40,11 +39,10 @@ async def test_locate_text_single_match():
     capability = LocateCapability(client=client)  # type: ignore
 
     req = LocateRequest(
-        locate=LocateText(
+        locate=Locate(
             file_path=Path("test.py"),
-            line=(0, 1),
+            scope=LineScope(line=(1, 2)),
             find="def",
-            find_end="start",
         )
     )
 

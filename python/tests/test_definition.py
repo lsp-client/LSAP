@@ -3,7 +3,7 @@ from typing import Sequence
 
 import pytest
 from lsap_schema.definition import DefinitionRequest
-from lsap_schema.locate import LocateText
+from lsap_schema.locate import LineScope, Locate
 from lsprotocol.types import DocumentSymbol, Location, SymbolKind
 from lsprotocol.types import Position as LSPPosition
 from lsprotocol.types import Range as LSPRange
@@ -75,14 +75,15 @@ async def test_definition():
     capability = DefinitionCapability(client=client)  # type: ignore
 
     req = DefinitionRequest(
-        locate=LocateText(file_path=Path("main.py"), line=1, find="foo"),
+        locate=Locate(file_path=Path("main.py"), scope=LineScope(line=2), find="foo"),
         mode="definition",
     )
 
     resp = await capability(req)
     assert resp is not None
-    assert resp.file_path == Path("/lib.py")
-    assert resp.name == "foo"
-    assert resp.path == ["foo"]
-    assert resp.code is not None
-    assert "def foo():" in resp.code
+    assert len(resp.items) == 1
+    assert resp.items[0].file_path == Path("/lib.py")
+    assert resp.items[0].name == "foo"
+    assert resp.items[0].path == ["foo"]
+    assert resp.items[0].code is not None
+    assert "def foo():" in resp.items[0].code
