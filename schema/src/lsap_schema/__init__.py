@@ -60,10 +60,15 @@ from .hover import HoverRequest, HoverResponse
 
 # Locate
 from .locate import (
+    HERE,
+    LineScope,
+    Locate,
+    LocateRange,
+    LocateRangeRequest,
+    LocateRangeResponse,
     LocateRequest,
     LocateResponse,
-    LocateSymbol,
-    LocateText,
+    SymbolScope,
 )
 
 # Reference
@@ -124,10 +129,15 @@ __all__ = [
     "InlineValueItem",
     "InlineValueRequest",
     # Locate
+    "HERE",
+    "LineScope",
+    "Locate",
+    "LocateRange",
+    "LocateRangeRequest",
+    "LocateRangeResponse",
     "LocateRequest",
     "LocateResponse",
-    "LocateSymbol",
-    "LocateText",
+    "SymbolScope",
     "Position",
     "Range",
     "SymbolInfo",

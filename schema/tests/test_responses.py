@@ -103,7 +103,7 @@ def test_workspace_symbol_response_format():
 
 def test_reference_response_format():
     from lsap_schema.reference import ReferenceItem, ReferenceRequest
-    from lsap_schema.locate import LocateText
+    from lsap_schema.locate import Locate, LineScope
 
     item = ReferenceItem(
         file_path=Path("test.py"),
@@ -118,9 +118,9 @@ def test_reference_response_format():
     )
     req = ReferenceRequest(
         mode="references",
-        locate=LocateText(
+        locate=Locate(
             file_path=Path("test.py"),
-            line=10,
+            scope=LineScope(line=10),
             find="test",
         ),
     )
@@ -133,7 +133,7 @@ def test_reference_response_format():
 
 def test_implementation_response_format():
     from lsap_schema.reference import ReferenceItem, ReferenceRequest
-    from lsap_schema.locate import LocateText
+    from lsap_schema.locate import Locate, LineScope
 
     item = ReferenceItem(
         file_path=Path("test.py"),
@@ -148,9 +148,9 @@ def test_implementation_response_format():
     )
     req = ReferenceRequest(
         mode="implementations",
-        locate=LocateText(
+        locate=Locate(
             file_path=Path("test.py"),
-            line=10,
+            scope=LineScope(line=10),
             find="test",
         ),
     )
@@ -291,11 +291,12 @@ def test_type_hierarchy_response_format():
 
 
 def test_definition_response_format():
-    from lsap_schema import DefinitionRequest, LocateText
+    from lsap_schema import DefinitionRequest
+    from lsap_schema.locate import Locate, LineScope
 
     req = DefinitionRequest(
         mode="definition",
-        locate=LocateText(file_path=Path("test.py"), line=1, find="test"),
+        locate=Locate(file_path=Path("test.py"), scope=LineScope(line=1), find="test"),
     )
     resp = DefinitionResponse(
         request=req,
