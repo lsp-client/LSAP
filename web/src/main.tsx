@@ -12,7 +12,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <BrowserRouter basename="/LSAP">
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/docs/:docId" element={<DocsPage />} />
+          <Route path="/docs/*" element={<DocsPage />} />
           <Route path="/docs" element={<DocsPage />} />
         </Routes>
       </BrowserRouter>

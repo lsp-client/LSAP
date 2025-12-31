@@ -1,5 +1,5 @@
 import { ChevronRight, FileText } from "lucide-react";
-import { isValidElement, useEffect, useState } from "react";
+import { isValidElement, useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Link, useParams } from "react-router-dom";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -13,156 +13,191 @@ import { Card } from "../components/ui/card";
 import { useTheme } from "../lib/ThemeProvider";
 
 type DocEntry = {
-  id: string;
+  route: string;
+  relativePath: string;
   title: string;
-  path: string;
   draft?: boolean;
 };
 
-function hrefToDocsRoute(href: string) {
-  const normalized = href.replace(/^\.\//, "");
+type Frontmatter = Record<string, string>;
 
-  const isSchemasPath =
-    normalized.startsWith("/docs/schemas/") ||
-    normalized.startsWith("schemas/");
-  const isDraftPath =
-    normalized.includes("/schemas/draft/") ||
-    normalized.startsWith("draft/") ||
-    normalized.startsWith("/docs/schemas/draft/") ||
-    normalized.startsWith("schemas/draft/");
+function parseFrontmatter(markdown: string): {
+  frontmatter: Frontmatter;
+  body: string;
+} {
+  if (!markdown.startsWith("---\n")) return { frontmatter: {}, body: markdown };
+  const endIndex = markdown.indexOf("\n---\n", 4);
+  if (endIndex === -1) return { frontmatter: {}, body: markdown };
+
+  const raw = markdown.slice(4, endIndex);
+  const body = markdown.slice(endIndex + "\n---\n".length);
+  const frontmatter: Frontmatter = {};
+
+  for (const line of raw.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    const match = /^([A-Za-z0-9_-]+)\s*:\s*(.*)$/.exec(trimmed);
+    if (!match) continue;
+    const key = match[1] ?? "";
+    if (!key) continue;
+    const value = (match[2] ?? "").replace(/^["']|["']$/g, "").trim();
+    frontmatter[key] = value;
+  }
+
+  return { frontmatter, body };
+}
+
+function extractTitleFromMarkdown(markdown: string): string | null {
+  const lines = markdown.split("\n");
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    if (trimmed.startsWith("# ")) return trimmed.replace(/^#\s+/, "").trim();
+    if (trimmed.startsWith("## ")) return trimmed.replace(/^##\s+/, "").trim();
+  }
+  return null;
+}
+
+function posixJoin(baseDir: string, hrefPath: string) {
+  const parts = [...baseDir.split("/"), ...hrefPath.split("/")].filter(Boolean);
+  const out: string[] = [];
+  for (const part of parts) {
+    if (part === ".") continue;
+    if (part === "..") out.pop();
+    else out.push(part);
+  }
+  return out.join("/");
+}
+
+const RAW_DOCS = import.meta.glob("../../../docs/schemas/**/*.md", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
+
+function makeDocIndex(): DocEntry[] {
+  const entries: DocEntry[] = [];
+
+  for (const [sourcePath, raw] of Object.entries(RAW_DOCS)) {
+    const marker = "/docs/schemas/";
+    const idx = sourcePath.lastIndexOf(marker);
+    if (idx === -1) continue;
+    const relativePath = sourcePath.slice(idx + marker.length);
+    const { frontmatter, body } = parseFrontmatter(raw);
+    const draft = relativePath.startsWith("draft/");
+
+    const frontmatterTitle = frontmatter.title?.trim();
+    const headingTitle = extractTitleFromMarkdown(body)?.trim();
+    const fallbackTitle = relativePath
+      .replace(/\.md$/, "")
+      .split("/")
+      .pop()
+      ?.replace(/_/g, " ");
+    const title =
+      frontmatterTitle || headingTitle || fallbackTitle || "Documentation";
+
+    const route = `/docs/schemas/${relativePath.replace(/\.md$/, "")}`;
+    entries.push({ route, relativePath, title, draft });
+  }
+
+  entries.sort((a, b) => {
+    const aIsReadme = a.relativePath.toLowerCase() === "readme.md";
+    const bIsReadme = b.relativePath.toLowerCase() === "readme.md";
+    if (aIsReadme !== bIsReadme) return aIsReadme ? -1 : 1;
+    if (a.draft !== b.draft) return a.draft ? 1 : -1;
+    return a.relativePath.localeCompare(b.relativePath);
+  });
+
+  return entries;
+}
+
+const DOC_INDEX = makeDocIndex();
+const DOC_BY_ROUTE = new Map(DOC_INDEX.map((d) => [d.route, d]));
+const DEFAULT_ROUTE = "/docs/schemas/README";
+
+function canonicalRouteFromSplat(splat?: string) {
+  const cleaned = (splat || "").replace(/^\/+/, "").replace(/\/+$/, "");
+  if (!cleaned) return DEFAULT_ROUTE;
+  if (cleaned === "schemas") return DEFAULT_ROUTE;
+  if (cleaned === "schemas/README") return DEFAULT_ROUTE;
+
+  if (cleaned.startsWith("schemas/")) {
+    const normalized = cleaned.replace(/\.md$/, "");
+    return `/docs/${normalized}`;
+  }
+
+  const old = cleaned.replace(/\.md$/, "");
+  if (old.startsWith("draft_"))
+    return `/docs/schemas/draft/${old.replace(/^draft_/, "")}`;
+  return `/docs/schemas/${old}`;
+}
+
+function hrefToDocsRoute(href: string, currentDocRelativePath: string) {
+  const [pathPart, hashPart] = href.split("#", 2);
+  const hash = hashPart ? `#${hashPart}` : "";
+  const normalized = (pathPart || "").replace(/^\.\//, "");
 
   const filenameMatch = /([^/]+)\.md$/.exec(normalized);
   if (!filenameMatch) return href;
 
-  const docBaseName = filenameMatch[1];
-  const docId = isDraftPath ? `draft_${docBaseName}` : docBaseName;
+  if (normalized.startsWith("/docs/")) {
+    const stripped = normalized.replace(/^\/docs\//, "").replace(/\.md$/, "");
+    if (stripped.startsWith("schemas/")) return `/docs/${stripped}${hash}`;
+    if (stripped.startsWith("draft_"))
+      return `/docs/schemas/draft/${stripped.replace(/^draft_/, "")}${hash}`;
+    return `/docs/schemas/${stripped}${hash}`;
+  }
 
-  if (isSchemasPath || isDraftPath) return `/docs/${docId}`;
-  return `/docs/${docId}`;
+  const underSchemas = normalized.startsWith("schemas/");
+  const schemaRelative = underSchemas
+    ? normalized.replace(/^schemas\//, "")
+    : normalized;
+  const baseDir = currentDocRelativePath.split("/").slice(0, -1).join("/");
+  const resolvedRelative = schemaRelative.startsWith("/")
+    ? schemaRelative.replace(/^\//, "")
+    : posixJoin(baseDir, schemaRelative);
+
+  const withoutExt = resolvedRelative.replace(/\.md$/, "");
+  return `/docs/schemas/${withoutExt}${hash}`;
 }
 
-const DOCS: DocEntry[] = [
-  { id: "README", title: "Overview", path: "/docs/schemas/README.md" },
-  { id: "locate", title: "Locate", path: "/docs/schemas/locate.md" },
-  { id: "symbol", title: "Symbol", path: "/docs/schemas/symbol.md" },
-  {
-    id: "symbol_outline",
-    title: "Symbol Outline",
-    path: "/docs/schemas/symbol_outline.md",
-  },
-  {
-    id: "definition",
-    title: "Definition",
-    path: "/docs/schemas/definition.md",
-  },
-  { id: "reference", title: "Reference", path: "/docs/schemas/reference.md" },
-  {
-    id: "implementation",
-    title: "Implementation",
-    path: "/docs/schemas/implementation.md",
-  },
-  {
-    id: "call_hierarchy",
-    title: "Call Hierarchy",
-    path: "/docs/schemas/call_hierarchy.md",
-  },
-  {
-    id: "type_hierarchy",
-    title: "Type Hierarchy",
-    path: "/docs/schemas/type_hierarchy.md",
-  },
-  { id: "workspace", title: "Workspace", path: "/docs/schemas/workspace.md" },
-  {
-    id: "completion",
-    title: "Completion",
-    path: "/docs/schemas/completion.md",
-  },
-  {
-    id: "diagnostics",
-    title: "Diagnostics",
-    path: "/docs/schemas/diagnostics.md",
-  },
-  { id: "rename", title: "Rename", path: "/docs/schemas/rename.md" },
-  {
-    id: "inlay_hints",
-    title: "Inlay Hints",
-    path: "/docs/schemas/inlay_hints.md",
-  },
-  {
-    id: "draft_implementation",
-    title: "Implementation",
-    path: "/docs/schemas/draft/implementation.md",
-    draft: true,
-  },
-  {
-    id: "draft_call_hierarchy",
-    title: "Call Hierarchy",
-    path: "/docs/schemas/draft/call_hierarchy.md",
-    draft: true,
-  },
-  {
-    id: "draft_type_hierarchy",
-    title: "Type Hierarchy",
-    path: "/docs/schemas/draft/type_hierarchy.md",
-    draft: true,
-  },
-  {
-    id: "draft_diagnostics",
-    title: "Diagnostics",
-    path: "/docs/schemas/draft/diagnostics.md",
-    draft: true,
-  },
-  {
-    id: "draft_rename",
-    title: "Rename",
-    path: "/docs/schemas/draft/rename.md",
-    draft: true,
-  },
-  {
-    id: "draft_inlay_hints",
-    title: "Inlay Hints",
-    path: "/docs/schemas/draft/inlay_hints.md",
-    draft: true,
-  },
-];
-
 export default function DocsPage() {
-  const { docId } = useParams();
+  const params = useParams();
+  const splat = params["*"];
   const [content, setContent] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const { resolvedTheme } = useTheme();
 
-  const cleanDocId = docId?.replace(/\.md$/, "");
-  const currentDoc = DOCS.find((d) => d.id === cleanDocId) ?? DOCS[0];
+  const docs = useMemo(() => DOC_INDEX, []);
+  const canonicalRoute = useMemo(() => canonicalRouteFromSplat(splat), [splat]);
+  const currentDoc =
+    DOC_BY_ROUTE.get(canonicalRoute) ?? DOC_BY_ROUTE.get(DEFAULT_ROUTE);
 
   useEffect(() => {
     const titleSuffix = currentDoc?.draft ? " (draft)" : "";
     document.title = `${
       currentDoc?.title ?? "Documentation"
     }${titleSuffix} | LSAP`;
-  }, [currentDoc?.id]);
+  }, [currentDoc?.route, currentDoc?.title, currentDoc?.draft]);
 
   useEffect(() => {
     if (!currentDoc) return;
-
     setLoading(true);
-    const baseUrl = (import.meta.env.BASE_URL || "/").replace(/\/$/, "");
-    fetch(`${baseUrl}${currentDoc.path}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch");
-        return res.text();
-      })
-      .then((text) => {
-        setContent(text);
-        setLoading(false);
-      })
-      .catch(() => {
-        setContent(
-          "# Documentation Not Found\n\nThe requested documentation could not be loaded."
-        );
-        setLoading(false);
-      });
-  }, [currentDoc?.path]);
+    const sourcePath = Object.keys(RAW_DOCS).find((p) =>
+      p.endsWith(`/docs/schemas/${currentDoc.relativePath}`)
+    );
+    const raw = sourcePath ? RAW_DOCS[sourcePath] ?? "" : "";
+    const { body } = parseFrontmatter(raw);
+    if (!body) {
+      setContent(
+        "# Documentation Not Found\n\nThe requested documentation could not be loaded."
+      );
+      setLoading(false);
+      return;
+    }
+    setContent(body);
+    setLoading(false);
+  }, [currentDoc?.route, currentDoc?.relativePath]);
 
   if (!currentDoc) return null;
 
@@ -172,21 +207,20 @@ export default function DocsPage() {
 
       <div className="container max-w-7xl mx-auto px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Sidebar */}
           <aside className="lg:col-span-1">
             <Card className="p-4 sticky top-24">
               <h2 className="font-mono text-sm font-medium mb-4 text-foreground">
                 Documentation
               </h2>
               <nav className="space-y-1">
-                {DOCS.map((doc) => (
+                {docs.map((doc) => (
                   <Link
-                    key={doc.id}
-                    to={`/docs/${doc.id}`}
+                    key={doc.route}
+                    to={doc.route}
                     className={`
                       flex items-center gap-2 px-3 py-2 rounded-sm text-sm transition-colors
                       ${
-                        currentDoc.id === doc.id
+                        currentDoc.route === doc.route
                           ? "bg-primary/10 text-primary font-medium"
                           : "text-muted-foreground hover:text-foreground hover:bg-muted"
                       }
@@ -203,7 +237,7 @@ export default function DocsPage() {
                         draft
                       </span>
                     )}
-                    {currentDoc.id === doc.id && (
+                    {currentDoc.route === doc.route && (
                       <ChevronRight className="h-3.5 w-3.5 ml-auto" />
                     )}
                   </Link>
@@ -212,7 +246,6 @@ export default function DocsPage() {
             </Card>
           </aside>
 
-          {/* Main Content */}
           <main className="lg:col-span-3">
             <Card className="p-8 lg:p-12">
               {loading ? (
@@ -368,9 +401,10 @@ export default function DocsPage() {
                           !href.startsWith("//") &&
                           !href.startsWith("#");
                         if (isInternal) {
-                          const to = href.startsWith("/")
-                            ? hrefToDocsRoute(href)
-                            : hrefToDocsRoute(href);
+                          const to = hrefToDocsRoute(
+                            href,
+                            currentDoc.relativePath
+                          );
                           return (
                             <Link
                               to={to}
