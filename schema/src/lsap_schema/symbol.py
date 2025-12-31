@@ -2,12 +2,12 @@ from typing import Final
 
 from pydantic import ConfigDict
 
-from .abc import Response, SymbolInfoRequest
+from .abc import Response
 from .locate import LocateRequest
-from .types import SymbolInfo
+from .types import SymbolCodeInfo
 
 
-class SymbolRequest(LocateRequest, SymbolInfoRequest):
+class SymbolRequest(LocateRequest):
     """
     Retrieves detailed information about a symbol at a specific location.
 
@@ -15,36 +15,18 @@ class SymbolRequest(LocateRequest, SymbolInfoRequest):
     of a symbol to understand its purpose and usage.
     """
 
-    include_hover: bool = False
-    """Whether to include hover/documentation information"""
-
-    include_code: bool = True
-    """Whether to include the symbol's source code content"""
-
 
 markdown_template: Final = """
 # Symbol: `{{ path | join: "." }}` (`{{ kind }}`) at `{{ file_path }}`
 
-{% if detail != nil -%}
-## Detail
-{{ detail }}
-{%- endif %}
-
-{% if hover != nil -%}
-## Documentation
-{{ hover }}
-{%- endif %}
-
-{% if code != nil -%}
 ## Implementation
 ```{{ file_path.suffix | remove_first: "." }}
 {{ code }}
 ```
-{%- endif %}
 """
 
 
-class SymbolResponse(SymbolInfo, Response):
+class SymbolResponse(SymbolCodeInfo, Response):
     model_config = ConfigDict(
         json_schema_extra={
             "markdown": markdown_template,

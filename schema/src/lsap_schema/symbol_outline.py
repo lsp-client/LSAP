@@ -3,11 +3,11 @@ from typing import Final
 
 from pydantic import ConfigDict
 
-from .abc import Response, SymbolInfoRequest
-from .types import SymbolInfo
+from .abc import Request, Response
+from .types import SymbolDetailInfo
 
 
-class SymbolOutlineRequest(SymbolInfoRequest):
+class SymbolOutlineRequest(Request):
     """
     Retrieves a hierarchical outline of symbols within a file.
 
@@ -24,12 +24,8 @@ markdown_template: Final = """
 {% for item in items -%}
 {% assign level = item.path | size | plus: 1 -%}
 {% for i in (1..level) %}#{% endfor %} {{ item.path | join: "." }} (`{{ item.kind }}`)
-{%- if item.detail %}
 {{ item.detail }}
-{%- endif %}
-{%- if item.hover %}
 {{ item.hover | strip | truncate: 120 }}
-{%- endif %}
 
 {% endfor -%}
 """
@@ -37,7 +33,7 @@ markdown_template: Final = """
 
 class SymbolOutlineResponse(Response):
     file_path: Path
-    items: list[SymbolInfo]
+    items: list[SymbolDetailInfo]
 
     model_config = ConfigDict(
         json_schema_extra={

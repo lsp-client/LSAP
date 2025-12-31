@@ -2,12 +2,12 @@ from typing import Final, Literal
 
 from pydantic import ConfigDict
 
-from .abc import Response, SymbolInfoRequest
+from .abc import Response
 from .locate import LocateRequest
-from .types import SymbolInfo
+from .types import SymbolCodeInfo
 
 
-class DefinitionRequest(LocateRequest, SymbolInfoRequest):
+class DefinitionRequest(LocateRequest):
     """
     Finds the definition, declaration, or type definition of a symbol.
 
@@ -28,30 +28,19 @@ No {{ request.mode | replace: "_", " " }} found.
 {%- for item in items -%}
 ## `{{ item.file_path }}`: {{ item.path | join: "." }} (`{{ item.kind }}`)
 
-{% if item.detail -%}
-{{ item.detail }}
-
-{% endif -%}
-{% if item.hover != nil -%}
-### Documentation
-{{ item.hover }}
-
-{% endif -%}
-{% if item.code != nil -%}
 ### Content
 ```{{ item.file_path.suffix | remove_first: "." }}
 {{ item.code }}
 ```
 
-{% endif -%}
-{%- endfor -%}
+{% endfor -%}
 {%- endif %}
 """
 
 
 class DefinitionResponse(Response):
     request: DefinitionRequest
-    items: list[SymbolInfo]
+    items: list[SymbolCodeInfo]
 
     model_config = ConfigDict(
         json_schema_extra={

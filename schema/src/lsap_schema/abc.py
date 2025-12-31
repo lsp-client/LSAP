@@ -27,18 +27,6 @@ class Response(BaseModel):
                 )
 
 
-class SymbolInfoRequest(Request):
-    """
-    Base request for retrieving symbol information.
-    """
-
-    include_hover: bool = True
-    """Whether to include hover/documentation information"""
-
-    include_code: bool = False
-    """Whether to include the symbol's source code content"""
-
-
 class PaginatedRequest(Request):
     """
     Base request for paginated results.

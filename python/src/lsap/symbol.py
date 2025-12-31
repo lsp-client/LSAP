@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from functools import cached_property
 from pathlib import Path
-from typing import Protocol, override
+from typing import Protocol, override, runtime_checkable
 
 from attrs import define
 from lsap_schema.symbol import SymbolRequest, SymbolResponse
@@ -18,6 +18,7 @@ from lsap.utils.symbol import symbol_at
 from .symbol_outline import SymbolOutlineCapability
 
 
+@runtime_checkable
 class SymbolClient(
     WithRequestDocumentSymbol,
     WithRequestHover,

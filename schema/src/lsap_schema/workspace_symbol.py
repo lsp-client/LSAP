@@ -2,15 +2,15 @@ from typing import Final
 
 from pydantic import ConfigDict
 
-from .abc import PaginatedRequest, PaginatedResponse, SymbolInfoRequest
-from .types import SymbolInfo
+from .abc import PaginatedRequest, PaginatedResponse
+from .types import SymbolDetailInfo
 
 
-class WorkspaceSymbolItem(SymbolInfo):
+class WorkspaceSymbolItem(SymbolDetailInfo):
     container_name: str | None = None
 
 
-class WorkspaceSymbolRequest(PaginatedRequest, SymbolInfoRequest):
+class WorkspaceSymbolRequest(PaginatedRequest):
     """
     Searches for symbols across the entire workspace by name.
 
@@ -34,19 +34,9 @@ No symbols found matching the query.
 {%- for item in items %}
 ### {{ item.name }} (`{{ item.kind }}`)
 - Location: `{{ item.file_path }}` {% if item.container_name != nil %}(in `{{ item.container_name }}`){% endif %}
-{%- if item.detail %}
 - Detail: {{ item.detail }}
-{%- endif %}
-{%- if item.hover != nil %}
 
 {{ item.hover }}
-{%- endif %}
-{%- if item.code != nil %}
-
-```{{ item.file_path.suffix | remove_first: "." }}
-{{ item.code }}
-```
-{%- endif %}
 {%- endfor %}
 
 {% if has_more -%}

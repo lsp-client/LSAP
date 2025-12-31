@@ -21,7 +21,8 @@ from lsap_schema import (
     RenameResponse,
     SymbolResponse,
     SymbolOutlineResponse,
-    SymbolInfo,
+    SymbolCodeInfo,
+    SymbolDetailInfo,
     SymbolKind,
     TypeHierarchyItem,
     TypeHierarchyNode,
@@ -60,12 +61,10 @@ def test_symbol_response_format():
         name="my_method",
         path=["MyClass", "my_method"],
         kind=SymbolKind.Method,
-        hover="Test Hover",
         code="def my_method(): pass",
     )
     rendered = resp.format()
     assert "MyClass.my_method" in rendered
-    assert "Test Hover" in rendered
     assert "def my_method()" in rendered
 
 
@@ -81,7 +80,7 @@ def test_workspace_symbol_response_format():
                 name="class MyClass",
                 path=["MyClass"],
                 kind=SymbolKind.Class,
-                code="class MyClass: pass",
+                detail="class",
                 hover="A test class",
             ),
             WorkspaceSymbolItem(
@@ -89,6 +88,8 @@ def test_workspace_symbol_response_format():
                 name="my_method",
                 path=["MyClass", "my_method"],
                 kind=SymbolKind.Method,
+                detail="method",
+                hover="documentation",
             ),
         ],
         start_index=0,
@@ -109,11 +110,13 @@ def test_reference_response_format():
         file_path=Path("test.py"),
         line=10,
         code="test_content",
-        symbol=SymbolInfo(
+        symbol=SymbolDetailInfo(
             file_path=Path("test.py"),
             name="test",
             path=["test"],
             kind=SymbolKind.Function,
+            detail="detail",
+            hover="hover",
         ),
     )
     req = ReferenceRequest(
@@ -139,11 +142,13 @@ def test_implementation_response_format():
         file_path=Path("test.py"),
         line=10,
         code="test_content",
-        symbol=SymbolInfo(
+        symbol=SymbolDetailInfo(
             file_path=Path("test.py"),
             name="test",
             path=["test"],
             kind=SymbolKind.Function,
+            detail="detail",
+            hover="hover",
         ),
     )
     req = ReferenceRequest(
@@ -187,7 +192,7 @@ def test_symbol_outline_response_format():
     resp = SymbolOutlineResponse(
         file_path=Path("test.py"),
         items=[
-            SymbolInfo(
+            SymbolDetailInfo(
                 file_path=Path("test.py"),
                 name="class MyClass",
                 path=["MyClass"],
@@ -195,13 +200,13 @@ def test_symbol_outline_response_format():
                 detail="class",
                 hover="A test class",
             ),
-            SymbolInfo(
+            SymbolDetailInfo(
                 file_path=Path("test.py"),
                 name="my_method(arg1: int) -> None",
                 path=["MyClass", "my_method"],
                 kind=SymbolKind.Method,
                 detail="method",
-                hover="",
+                hover="documentation",
             ),
         ],
     )
@@ -303,19 +308,17 @@ def test_definition_response_format():
     resp = DefinitionResponse(
         request=req,
         items=[
-            SymbolInfo(
+            SymbolCodeInfo(
                 file_path=Path("test.py"),
                 name="test",
                 path=["test"],
                 kind=SymbolKind.Function,
                 code="test_content",
-                hover="test_hover",
             )
         ],
     )
     rendered = resp.format()
     assert "Definition Result" in rendered
-    assert "test_hover" in rendered
     assert "test_content" in rendered
 
     req.mode = "type_definition"

@@ -84,7 +84,14 @@ from .symbol_outline import (
 )
 
 # Types
-from .types import Position, Range, SymbolInfo, SymbolKind
+from .types import (
+    Position,
+    Range,
+    SymbolCodeInfo,
+    SymbolDetailInfo,
+    SymbolInfo,
+    SymbolKind,
+)
 
 # Workspace
 from .workspace_symbol import (
@@ -140,6 +147,8 @@ __all__ = [
     "SymbolScope",
     "Position",
     "Range",
+    "SymbolCodeInfo",
+    "SymbolDetailInfo",
     "SymbolInfo",
     "SymbolKind",
     # Reference

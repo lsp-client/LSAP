@@ -34,11 +34,11 @@ class HoverCapability(Capability[HoverClient, HoverRequest, HoverResponse]):
         file_path, lsp_pos = loc_resp.file_path, loc_resp.position.to_lsp()
         hover = await self.client.request_hover(file_path, lsp_pos)
 
-        if not hover:
+        if hover is None:
             return None
 
         contents = ""
-        if isinstance(hover.contents, str):
+        if isinstance(hover.value, str):
             contents = hover.contents
         elif isinstance(hover.contents, list):
             contents = "\n".join(

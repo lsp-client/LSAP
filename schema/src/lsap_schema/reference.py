@@ -5,14 +5,14 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .abc import PaginatedRequest, PaginatedResponse
 from .locate import LocateRequest
-from .types import SymbolInfo
+from .types import SymbolDetailInfo
 
 
 class ReferenceItem(BaseModel):
     file_path: Path
     line: int = Field(..., description="1-based line number")
     code: str = Field(..., description="Surrounding code snippet")
-    symbol: SymbolInfo | None = Field(
+    symbol: SymbolDetailInfo | None = Field(
         None, description="The symbol containing this reference"
     )
 

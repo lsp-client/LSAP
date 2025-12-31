@@ -18,12 +18,12 @@ class HoverRequest(LocateRequest):
 markdown_template: Final = """
 # Hover Information
 
-{{ contents }}
+{{ content }}
 """
 
 
 class HoverResponse(Response):
-    contents: str
+    content: str
     """The hover content, usually markdown."""
 
     model_config = ConfigDict(

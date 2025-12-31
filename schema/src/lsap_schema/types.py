@@ -80,10 +80,13 @@ class SymbolInfo(BaseModel):
     range: Range | None = None
     """Source code range of the symbol"""
 
-    detail: str | None = None
 
-    hover: str | None = None
-    """Markdown formatted hover/documentation information"""
-
-    code: str | None = None
+class SymbolCodeInfo(SymbolInfo):
+    code: str
     """Source code of the symbol"""
+
+
+class SymbolDetailInfo(SymbolInfo):
+    detail: str
+    hover: str
+    """Markdown formatted hover/documentation information"""

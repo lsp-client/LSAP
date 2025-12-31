@@ -62,7 +62,7 @@ class Locate(BaseModel):
     """Text pattern with marker for exact position; if no marker, positions at match start."""
 
     marker: str = HERE
-    """Position marker in find pattern. Change if source contains the default '<HERE>'."""
+    """Position marker in find pattern. Change this if source contains the default '<HERE>'."""
 
     @model_validator(mode="after")
     def check_valid_locate(self):
@@ -79,7 +79,7 @@ class Locate(BaseModel):
 
 class LocateRange(BaseModel):
     """
-    Locate a range for operations like codeAction.
+    Locate a range.
 
     Examples:
         # Select symbol body
