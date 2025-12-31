@@ -144,7 +144,7 @@ requires-dist = [
     { name = "asyncer", specifier = ">=0.0.11" },
     { name = "attrs", specifier = ">=25.4.0" },
     { name = "cattrs", specifier = ">=25.3.0" },
-    { name = "lsap-schema", git = "https://github.com/lsp-client/LSAP.git?subdirectory=schema" },
+    { name = "lsap-schema", git = "https://github.com/lsp-client/LSAP.git" },
     { name = "lsp-client", git = "https://github.com/lsp-client/python-sdk.git" },
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "python-liquid", specifier = ">=2.1.0" },
@@ -159,7 +159,7 @@ dev = [
 [[package]]
 name = "lsap-schema"
 version = "0.1.0"
-source = { git = "https://github.com/lsp-client/LSAP.git?subdirectory=schema#c91d924fe574f32b2b9fd926298f5d8df09838b2" }
+source = { git = "https://github.com/lsp-client/LSAP.git#bd340e50ddf6667aabd2490e87094b1fc5826a3b" }
 dependencies = [
     { name = "lsprotocol" },
     { name = "pydantic" },
@@ -169,7 +169,7 @@ dependencies = [
 [[package]]
 name = "lsp-client"
 version = "0.1.0"
-source = { git = "https://github.com/lsp-client/python-sdk.git#4bea3bfe0b4158cafe76583380b309e95cd0d2b0" }
+source = { git = "https://github.com/lsp-client/python-sdk.git#2704a45b7380ce2281d019a8304a89e175885a9f" }
 dependencies = [
     { name = "aioshutil" },
     { name = "anyio" },

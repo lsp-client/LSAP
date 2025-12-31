@@ -4,10 +4,10 @@ The Rename API provides a safe, workspace-wide symbol renaming capability. It au
 
 ## RenameRequest
 
-| Field      | Type                                                     | Default  | Description                           |
-| :--------- | :------------------------------------------------------- | :------- | :------------------------------------ |
-| `locate`   | [`LocateText`](locate.md) \| [`LocateSymbol`](locate.md) | Required | The location of the symbol to rename. |
-| `new_name` | `string`                                                 | Required | The target name for the symbol.       |
+| Field      | Type                | Default  | Description                           |
+| :--------- | :------------------ | :------- | :------------------------------------ |
+| `locate`   | [`Locate`](locate.md) | Required | The location of the symbol to rename. |
+| `new_name` | `string`            | Required | The target name for the symbol.       |
 
 ## RenameResponse
 
@@ -32,7 +32,7 @@ LSAP focuses on providing a **Preview** of the changes to help the Agent verify 
 
 | Field      | Type     | Description                          |
 | :--------- | :------- | :----------------------------------- |
-| `line`     | `number` | Line number where the change occurs. |
+| `line`     | `number` | Line number (1-based) where the change occurs. |
 | `original` | `string` | The text before the rename.          |
 | `modified` | `string` | The text after the rename.           |
 
@@ -46,7 +46,9 @@ LSAP focuses on providing a **Preview** of the changes to help the Agent verify 
 {
   "locate": {
     "file_path": "src/client.py",
-    "symbol_path": ["APIClient", "fetch_data"]
+    "scope": {
+      "symbol_path": ["APIClient", "fetch_data"]
+    }
   },
   "new_name": "get_resource"
 }
@@ -89,7 +91,6 @@ Summary: Affects 2 files and 3 occurrences.
 {
   "locate": {
     "file_path": "src/utils.py",
-    "line": 15,
     "find": "temp"
   },
   "new_name": "buffer"
@@ -136,7 +137,9 @@ Summary: Affects 1 file and 5 occurrences.
 {
   "locate": {
     "file_path": "src/models.py",
-    "symbol_path": ["UserAccount"]
+    "scope": {
+      "symbol_path": ["UserAccount"]
+    }
   },
   "new_name": "UserProfile"
 }

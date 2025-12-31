@@ -2,28 +2,26 @@
 
 The Implementation API finds all concrete implementations of an abstract symbol, such as an interface method or a base class. This is a specialized mode of the Reference API with `mode="implementations"`.
 
-## ImplementationRequest
+## ReferenceRequest (with mode="implementations")
 
-| Field             | Type                                                     | Default  | Description                                      |
-| :---------------- | :------------------------------------------------------- | :------- | :----------------------------------------------- |
-| `locate`          | [`LocateText`](locate.md) \| [`LocateSymbol`](locate.md) | Required | The symbol to find implementations for.          |
-| `mode`            | `"implementations"`                                      | Required | Must be set to "implementations".                 |
-| `context_lines`   | `number`                                                 | `2`      | Number of lines around the match to include.     |
-| `include_hover`   | `boolean`                                                | `true`   | Whether to include docs for each implementation. |
-| `include_code`    | `boolean`                                                | `true`   | Whether to include code for each implementation. |
-| `max_items`       | `number \| null`                                         | `null`   | Maximum number of implementations to return.     |
-| `start_index`     | `number`                                                 | `0`      | Number of items to skip for pagination.          |
-| `pagination_id`   | `string \| null`                                         | `null`   | Token to retrieve the next page of results.      |
+| Field             | Type                        | Default        | Description                                      |
+| :---------------- | :-------------------------- | :------------- | :----------------------------------------------- |
+| `locate`          | [`Locate`](locate.md)       | Required       | The symbol to find implementations for.          |
+| `mode`            | `"implementations"`         | `"references"` | Must be set to "implementations" to use this mode. |
+| `context_lines`   | `number`                    | `2`            | Number of lines around the match to include.     |
+| `max_items`       | `number \| null`            | `null`         | Maximum number of implementations to return.     |
+| `start_index`     | `number`                    | `0`            | Number of items to skip for pagination.          |
+| `pagination_id`   | `string \| null`            | `null`         | Token to retrieve the next page of results.      |
 
-## ImplementationResponse
+## ReferenceResponse
 
 | Field           | Type                 | Description                              |
 | :-------------- | :------------------- | :--------------------------------------- |
 | `request`       | `ReferenceRequest`   | The original request (with mode=implementations). |
-| `items`         | `ReferenceItem[]`     | List of concrete implementations.        |
+| `items`         | `ReferenceItem[]`    | List of concrete implementations.        |
 | `start_index`   | `number`             | Offset of the current page.              |
 | `max_items`     | `number?`            | Number of items per page (if specified). |
-| `total`         | `number \| null`      | Total number of implementations found.   |
+| `total`         | `number \| null`     | Total number of implementations found.   |
 | `has_more`      | `boolean`            | Whether more results are available.      |
 | `pagination_id` | `string?`            | Token for retrieving the next page.      |
 
@@ -37,7 +35,9 @@ The Implementation API finds all concrete implementations of an abstract symbol,
 {
   "locate": {
     "file_path": "base.py",
-    "symbol_path": ["BaseWorker", "run"]
+    "scope": {
+      "symbol_path": ["BaseWorker", "run"]
+    }
   },
   "mode": "implementations",
   "context_lines": 2,
@@ -87,7 +87,9 @@ def run(self):
 {
   "locate": {
     "file_path": "src/interfaces.py",
-    "symbol_path": ["IRepository"]
+    "scope": {
+      "symbol_path": ["IRepository"]
+    }
   },
   "mode": "implementations",
   "context_lines": 1,
@@ -144,12 +146,12 @@ class OrderRepository(IRepository):
 {
   "locate": {
     "file_path": "src/base.py",
-    "symbol_path": ["IDataSource", "query"]
+    "scope": {
+      "symbol_path": ["IDataSource", "query"]
+    }
   },
   "mode": "implementations",
   "context_lines": 5,
-  "include_hover": true,
-  "include_code": true,
   "max_items": 3
 }
 ```
@@ -163,7 +165,6 @@ Total implementations: 4 | Showing: 3 (Offset: 0, max_items: 3)
 
 ### `src/sources/sqlite_source.py`:20
 In `SQLiteDataSource.query` (`Method`)
-Executes SQL query and returns results.
 
 ```python
 def query(self, sql, params=None):
@@ -181,7 +182,6 @@ def query(self, sql, params=None):
 
 ### `src/sources/postgres_source.py`:22
 In `PostgresDataSource.query` (`Method`)
-Executes PostgreSQL query with connection pooling.
 
 ```python
 def query(self, sql, params=None):
@@ -200,5 +200,4 @@ def query(self, sql, params=None):
 > [!TIP]
 > More implementations available.
 > To see more, specify a `max_items` and use: `start_index=3`
-````
 ````

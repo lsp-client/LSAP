@@ -4,12 +4,12 @@ The Call Hierarchy API allows tracing the relationships between functions, showi
 
 ## CallHierarchyRequest
 
-| Field              | Type                                                     | Default  | Description                                          |
-| :----------------- | :------------------------------------------------------- | :------- | :--------------------------------------------------- |
-| `locate`           | [`LocateText`](locate.md) \| [`LocateSymbol`](locate.md) | Required | The symbol to trace callers/callees for.             |
-| `direction`        | `"incoming" \| "outgoing" \| "both"`                     | `"both"` | Direction of the trace.                              |
-| `depth`            | `number`                                                 | `2`      | Maximum number of hops to trace.                     |
-| `include_external` | `boolean`                                                | `false`  | Whether to include calls to/from external libraries. |
+| Field              | Type                        | Default   | Description                                          |
+| :----------------- | :-------------------------- | :-------- | :--------------------------------------------------- |
+| `locate`           | [`Locate`](locate.md)       | Required  | The symbol to trace callers/callees for.             |
+| `direction`        | `"incoming"` \| `"outgoing"` \| `"both"` | `"both"` | Direction of the trace.                              |
+| `depth`            | `number`                    | `2`       | Maximum number of hops to trace.                     |
+| `include_external` | `boolean`                   | `false`   | Whether to include calls to/from external libraries. |
 
 ## CallHierarchyResponse
 
@@ -19,6 +19,10 @@ The Call Hierarchy API allows tracing the relationships between functions, showi
 | `nodes`     | `Map<string, CallHierarchyNode>` | Details of all types encountered in the hierarchy. |
 | `edges_in`  | `Map<string, CallEdge[]>`        | Incoming edges for each node.                      |
 | `edges_out` | `Map<string, CallEdge[]>`        | Outgoing edges for each node.                      |
+| `calls_in`  | `CallHierarchyItem[]`            | Flat list of incoming calls for tree rendering.    |
+| `calls_out` | `CallHierarchyItem[]`            | Flat list of outgoing calls for tree rendering.    |
+| `direction` | `string`                         | The direction that was used.                       |
+| `depth`     | `number`                         | The depth that was used.                           |
 
 ### CallHierarchyNode
 
@@ -29,6 +33,16 @@ The Call Hierarchy API allows tracing the relationships between functions, showi
 | `kind`        | `string`   | Symbol kind (e.g., `Function`, `Method`). |
 | `file_path`   | `string`   | Relative path to the file.                |
 | `range_start` | `Position` | Start coordinates of the definition.      |
+
+### CallHierarchyItem
+
+| Field       | Type       | Description                                            |
+| :---------- | :--------- | :----------------------------------------------------- |
+| `name`      | `string`   | Name of the function.                                  |
+| `kind`      | `string`   | Symbol kind (e.g., `Function`, `Method`).              |
+| `file_path` | `string`   | Relative path to the file.                             |
+| `level`     | `number`   | Nesting level in the hierarchy.                        |
+| `is_cycle`  | `boolean`  | Whether this represents a recursive cycle.             |
 
 ### CallEdge
 
@@ -48,7 +62,9 @@ The Call Hierarchy API allows tracing the relationships between functions, showi
 {
   "locate": {
     "file_path": "src/app.py",
-    "symbol_path": ["start_server"]
+    "scope": {
+      "symbol_path": ["start_server"]
+    }
   },
   "direction": "outgoing",
   "depth": 1
@@ -79,7 +95,9 @@ The Call Hierarchy API allows tracing the relationships between functions, showi
 {
   "locate": {
     "file_path": "src/db.py",
-    "symbol_path": ["initialize_db"]
+    "scope": {
+      "symbol_path": ["initialize_db"]
+    }
   },
   "direction": "incoming",
   "depth": 2
@@ -110,7 +128,9 @@ The Call Hierarchy API allows tracing the relationships between functions, showi
 {
   "locate": {
     "file_path": "src/controllers.py",
-    "symbol_path": ["handle_request"]
+    "scope": {
+      "symbol_path": ["handle_request"]
+    }
   },
   "direction": "both",
   "depth": 3,

@@ -4,11 +4,9 @@ The Symbol API provides detailed information about a specific code symbol, inclu
 
 ## SymbolRequest
 
-| Field             | Type                                                     | Default  | Description                                              |
-| :---------------- | :------------------------------------------------------- | :------- | :------------------------------------------------------- |
-| `locate`          | [`LocateText`](locate.md) \| [`LocateSymbol`](locate.md) | Required | How to find the symbol (by text snippet or symbol path). |
-| `include_hover`   | `boolean`                                                | `true`   | Whether to include documentation/hover information.      |
-| `include_code`    | `boolean`                                                | `true`   | Whether to include the source code of the symbol.        |
+| Field    | Type                | Default  | Description                                              |
+| :------- | :------------------ | :------- | :------------------------------------------------------- |
+| `locate` | [`Locate`](locate.md) | Required | How to find the symbol (by text pattern or symbol path). |
 
 ## SymbolResponse
 
@@ -20,7 +18,8 @@ The Symbol API provides detailed information about a specific code symbol, inclu
 | `kind`           | `string`           | Symbol kind (e.g., `Function`, `Class`).                  |
 | `detail`         | `string \| null`   | Detail information about the symbol.                       |
 | `hover`          | `string \| null`   | Markdown formatted documentation for the symbol.            |
-| `code`           | `string \| null`   | The source code of the symbol.                              |
+| `code`           | `string`           | The source code of the symbol.                              |
+| `range`          | `Range \| null`    | Source code range of the symbol.                            |
 
 ## Example Usage
 
@@ -32,10 +31,10 @@ The Symbol API provides detailed information about a specific code symbol, inclu
 {
   "locate": {
     "file_path": "src/main.py",
-    "symbol_path": ["calculate_total"]
-  },
-  "include_hover": true,
-  "include_code": true
+    "scope": {
+      "symbol_path": ["calculate_total"]
+    }
+  }
 }
 ```
 
@@ -44,20 +43,14 @@ The Symbol API provides detailed information about a specific code symbol, inclu
 ````markdown
 # Symbol: `calculate_total` (`function`) at `src/main.py`
 
-## Detail
-(total_price, tax_rate: float) -> float
-
-## Documentation
-Calculates the total price of items in the cart, including tax.
-
-## Content
+## Implementation
 ```python
 def calculate_total(items, tax_rate):
     return sum(item.price for item in items) * (1 + tax_rate)
 ```
 ````
 
-### Scenario 2: Getting class information only (no code)
+### Scenario 2: Getting class information
 
 #### Request
 
@@ -65,21 +58,23 @@ def calculate_total(items, tax_rate):
 {
   "locate": {
     "file_path": "src/models.py",
-    "symbol_path": ["User"]
-  },
-  "include_hover": true,
-  "include_code": false
+    "scope": {
+      "symbol_path": ["User"]
+    }
+  }
 }
 ```
 
 #### Markdown Rendered for LLM
 
 ````markdown
-# Symbol: `models.User` (`class`) at `src/models.py`
+# Symbol: `User` (`class`) at `src/models.py`
 
-## Detail
-User model for authentication and profile management
-
-## Documentation
-Represents a user in the system with authentication credentials and profile information.
+## Implementation
+```python
+class User:
+    def __init__(self, username: str, email: str):
+        self.username = username
+        self.email = email
+```
 ````

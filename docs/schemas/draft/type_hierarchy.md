@@ -4,11 +4,11 @@ The Type Hierarchy API allows exploring the inheritance relationships of a class
 
 ## TypeHierarchyRequest
 
-| Field       | Type                                                     | Default  | Description                            |
-| :---------- | :------------------------------------------------------- | :------- | :------------------------------------- |
-| `locate`    | [`LocateText`](locate.md) \| [`LocateSymbol`](locate.md) | Required | The symbol to trace the hierarchy for. |
-| `direction` | `"supertypes" \| "subtypes" \| "both"`                   | `"both"` | Direction of the hierarchy trace.      |
-| `depth`     | `number`                                                 | `2`      | Maximum number of levels to trace.     |
+| Field       | Type                        | Default  | Description                            |
+| :---------- | :-------------------------- | :------- | :------------------------------------- |
+| `locate`    | [`Locate`](locate.md)       | Required | The symbol to trace the hierarchy for. |
+| `direction` | `"supertypes"` \| `"subtypes"` \| `"both"` | `"both"` | Direction of the hierarchy trace.      |
+| `depth`     | `number`                    | `2`      | Maximum number of levels to trace.     |
 
 ## TypeHierarchyResponse
 
@@ -18,6 +18,10 @@ The Type Hierarchy API allows exploring the inheritance relationships of a class
 | `nodes`      | `Map<string, TypeHierarchyNode>` | Details of all types encountered in the hierarchy. |
 | `edges_up`   | `Map<string, TypeEdge[]>`        | Edges leading to supertypes.                       |
 | `edges_down` | `Map<string, TypeEdge[]>`        | Edges leading to subtypes.                         |
+| `types_up`   | `TypeHierarchyItem[]`            | Flat list of supertypes for tree rendering.        |
+| `types_down` | `TypeHierarchyItem[]`            | Flat list of subtypes for tree rendering.          |
+| `direction`  | `string`                         | The direction that was used.                       |
+| `depth`      | `number`                         | The depth that was used.                           |
 
 ### TypeHierarchyNode
 
@@ -30,13 +34,24 @@ The Type Hierarchy API allows exploring the inheritance relationships of a class
 | `range_start` | `Position`       | Start coordinates of the definition.      |
 | `detail`      | `string \| null` | Optional detail (e.g., base class names). |
 
+### TypeHierarchyItem
+
+| Field       | Type              | Description                                            |
+| :---------- | :---------------- | :----------------------------------------------------- |
+| `name`      | `string`          | Name of the type.                                      |
+| `kind`      | `string`          | Symbol kind (e.g., `Class`, `Interface`).              |
+| `file_path` | `string`          | Relative path to the file.                             |
+| `level`     | `number`          | Nesting level in the hierarchy.                        |
+| `detail`    | `string \| null`  | Optional detail (e.g., base class names).              |
+| `is_cycle`  | `boolean`         | Whether this represents a recursive cycle.             |
+
 ### TypeEdge
 
-| Field          | Type                        | Description                   |
-| :------------- | :-------------------------- | :---------------------------- |
-| `from_node_id` | `string`                    | ID of the child/derived node. |
-| `to_node_id`   | `string`                    | ID of the parent/base node.   |
-| `relationship` | `"extends" \| "implements"` | Type of inheritance.          |
+| Field          | Type                              | Description                   |
+| :------------- | :-------------------------------- | :---------------------------- |
+| `from_node_id` | `string`                          | ID of the child/derived node. |
+| `to_node_id`   | `string`                          | ID of the parent/base node.   |
+| `relationship` | `"extends"` \| `"implements"`     | Type of inheritance.          |
 
 ## Example Usage
 
@@ -48,7 +63,9 @@ The Type Hierarchy API allows exploring the inheritance relationships of a class
 {
   "locate": {
     "file_path": "models.py",
-    "symbol_path": ["BaseModel"]
+    "scope": {
+      "symbol_path": ["BaseModel"]
+    }
   },
   "direction": "subtypes",
   "depth": 1
@@ -61,9 +78,9 @@ The Type Hierarchy API allows exploring the inheritance relationships of a class
 # Type Hierarchy for `BaseModel` (Depth: 1, Direction: subtypes)
 
 ## Subtypes (Children/Implementations)
-  - User (`Class`) [inherits from BaseModel] in `src/models/user.py`
-  - Order (`Class`) [inherits from BaseModel] in `src/models/order.py`
-  - Product (`Class`) [inherits from BaseModel] in `src/models/product.py`
+  - User (`Class`) in `src/models/user.py`
+  - Order (`Class`) in `src/models/order.py`
+  - Product (`Class`) in `src/models/product.py`
 
 ---
 
@@ -79,7 +96,9 @@ The Type Hierarchy API allows exploring the inheritance relationships of a class
 {
   "locate": {
     "file_path": "src/models/user.py",
-    "symbol_path": ["User"]
+    "scope": {
+      "symbol_path": ["User"]
+    }
   },
   "direction": "supertypes",
   "depth": 2
@@ -92,8 +111,8 @@ The Type Hierarchy API allows exploring the inheritance relationships of a class
 # Type Hierarchy for `User` (Depth: 2, Direction: supertypes)
 
 ## Supertypes (Parents/Base Classes)
-  - BaseModel (`Class`) [base class for all models] in `src/models/base.py`
-  - Serializable (`Interface`) [provides serialization methods] in `src/interfaces.py`
+  - BaseModel (`Class`) in `src/models/base.py`
+  - Serializable (`Interface`) in `src/interfaces.py`
 
 ---
 
@@ -109,7 +128,9 @@ The Type Hierarchy API allows exploring the inheritance relationships of a class
 {
   "locate": {
     "file_path": "src/controllers.py",
-    "symbol_path": ["AuthController"]
+    "scope": {
+      "symbol_path": ["AuthController"]
+    }
   },
   "direction": "both",
   "depth": 2
@@ -122,10 +143,10 @@ The Type Hierarchy API allows exploring the inheritance relationships of a class
 # Type Hierarchy for `AuthController` (Depth: 2, Direction: both)
 
 ## Supertypes (Parents/Base Classes)
-  - BaseController (`Class`) [handles common controller logic] in `src/controllers/base.py`
+  - BaseController (`Class`) in `src/controllers/base.py`
 
 ## Subtypes (Children/Implementations)
-  - AdminAuthController (`Class`) [admin-specific authentication] in `src/controllers/admin.py`
+  - AdminAuthController (`Class`) in `src/controllers/admin.py`
 
 ---
 

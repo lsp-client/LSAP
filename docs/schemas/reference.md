@@ -4,23 +4,21 @@ The Reference API finds all locations where a specific symbol is used across the
 
 ## ReferenceRequest
 
-| Field             | Type                                                     | Default  | Description                                          |
-| :---------------- | :------------------------------------------------------- | :------- | :--------------------------------------------------- |
-| `locate`          | [`LocateText`](locate.md) \| [`LocateSymbol`](locate.md) | Required | The symbol to find references for.                   |
-| `mode`            | `"references" \| "implementations"`                     | `"references"` | Whether to find references or concrete implementations. |
-| `context_lines`   | `number`                                                 | `2`      | Number of lines around the match to include.        |
-| `include_hover`   | `boolean`                                                | `true`   | Whether to include docs for each reference.          |
-| `include_code`    | `boolean`                                                | `true`   | Whether to include code snippets for each reference. |
-| `max_items`       | `number \| null`                                         | `null`   | Maximum number of references to return.              |
-| `start_index`     | `number`                                                 | `0`      | Number of items to skip for pagination.              |
-| `pagination_id`   | `string \| null`                                         | `null`   | Token to retrieve the next page of results.          |
+| Field             | Type                        | Default       | Description                                          |
+| :---------------- | :-------------------------- | :------------ | :--------------------------------------------------- |
+| `locate`          | [`Locate`](locate.md)       | Required      | The symbol to find references for.                   |
+| `mode`            | `"references"` \| `"implementations"` | `"references"` | Whether to find references or concrete implementations. |
+| `context_lines`   | `number`                    | `2`           | Number of lines around the match to include.         |
+| `max_items`       | `number \| null`            | `null`        | Maximum number of references to return.              |
+| `start_index`     | `number`                    | `0`           | Number of items to skip for pagination.              |
+| `pagination_id`   | `string \| null`            | `null`        | Token to retrieve the next page of results.          |
 
 ## ReferenceResponse
 
 | Field           | Type                 | Description                                       |
 | :-------------- | :------------------- | :------------------------------------------------ |
 | `request`       | `ReferenceRequest`   | The original request.                             |
-| `items`         | `ReferenceItem[]`     | List of locations where the symbol is referenced. |
+| `items`         | `ReferenceItem[]`    | List of locations where the symbol is referenced. |
 | `start_index`   | `number`             | Offset of the current page.                       |
 | `max_items`     | `number?`            | Number of items per page (if specified).          |
 | `total`         | `number?`            | Total number of references (if available).        |
@@ -33,7 +31,7 @@ The Reference API finds all locations where a specific symbol is used across the
 | :---------- | :----------------- | :------------------------------------------------------ |
 | `file_path` | `string`           | Relative path to the file.                              |
 | `line`      | `number`           | 1-based line number.                                    |
-| `code`      | `string`           | Surrounding code snippet.                                |
+| `code`      | `string`           | Surrounding code snippet.                               |
 | `symbol`    | `SymbolInfo \| null`| The symbol containing this reference (optional).       |
 
 ## Example Usage
@@ -46,7 +44,9 @@ The Reference API finds all locations where a specific symbol is used across the
 {
   "locate": {
     "file_path": "src/utils.py",
-    "symbol_path": ["format_date"]
+    "scope": {
+      "symbol_path": ["format_date"]
+    }
   },
   "max_items": 10
 }
@@ -88,7 +88,9 @@ return {"date": format_date(obj.created_at)}
 {
   "locate": {
     "file_path": "src/base.py",
-    "symbol_path": ["DatabaseConnection", "connect"]
+    "scope": {
+      "symbol_path": ["DatabaseConnection", "connect"]
+    }
   },
   "mode": "implementations",
   "max_items": 5

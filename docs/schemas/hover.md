@@ -4,16 +4,15 @@ The Hover API provides quick access to documentation, type information, or other
 
 ## HoverRequest
 
-| Field       | Type                                                     | Default  | Description                           |
-| :---------- | :------------------------------------------------------- | :------- | :------------------------------------ |
-| `locate`    | [`LocateText`](locate.md) \| [`LocateSymbol`](locate.md) | Required | The location to get hover info for.    |
+| Field    | Type                | Default  | Description                           |
+| :------- | :------------------ | :------- | :------------------------------------ |
+| `locate` | [`Locate`](locate.md) | Required | The location to get hover info for.   |
 
 ## HoverResponse
 
 | Field      | Type          | Description                                       |
 | :--------- | :------------ | :------------------------------------------------ |
-| `contents`  | `string`      | The hover content, usually in markdown format.    |
-| `range`     | `Range \| null` | The range to which this hover applies (optional). |
+| `contents` | `string`      | The hover content, usually in markdown format.    |
 
 ## Example Usage
 
@@ -25,8 +24,7 @@ The Hover API provides quick access to documentation, type information, or other
 {
   "locate": {
     "file_path": "src/utils.py",
-    "line": 42,
-    "find": "calculate"
+    "find": "def calculate"
   }
 }
 ```
@@ -35,10 +33,6 @@ The Hover API provides quick access to documentation, type information, or other
 
 ```markdown
 # Hover Information
-
-```python
-def calculate(x: int, y: int) -> int
-```
 
 Calculates the sum of two integers and returns the result.
 
@@ -57,7 +51,6 @@ Calculates the sum of two integers and returns the result.
 {
   "locate": {
     "file_path": "src/main.py",
-    "line": 15,
     "find": "config"
   }
 }
@@ -67,10 +60,6 @@ Calculates the sum of two integers and returns the result.
 
 ```markdown
 # Hover Information
-
-```python
-config: Config
-```
 
 Configuration object containing application settings such as database connection, API endpoints, and logging preferences.
 ```
@@ -83,7 +72,9 @@ Configuration object containing application settings such as database connection
 {
   "locate": {
     "file_path": "src/models/user.py",
-    "symbol_path": ["User", "save"]
+    "scope": {
+      "symbol_path": ["User", "save"]
+    }
   }
 }
 ```
@@ -92,10 +83,6 @@ Configuration object containing application settings such as database connection
 
 ```markdown
 # Hover Information
-
-```python
-def save(self) -> bool
-```
 
 Saves the current user instance to the database.
 
@@ -112,8 +99,7 @@ Saves the current user instance to the database.
 {
   "locate": {
     "file_path": "src/main.py",
-    "line": 5,
-    "find": "numpy"
+    "find": "import numpy"
   }
 }
 ```
@@ -122,10 +108,6 @@ Saves the current user instance to the database.
 
 ```markdown
 # Hover Information
-
-```python
-import numpy
-```
 
 NumPy is the fundamental package for scientific computing in Python. It provides support for large, multi-dimensional arrays and matrices, along with a large collection of high-level mathematical functions to operate on these arrays.
 
