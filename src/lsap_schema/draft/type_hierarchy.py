@@ -51,15 +51,35 @@ markdown_template: Final = """
 
 {% if direction == "supertypes" or direction == "both" %}
 ## Supertypes (Parents/Base Classes)
+
 {% for item in types_up %}
-{% for i in (1..item.level) %}  {% endfor %}- {{ item.name }} (`{{ item.kind }}`) {% if item.detail %}[{{ item.detail }}]{% endif %} in `{{ item.file_path }}`{% if item.is_cycle %} (recursive cycle){% endif %}
+{% for i in (1..item.level) %}#{% endfor %}## {{ item.name }}
+- Kind: `{{ item.kind }}`
+- File: `{{ item.file_path }}`
+{%- if item.detail != nil %}
+- Detail: {{ item.detail }}
+{%- endif %}
+{%- if item.is_cycle %}
+- Recursive cycle detected
+{%- endif %}
+
 {% endfor %}
 {% endif %}
 
 {% if direction == "subtypes" or direction == "both" %}
 ## Subtypes (Children/Implementations)
+
 {% for item in types_down %}
-{% for i in (1..item.level) %}  {% endfor %}- {{ item.name }} (`{{ item.kind }}`) {% if item.detail %}[{{ item.detail }}]{% endif %} in `{{ item.file_path }}`{% if item.is_cycle %} (recursive cycle){% endif %}
+{% for i in (1..item.level) %}#{% endfor %}## {{ item.name }}
+- Kind: `{{ item.kind }}`
+- File: `{{ item.file_path }}`
+{%- if item.detail != nil %}
+- Detail: {{ item.detail }}
+{%- endif %}
+{%- if item.is_cycle %}
+- Recursive cycle detected
+{%- endif %}
+
 {% endfor %}
 {% endif %}
 

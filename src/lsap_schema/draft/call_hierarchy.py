@@ -53,15 +53,29 @@ markdown_template: Final = """
 
 {% if direction == "incoming" or direction == "both" %}
 ## Incoming Calls (Who calls this?)
+
 {% for item in calls_in %}
-{% for i in (1..item.level) %}  {% endfor %}- {{ item.name }} (`{{ item.kind }}`) in `{{ item.file_path }}`{% if item.is_cycle %} (recursive cycle){% endif %}
+{% for i in (1..item.level) %}#{% endfor %}## {{ item.name }}
+- **Kind**: `{{ item.kind }}`
+- **File**: `{{ item.file_path }}`
+{%- if item.is_cycle %}
+- **Recursive cycle detected**
+{%- endif %}
+
 {% endfor %}
 {% endif %}
 
 {% if direction == "outgoing" or direction == "both" %}
 ## Outgoing Calls (What does this call?)
+
 {% for item in calls_out %}
-{% for i in (1..item.level) %}  {% endfor %}- {{ item.name }} (`{{ item.kind }}`) in `{{ item.file_path }}`{% if item.is_cycle %} (recursive cycle){% endif %}
+{% for i in (1..item.level) %}#{% endfor %}## {{ item.name }}
+- **Kind**: `{{ item.kind }}`
+- **File**: `{{ item.file_path }}`
+{%- if item.is_cycle %}
+- **Recursive cycle detected**
+{%- endif %}
+
 {% endfor %}
 {% endif %}
 
