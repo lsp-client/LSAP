@@ -37,6 +37,16 @@ class HoverCapability(Capability[HoverClient, HoverRequest, HoverResponse]):
         if not hover:
             return None
 
+        contents = ""
+        if isinstance(hover.contents, str):
+            contents = hover.contents
+        elif isinstance(hover.contents, list):
+            contents = "\n".join(
+                c if isinstance(c, str) else c.value for c in hover.contents
+            )
+        else:
+            contents = hover.contents.value
+
         return HoverResponse(
-            contents=hover.value,
+            contents=contents,
         )

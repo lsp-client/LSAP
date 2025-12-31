@@ -77,6 +77,7 @@ async def test_definition():
     req = DefinitionRequest(
         locate=Locate(file_path=Path("main.py"), scope=LineScope(line=2), find="foo"),
         mode="definition",
+        include_code=True,
     )
 
     resp = await capability(req)
