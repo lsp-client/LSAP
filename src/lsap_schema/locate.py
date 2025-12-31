@@ -5,7 +5,8 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, model_validator
 
 from .abc import Request, Response
-from .types import Position, Range, SymbolPath
+from .models import Position, Range
+from .types import SymbolPath
 
 HERE = "<HERE>"
 """Default marker token for exact position in find pattern"""

@@ -4,7 +4,7 @@ from typing import Final, Literal
 from pydantic import BaseModel, ConfigDict
 
 from lsap_schema.abc import Request, Response
-from lsap_schema.types import Range
+from lsap_schema.models import Range
 
 
 class InlayHintItem(BaseModel):

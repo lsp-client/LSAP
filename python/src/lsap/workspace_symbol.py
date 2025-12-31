@@ -5,7 +5,7 @@ from typing import Protocol, override, runtime_checkable
 
 import asyncer
 from attrs import Factory, define
-from lsap_schema.types import SymbolKind
+from lsap_schema.types import SymbolDetailInfo, SymbolKind
 from lsap_schema.workspace_symbol import (
     WorkspaceSymbolItem,
     WorkspaceSymbolRequest,
@@ -20,9 +20,10 @@ from lsp_client.protocol import CapabilityClientProtocol
 from lsprotocol.types import Location, SymbolInformation, WorkspaceSymbol
 
 from lsap.abc import Capability
-from lsap.symbol import SymbolCapability
+from lsap.symbol_outline import SymbolOutlineCapability
 from lsap.utils.cache import PaginationCache
 from lsap.utils.pagination import paginate
+from lsap.utils.symbol import symbol_at
 
 
 @runtime_checkable
@@ -42,8 +43,8 @@ class WorkspaceSymbolCapability(
     _cache: PaginationCache[WorkspaceSymbolItem] = Factory(PaginationCache)
 
     @cached_property
-    def symbol(self) -> SymbolCapability:
-        return SymbolCapability(self.client)
+    def outline(self) -> SymbolOutlineCapability:
+        return SymbolOutlineCapability(self.client)
 
     @override
     async def __call__(
@@ -57,7 +58,7 @@ class WorkspaceSymbolCapability(
             items = []
             async with asyncer.create_task_group() as tg:
                 for symbol in symbols:
-                    tg.soonify(self._process_symbol)(symbol, req, items)
+                    tg.soonify(self._process_symbol)(symbol, items)
 
             items.sort(key=lambda x: (x.name, x.file_path))
             return items
@@ -79,21 +80,20 @@ class WorkspaceSymbolCapability(
     async def _process_symbol(
         self,
         symbol: SymbolInformation | WorkspaceSymbol,
-        req: WorkspaceSymbolRequest,
         items: list[WorkspaceSymbolItem],
     ) -> None:
         location = symbol.location
         file_path = self.client.from_uri(location.uri)
         range_ = location.range if isinstance(location, Location) else None
 
-        info = None
+        info: SymbolDetailInfo | None = None
         if range_:
-            info = await self.symbol.resolve(
-                file_path,
-                range_.start,
-                include_hover=req.include_hover,
-                include_code=req.include_code,
-            )
+            symbols = await self.client.request_document_symbol_list(file_path)
+            if symbols and (match := symbol_at(symbols, range_.start)):
+                path, sym = match
+                details = await self.outline.resolve_symbols(file_path, [(path, sym)])
+                if details:
+                    info = details[0]
 
         if info:
             items.append(
@@ -110,5 +110,7 @@ class WorkspaceSymbolCapability(
                     kind=SymbolKind.from_lsp(symbol.kind),
                     container_name=symbol.container_name,
                     path=[],
+                    detail="",
+                    hover="",
                 )
             )

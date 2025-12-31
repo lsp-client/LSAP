@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .abc import PaginatedRequest, PaginatedResponse
 from .locate import LocateRequest
-from .types import SymbolDetailInfo
+from .models import SymbolDetailInfo
 
 
 class ReferenceItem(BaseModel):

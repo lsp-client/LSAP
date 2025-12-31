@@ -1,23 +1,10 @@
 # Base classes
 from .abc import PaginatedRequest, PaginatedResponse, Request, Response
 
-# Completion
-from .draft.completion import CompletionItem, CompletionRequest, CompletionResponse
-
 # Definition
 from .definition import (
     DefinitionRequest,
     DefinitionResponse,
-)
-
-# Diagnostics
-from .draft.diagnostics import (
-    Diagnostic,
-    FileDiagnosticsRequest,
-    FileDiagnosticsResponse,
-    WorkspaceDiagnosticItem,
-    WorkspaceDiagnosticsRequest,
-    WorkspaceDiagnosticsResponse,
 )
 
 # Call hierarchy
@@ -27,6 +14,19 @@ from .draft.call_hierarchy import (
     CallHierarchyNode,
     CallHierarchyRequest,
     CallHierarchyResponse,
+)
+
+# Completion
+from .draft.completion import CompletionItem, CompletionRequest, CompletionResponse
+
+# Diagnostics
+from .draft.diagnostics import (
+    Diagnostic,
+    FileDiagnosticsRequest,
+    FileDiagnosticsResponse,
+    WorkspaceDiagnosticItem,
+    WorkspaceDiagnosticsRequest,
+    WorkspaceDiagnosticsResponse,
 )
 
 # Inlay hint
@@ -71,6 +71,16 @@ from .locate import (
     SymbolScope,
 )
 
+# Types
+from .models import (
+    Position,
+    Range,
+    SymbolCodeInfo,
+    SymbolDetailInfo,
+    SymbolInfo,
+    SymbolKind,
+)
+
 # Reference
 from .reference import ReferenceItem, ReferenceRequest, ReferenceResponse
 
@@ -81,16 +91,6 @@ from .symbol import SymbolRequest, SymbolResponse
 from .symbol_outline import (
     SymbolOutlineRequest,
     SymbolOutlineResponse,
-)
-
-# Types
-from .types import (
-    Position,
-    Range,
-    SymbolCodeInfo,
-    SymbolDetailInfo,
-    SymbolInfo,
-    SymbolKind,
 )
 
 # Workspace

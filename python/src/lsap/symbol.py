@@ -6,13 +6,19 @@ from typing import Protocol, override, runtime_checkable
 
 from attrs import define
 from lsap_schema.symbol import SymbolRequest, SymbolResponse
-from lsap_schema.types import SymbolInfo
+from lsap_schema.types import (
+    Position,
+    Range,
+    SymbolCodeInfo,
+    SymbolKind,
+)
 from lsp_client.capability.request import WithRequestDocumentSymbol, WithRequestHover
 from lsp_client.protocol import CapabilityClientProtocol
 from lsprotocol.types import Position as LSPPosition
 
 from lsap.abc import Capability
 from lsap.locate import LocateCapability
+from lsap.utils.content import DocumentReader
 from lsap.utils.symbol import symbol_at
 
 from .symbol_outline import SymbolOutlineCapability
@@ -46,8 +52,6 @@ class SymbolCapability(Capability[SymbolClient, SymbolRequest, SymbolResponse]):
         best_match = await self.resolve(
             location.file_path,
             location.position.to_lsp(),
-            include_hover=req.include_hover,
-            include_code=req.include_code,
         )
 
         if not best_match:
@@ -59,9 +63,7 @@ class SymbolCapability(Capability[SymbolClient, SymbolRequest, SymbolResponse]):
         self,
         file_path: Path,
         pos: LSPPosition,
-        include_hover: bool = False,
-        include_code: bool = False,
-    ) -> SymbolInfo | None:
+    ) -> SymbolCodeInfo | None:
         symbols = await self.client.request_document_symbol_list(file_path)
         if not symbols:
             return None
@@ -71,10 +73,21 @@ class SymbolCapability(Capability[SymbolClient, SymbolRequest, SymbolResponse]):
             return None
 
         path, symbol = match
-        items = await self.outline.resolve_symbols(
-            file_path,
-            [(path, symbol)],
-            include_hover=include_hover,
-            include_code=include_code,
+        document = await self.client.read_file(file_path)
+        reader = DocumentReader(document)
+
+        code = ""
+        if snippet := reader.read(symbol.range):
+            code = snippet.content
+
+        return SymbolCodeInfo(
+            file_path=file_path,
+            name=symbol.name,
+            path=path,
+            kind=SymbolKind.from_lsp(symbol.kind),
+            code=code,
+            range=Range(
+                start=Position.from_lsp(symbol.range.start),
+                end=Position.from_lsp(symbol.range.end),
+            ),
         )
-        return items[0] if items else None

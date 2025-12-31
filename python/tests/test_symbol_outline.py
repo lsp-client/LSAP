@@ -56,7 +56,7 @@ async def test_symbol_outline():
     client = MockSymbolOutlineClient()
     capability = SymbolOutlineCapability(client=client)  # type: ignore
 
-    req = SymbolOutlineRequest(file_path=Path("test.py"), include_code=True)
+    req = SymbolOutlineRequest(file_path=Path("test.py"))
 
     resp = await capability(req)
     assert resp is not None
@@ -64,9 +64,6 @@ async def test_symbol_outline():
 
     assert resp.items[0].name == "A"
     assert len(resp.items[0].path) == 1
-    assert resp.items[0].code is not None
 
     assert resp.items[1].name == "foo"
     assert len(resp.items[1].path) == 2
-    assert resp.items[1].code is not None
-    assert "def foo(self):" in resp.items[1].code

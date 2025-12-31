@@ -4,7 +4,7 @@ from pydantic import ConfigDict
 
 from .abc import Response
 from .locate import LocateRequest
-from .types import SymbolCodeInfo
+from .models import SymbolCodeInfo
 
 
 class SymbolRequest(LocateRequest):
@@ -19,10 +19,12 @@ class SymbolRequest(LocateRequest):
 markdown_template: Final = """
 # Symbol: `{{ path | join: "." }}` (`{{ kind }}`) at `{{ file_path }}`
 
+{% if code != nil -%}
 ## Implementation
 ```{{ file_path.suffix | remove_first: "." }}
 {{ code }}
 ```
+{%- endif %}
 """
 
 

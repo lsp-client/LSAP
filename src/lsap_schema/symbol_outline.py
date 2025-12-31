@@ -4,7 +4,7 @@ from typing import Final
 from pydantic import ConfigDict
 
 from .abc import Request, Response
-from .types import SymbolDetailInfo
+from .models import SymbolDetailInfo
 
 
 class SymbolOutlineRequest(Request):
@@ -24,8 +24,8 @@ markdown_template: Final = """
 {% for item in items -%}
 {% assign level = item.path | size | plus: 1 -%}
 {% for i in (1..level) %}#{% endfor %} {{ item.path | join: "." }} (`{{ item.kind }}`)
-{{ item.detail }}
-{{ item.hover | strip | truncate: 120 }}
+{% if item.detail != nil %}{{ item.detail }}{% endif %}
+{% if item.hover != nil %}{{ item.hover | strip | truncate: 120 }}{% endif %}
 
 {% endfor -%}
 """

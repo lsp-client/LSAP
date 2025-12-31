@@ -4,7 +4,7 @@ from typing import Protocol, runtime_checkable
 import asyncer
 from attrs import Factory, define
 from lsap_schema.reference import ReferenceItem, ReferenceRequest, ReferenceResponse
-from lsap_schema.types import SymbolInfo, SymbolKind
+from lsap_schema.types import Position, Range, SymbolDetailInfo, SymbolKind
 from lsp_client.capability.request import (
     WithRequestDocumentSymbol,
     WithRequestHover,
@@ -116,19 +116,26 @@ class ReferenceCapability(
         if not (snippet := reader.read(context_range)):
             return
 
-        symbol: SymbolInfo | None = None
+        symbol: SymbolDetailInfo | None = None
         if symbols := await self.client.request_document_symbol_list(file_path):
             if match := symbol_at(symbols, range_.start):
                 path, sym = match
                 kind = SymbolKind.from_lsp(sym.kind)
 
-                symbol = SymbolInfo(
+                symbol = SymbolDetailInfo(
                     file_path=file_path,
                     name=sym.name,
                     path=path,
                     kind=kind,
-                    detail=sym.detail,
+                    detail=sym.detail or "",
+                    hover="",
+                    range=Range(
+                        start=Position.from_lsp(sym.range.start),
+                        end=Position.from_lsp(sym.range.end),
+                    ),
                 )
+                if hover := await self.client.request_hover(file_path, range_.start):
+                    symbol.hover = hover.value
 
         items.append(
             ReferenceItem(

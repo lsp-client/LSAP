@@ -4,7 +4,7 @@ from pydantic import ConfigDict
 
 from .abc import Response
 from .locate import LocateRequest
-from .types import SymbolCodeInfo
+from .models import SymbolCodeInfo
 
 
 class DefinitionRequest(LocateRequest):
@@ -28,10 +28,12 @@ No {{ request.mode | replace: "_", " " }} found.
 {%- for item in items -%}
 ## `{{ item.file_path }}`: {{ item.path | join: "." }} (`{{ item.kind }}`)
 
+{% if item.code != nil -%}
 ### Content
 ```{{ item.file_path.suffix | remove_first: "." }}
 {{ item.code }}
 ```
+{%- endif %}
 
 {% endfor -%}
 {%- endif %}

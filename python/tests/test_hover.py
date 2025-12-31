@@ -15,13 +15,11 @@ class MockHoverClient:
 
     async def request_hover(
         self, file_path: Path, position: LSPPosition
-    ) -> Hover | None:
+    ) -> MarkupContent | None:
         if "main.py" in str(file_path) and position.line == 0:
-            return Hover(
-                contents=MarkupContent(
-                    kind=MarkupKind.Markdown,
-                    value="Hover content for foo",
-                )
+            return MarkupContent(
+                kind=MarkupKind.Markdown,
+                value="Hover content for foo",
             )
         return None
 
@@ -43,7 +41,7 @@ async def test_hover():
 
     resp = await capability(req)
     assert resp is not None
-    assert resp.contents == "Hover content for foo"
+    assert resp.content == "Hover content for foo"
 
 
 @pytest.mark.asyncio

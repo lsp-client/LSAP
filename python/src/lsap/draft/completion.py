@@ -1,5 +1,5 @@
 from functools import cached_property
-from typing import Protocol, cast, override, runtime_checkable
+from typing import Protocol, override, runtime_checkable
 
 from attrs import Factory, define
 from lsap_schema.draft.completion import (
@@ -57,7 +57,14 @@ class CompletionCapability(
             for lsp_item in lsp_items:
                 kind = "Unknown"
                 if lsp_item.kind is not None:
-                    kind = cast(CompletionItemKind, lsp_item.kind).name
+                    if isinstance(lsp_item.kind, CompletionItemKind):
+                        kind = lsp_item.kind.name
+                    else:
+                        # Handle case where it might be a raw integer
+                        try:
+                            kind = CompletionItemKind(lsp_item.kind).name
+                        except ValueError:
+                            kind = str(lsp_item.kind)
 
                 documentation = None
                 if lsp_item.documentation:

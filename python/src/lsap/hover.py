@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import cached_property
-from typing import Protocol, override, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 from attrs import define
 from lsap_schema.hover import HoverRequest, HoverResponse
@@ -26,7 +26,6 @@ class HoverCapability(Capability[HoverClient, HoverRequest, HoverResponse]):
     def locate(self) -> LocateCapability:
         return LocateCapability(self.client)
 
-    @override
     async def __call__(self, req: HoverRequest) -> HoverResponse | None:
         if not (loc_resp := await self.locate(req)):
             return None
@@ -37,16 +36,4 @@ class HoverCapability(Capability[HoverClient, HoverRequest, HoverResponse]):
         if hover is None:
             return None
 
-        contents = ""
-        if isinstance(hover.value, str):
-            contents = hover.contents
-        elif isinstance(hover.contents, list):
-            contents = "\n".join(
-                c if isinstance(c, str) else c.value for c in hover.contents
-            )
-        else:
-            contents = hover.contents.value
-
-        return HoverResponse(
-            contents=contents,
-        )
+        return HoverResponse(content=hover.value)

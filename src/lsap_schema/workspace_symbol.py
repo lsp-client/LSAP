@@ -3,7 +3,7 @@ from typing import Final
 from pydantic import ConfigDict
 
 from .abc import PaginatedRequest, PaginatedResponse
-from .types import SymbolDetailInfo
+from .models import SymbolDetailInfo
 
 
 class WorkspaceSymbolItem(SymbolDetailInfo):
@@ -34,9 +34,9 @@ No symbols found matching the query.
 {%- for item in items %}
 ### {{ item.name }} (`{{ item.kind }}`)
 - Location: `{{ item.file_path }}` {% if item.container_name != nil %}(in `{{ item.container_name }}`){% endif %}
-- Detail: {{ item.detail }}
+{% if item.detail != nil %}- Detail: {{ item.detail }}{% endif %}
 
-{{ item.hover }}
+{% if item.hover != nil %}{{ item.hover }}{% endif %}
 {%- endfor %}
 
 {% if has_more -%}
