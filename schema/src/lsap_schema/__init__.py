@@ -2,7 +2,7 @@
 from .abc import PaginatedRequest, PaginatedResponse, Request, Response
 
 # Completion
-from .completion import CompletionItem, CompletionRequest, CompletionResponse
+from .draft.completion import CompletionItem, CompletionRequest, CompletionResponse
 
 # Definition
 from .definition import (

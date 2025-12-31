@@ -2,7 +2,11 @@ from functools import cached_property
 from typing import Protocol, cast, override, runtime_checkable
 
 from attrs import Factory, define
-from lsap_schema.completion import CompletionItem, CompletionRequest, CompletionResponse
+from lsap_schema.draft.completion import (
+    CompletionItem,
+    CompletionRequest,
+    CompletionResponse,
+)
 from lsp_client.capability.request import (
     WithRequestCompletion,
     WithRequestDocumentSymbol,

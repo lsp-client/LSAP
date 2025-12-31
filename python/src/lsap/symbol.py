@@ -7,10 +7,7 @@ from typing import Protocol, override
 from attrs import define
 from lsap_schema.symbol import SymbolRequest, SymbolResponse
 from lsap_schema.types import SymbolInfo
-from lsp_client.capability.request import (
-    WithRequestDocumentSymbol,
-    WithRequestHover,
-)
+from lsp_client.capability.request import WithRequestDocumentSymbol, WithRequestHover
 from lsp_client.protocol import CapabilityClientProtocol
 from lsprotocol.types import Position as LSPPosition
 

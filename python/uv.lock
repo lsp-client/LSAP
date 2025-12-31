@@ -159,7 +159,7 @@ dev = [
 [[package]]
 name = "lsap-schema"
 version = "0.1.0"
-source = { git = "https://github.com/lsp-client/LSAP.git?subdirectory=schema#8434aad55b6733b539d1751d855081931f48d589" }
+source = { git = "https://github.com/lsp-client/LSAP.git?subdirectory=schema#77c400f4dd78cb8c5814eef0fbc7c1bb1f5c7dc3" }
 dependencies = [
     { name = "lsprotocol" },
     { name = "pydantic" },

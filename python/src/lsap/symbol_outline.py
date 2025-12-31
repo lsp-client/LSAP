@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Protocol, override, runtime_checkable
@@ -8,7 +10,7 @@ from lsap_schema.symbol_outline import SymbolOutlineRequest, SymbolOutlineRespon
 from lsap_schema.types import Position, Range, SymbolInfo, SymbolKind, SymbolPath
 from lsp_client.capability.request import WithRequestDocumentSymbol, WithRequestHover
 from lsp_client.protocol import CapabilityClientProtocol
-from lsprotocol.types import DocumentSymbol
+from lsprotocol.types import DocumentSymbol, Position as LSPPosition
 
 from lsap.abc import Capability
 from lsap.utils.content import DocumentReader
@@ -56,33 +58,40 @@ class SymbolOutlineCapability(
             reader = DocumentReader(document)
 
         items: list[SymbolInfo] = []
-
-        async def fill_hover(it: SymbolInfo, sym: DocumentSymbol) -> None:
-            if hover := await self.client.request_hover(
-                file_path, sym.selection_range.start
-            ):
-                it.hover = hover.value
-
         async with asyncer.create_task_group() as tg:
             for path, symbol in symbols_with_path:
-                item = SymbolInfo(
-                    file_path=file_path,
-                    name=symbol.name,
-                    path=path,
-                    kind=SymbolKind.from_lsp(symbol.kind),
-                    detail=symbol.detail,
-                    range=Range(
-                        start=Position.from_lsp(symbol.range.start),
-                        end=Position.from_lsp(symbol.range.end),
-                    ),
-                )
-
+                item = self._make_item(file_path, path, symbol, reader)
                 items.append(item)
 
-                if reader and (snippet := reader.read(symbol.range)):
-                    item.code = snippet.content
-
                 if include_hover:
-                    tg.soonify(fill_hover)(item, symbol)
+                    tg.soonify(self._fill_hover)(item, symbol.selection_range.start)
 
         return items
+
+    def _make_item(
+        self,
+        file_path: Path,
+        path: SymbolPath,
+        symbol: DocumentSymbol,
+        reader: DocumentReader | None,
+    ) -> SymbolInfo:
+        item = SymbolInfo(
+            file_path=file_path,
+            name=symbol.name,
+            path=path,
+            kind=SymbolKind.from_lsp(symbol.kind),
+            detail=symbol.detail,
+            range=Range(
+                start=Position.from_lsp(symbol.range.start),
+                end=Position.from_lsp(symbol.range.end),
+            ),
+        )
+
+        if reader and (snippet := reader.read(symbol.range)):
+            item.code = snippet.content
+
+        return item
+
+    async def _fill_hover(self, item: SymbolInfo, pos: LSPPosition) -> None:
+        if hover := await self.client.request_hover(item.file_path, pos):
+            item.hover = hover.value

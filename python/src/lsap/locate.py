@@ -181,4 +181,3 @@ class LocateRangeCapability(
                     end=Position.from_lsp(final_range.end),
                 ),
             )
-        return None
