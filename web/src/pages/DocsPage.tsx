@@ -69,7 +69,7 @@ function posixJoin(baseDir: string, hrefPath: string) {
   return out.join("/");
 }
 
-const RAW_DOCS = import.meta.glob("../../../docs/schemas/**/*.md", {
+const RAW_DOCS = import.meta.glob("../../../docs/**/*.md", {
   query: "?raw",
   import: "default",
   eager: true,
@@ -79,12 +79,12 @@ function makeDocIndex(): DocEntry[] {
   const entries: DocEntry[] = [];
 
   for (const [sourcePath, raw] of Object.entries(RAW_DOCS)) {
-    const marker = "/docs/schemas/";
+    const marker = "/docs/";
     const idx = sourcePath.lastIndexOf(marker);
     if (idx === -1) continue;
     const relativePath = sourcePath.slice(idx + marker.length);
     const { frontmatter, body } = parseFrontmatter(raw);
-    const draft = relativePath.startsWith("draft/");
+    const draft = relativePath.startsWith("schemas/draft/");
 
     const frontmatterTitle = frontmatter.title?.trim();
     const headingTitle = extractTitleFromMarkdown(body)?.trim();
@@ -96,14 +96,20 @@ function makeDocIndex(): DocEntry[] {
     const title =
       frontmatterTitle || headingTitle || fallbackTitle || "Documentation";
 
-    const route = `/docs/schemas/${relativePath.replace(/\.md$/, "")}`;
+    const route = `/docs/${relativePath.replace(/\.md$/, "")}`;
     entries.push({ route, relativePath, title, draft });
   }
 
   entries.sort((a, b) => {
-    const aIsReadme = a.relativePath.toLowerCase() === "readme.md";
-    const bIsReadme = b.relativePath.toLowerCase() === "readme.md";
+    const aIsReadme = a.relativePath.toLowerCase() === "schemas/readme.md";
+    const bIsReadme = b.relativePath.toLowerCase() === "schemas/readme.md";
     if (aIsReadme !== bIsReadme) return aIsReadme ? -1 : 1;
+    
+    // Group by category: root docs vs schema docs
+    const aIsSchema = a.relativePath.startsWith("schemas/");
+    const bIsSchema = b.relativePath.startsWith("schemas/");
+    if (aIsSchema !== bIsSchema) return aIsSchema ? 1 : -1;
+    
     if (a.draft !== b.draft) return a.draft ? 1 : -1;
     return a.relativePath.localeCompare(b.relativePath);
   });
@@ -121,15 +127,8 @@ function canonicalRouteFromSplat(splat?: string) {
   if (cleaned === "schemas") return DEFAULT_ROUTE;
   if (cleaned === "schemas/README") return DEFAULT_ROUTE;
 
-  if (cleaned.startsWith("schemas/")) {
-    const normalized = cleaned.replace(/\.md$/, "");
-    return `/docs/${normalized}`;
-  }
-
-  const old = cleaned.replace(/\.md$/, "");
-  if (old.startsWith("draft_"))
-    return `/docs/schemas/draft/${old.replace(/^draft_/, "")}`;
-  return `/docs/schemas/${old}`;
+  const normalized = cleaned.replace(/\.md$/, "");
+  return `/docs/${normalized}`;
 }
 
 function hrefToDocsRoute(href: string, currentDocRelativePath: string) {
@@ -142,10 +141,7 @@ function hrefToDocsRoute(href: string, currentDocRelativePath: string) {
 
   if (normalized.startsWith("/docs/")) {
     const stripped = normalized.replace(/^\/docs\//, "").replace(/\.md$/, "");
-    if (stripped.startsWith("schemas/")) return `/docs/${stripped}${hash}`;
-    if (stripped.startsWith("draft_"))
-      return `/docs/schemas/draft/${stripped.replace(/^draft_/, "")}${hash}`;
-    return `/docs/schemas/${stripped}${hash}`;
+    return `/docs/${stripped}${hash}`;
   }
 
   const underSchemas = normalized.startsWith("schemas/");
@@ -158,7 +154,7 @@ function hrefToDocsRoute(href: string, currentDocRelativePath: string) {
     : posixJoin(baseDir, schemaRelative);
 
   const withoutExt = resolvedRelative.replace(/\.md$/, "");
-  return `/docs/schemas/${withoutExt}${hash}`;
+  return `/docs/${withoutExt}${hash}`;
 }
 
 export default function DocsPage() {
@@ -173,6 +169,15 @@ export default function DocsPage() {
   const currentDoc =
     DOC_BY_ROUTE.get(canonicalRoute) ?? DOC_BY_ROUTE.get(DEFAULT_ROUTE);
 
+  const generalDocs = useMemo(
+    () => docs.filter(doc => !doc.relativePath.startsWith("schemas/")),
+    [docs]
+  );
+  const schemaDocs = useMemo(
+    () => docs.filter(doc => doc.relativePath.startsWith("schemas/")),
+    [docs]
+  );
+
   useEffect(() => {
     const titleSuffix = currentDoc?.draft ? " (draft)" : "";
     document.title = `${
@@ -184,7 +189,7 @@ export default function DocsPage() {
     if (!currentDoc) return;
     setLoading(true);
     const sourcePath = Object.keys(RAW_DOCS).find((p) =>
-      p.endsWith(`/docs/schemas/${currentDoc.relativePath}`)
+      p.endsWith(`/docs/${currentDoc.relativePath}`)
     );
     const raw = sourcePath ? RAW_DOCS[sourcePath] ?? "" : "";
     const { body } = parseFrontmatter(raw);
@@ -213,35 +218,72 @@ export default function DocsPage() {
                 Documentation
               </h2>
               <nav className="space-y-1">
-                {docs.map((doc) => (
-                  <Link
-                    key={doc.route}
-                    to={doc.route}
-                    className={`
-                      flex items-center gap-2 px-3 py-2 rounded-sm text-sm transition-colors
-                      ${
-                        currentDoc.route === doc.route
-                          ? "bg-primary/10 text-primary font-medium"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                      }
-                    `}
-                  >
-                    <FileText className="h-3.5 w-3.5" />
-                    <span className="font-mono text-xs">{doc.title}</span>
-                    {doc.draft && (
-                      <span
-                        title="Draft: content may change"
-                        aria-label="Draft: content may change"
-                        className="ml-1 cursor-help rounded-sm border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground"
+                {/* Root level docs */}
+                {generalDocs.length > 0 && (
+                  <>
+                    <div className="px-3 py-2 font-mono text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      General
+                    </div>
+                    {generalDocs.map((doc) => (
+                      <Link
+                        key={doc.route}
+                        to={doc.route}
+                        className={`
+                          flex items-center gap-2 px-3 py-2 rounded-sm text-sm transition-colors
+                          ${
+                            currentDoc.route === doc.route
+                              ? "bg-primary/10 text-primary font-medium"
+                              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                          }
+                        `}
                       >
-                        draft
-                      </span>
-                    )}
-                    {currentDoc.route === doc.route && (
-                      <ChevronRight className="h-3.5 w-3.5 ml-auto" />
-                    )}
-                  </Link>
-                ))}
+                        <FileText className="h-3.5 w-3.5" />
+                        <span className="font-mono text-xs">{doc.title}</span>
+                        {currentDoc.route === doc.route && (
+                          <ChevronRight className="h-3.5 w-3.5 ml-auto" />
+                        )}
+                      </Link>
+                    ))}
+                  </>
+                )}
+                
+                {/* Schema docs */}
+                {schemaDocs.length > 0 && (
+                  <>
+                    <div className="px-3 py-2 font-mono text-xs font-medium text-muted-foreground uppercase tracking-wider mt-4">
+                      Schemas
+                    </div>
+                    {schemaDocs.map((doc) => (
+                      <Link
+                        key={doc.route}
+                        to={doc.route}
+                        className={`
+                          flex items-center gap-2 px-3 py-2 rounded-sm text-sm transition-colors
+                          ${
+                            currentDoc.route === doc.route
+                              ? "bg-primary/10 text-primary font-medium"
+                              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                          }
+                        `}
+                      >
+                        <FileText className="h-3.5 w-3.5" />
+                        <span className="font-mono text-xs">{doc.title}</span>
+                        {doc.draft && (
+                          <span
+                            title="Draft: content may change"
+                            aria-label="Draft: content may change"
+                            className="ml-1 cursor-help rounded-sm border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground"
+                          >
+                            draft
+                          </span>
+                        )}
+                        {currentDoc.route === doc.route && (
+                          <ChevronRight className="h-3.5 w-3.5 ml-auto" />
+                        )}
+                      </Link>
+                    ))}
+                  </>
+                )}
               </nav>
             </Card>
           </aside>

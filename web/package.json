@@ -5,8 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "predev": "mkdir -p public/docs && cp -r ../docs/schemas public/docs/",
-    "prebuild": "mkdir -p public/docs && cp -r ../docs/schemas public/docs/",
+    "predev": "mkdir -p public/docs && cp -r ../docs/* public/docs/",
+    "prebuild": "mkdir -p public/docs && cp -r ../docs/* public/docs/",
     "build": "vite build",
     "preview": "vite preview"
   },
