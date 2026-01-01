@@ -1,16 +1,14 @@
-from pathlib import Path
 from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from .abc import PaginatedRequest, PaginatedResponse
 from .locate import LocateRequest
-from .models import SymbolDetailInfo
+from .models import Location, SymbolDetailInfo
 
 
 class ReferenceItem(BaseModel):
-    file_path: Path
-    line: int = Field(..., description="1-based line number")
+    location: Location
     code: str = Field(..., description="Surrounding code snippet")
     symbol: SymbolDetailInfo | None = Field(
         None, description="The symbol containing this reference"
@@ -43,12 +41,12 @@ Total {{ request.mode }}: {{ total }} | Showing: {{ items.size }}{% if max_items
 No {{ request.mode }} found.
 {%- else -%}
 {%- for item in items -%}
-### {{ item.file_path }}:{{ item.line }}
+### {{ item.location.file_path }}:{{ item.location.range.start.line }}
 {%- if item.symbol != nil %}
 In `{{ item.symbol.path | join: "." }}` (`{{ item.symbol.kind }}`)
 {%- endif %}
 
-```{{ item.file_path.suffix | remove_first: "." }}
+```{{ item.location.file_path.suffix | remove_first: "." }}
 {{ item.code }}
 ```
 

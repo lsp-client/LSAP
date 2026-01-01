@@ -36,6 +36,11 @@ class Range(BaseModel):
     end: Position
 
 
+class Location(BaseModel):
+    file_path: Path
+    range: Range
+
+
 class SymbolKind(str, Enum):
     File = "file"
     Module = "module"

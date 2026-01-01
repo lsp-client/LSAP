@@ -75,6 +75,7 @@ from .locate import (
 from .models import (
     Position,
     Range,
+    Location,
     SymbolCodeInfo,
     SymbolDetailInfo,
     SymbolInfo,
@@ -147,6 +148,7 @@ __all__ = [
     "SymbolScope",
     "Position",
     "Range",
+    "Location",
     "SymbolCodeInfo",
     "SymbolDetailInfo",
     "SymbolInfo",
