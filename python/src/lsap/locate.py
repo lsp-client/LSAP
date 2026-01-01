@@ -17,7 +17,7 @@ from lsp_client.protocol import CapabilityClientProtocol
 from lsprotocol.types import Position as LSPPosition
 from lsprotocol.types import Range as LSPRange
 
-from lsap.error import NotFoundError
+from lsap.exception import NotFoundError
 from lsap.utils.content import DocumentReader
 from lsap.utils.symbol import iter_symbols
 
