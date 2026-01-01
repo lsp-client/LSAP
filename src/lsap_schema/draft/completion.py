@@ -46,10 +46,17 @@ No completion suggestions found.
 {{ items[0].documentation }}
 {% endif %}
 
-| Symbol | Kind | Detail |
-| :--- | :--- | :--- |
 {%- for item in items %}
-| `{{ item.label }}` | {{ item.kind }} | {{ item.detail | default: "" }} |
+### {{ forloop.index }}. `{{ item.label }}` ({{ item.kind }})
+{%- if item.detail %}
+- Detail: {{ item.detail }}
+{%- endif %}
+{%- if item.insert_text and item.insert_text != item.label %}
+- Insert: `{{ item.insert_text }}`
+{%- endif %}
+{%- if item.documentation %}
+- Doc: {{ item.documentation | truncate: 300 }}
+{%- endif %}
 {%- endfor %}
 
 {% if has_more -%}
