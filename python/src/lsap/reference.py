@@ -3,15 +3,8 @@ from typing import Protocol, runtime_checkable
 
 import asyncer
 from attrs import Factory, define
-from lsap_schema.models import (
-    Location as LSAPLocation,
-)
-from lsap_schema.models import (
-    Position,
-    Range,
-    SymbolDetailInfo,
-    SymbolKind,
-)
+from lsap_schema.models import Location as LSAPLocation
+from lsap_schema.models import Position, Range, SymbolDetailInfo, SymbolKind
 from lsap_schema.reference import ReferenceItem, ReferenceRequest, ReferenceResponse
 from lsp_client.capability.request import (
     WithRequestDocumentSymbol,
@@ -66,7 +59,7 @@ class ReferenceCapability(
                 if refs := await self.client.request_references(
                     file_path, lsp_pos, include_declaration=True
                 ):
-                    locations.extend(refs)  # type: ignore
+                    locations.extend(refs)
             elif req.mode == "implementations":
                 if impls := await self.client.request_implementation_locations(
                     file_path, lsp_pos
@@ -110,8 +103,8 @@ class ReferenceCapability(
         content = await self.client.read_file(file_path)
         reader = DocumentReader(content)
 
-        range_ = loc.range
-        line = range_.start.line
+        range = loc.range
+        line = range.start.line
         context_range = LSPRange(
             start=LSPPosition(line=max(0, line - context_lines), character=0),
             end=LSPPosition(line=line + context_lines + 1, character=0),
@@ -121,7 +114,7 @@ class ReferenceCapability(
 
         symbol: SymbolDetailInfo | None = None
         if symbols := await self.client.request_document_symbol_list(file_path):
-            if match := symbol_at(symbols, range_.start):
+            if match := symbol_at(symbols, range.start):
                 path, sym = match
                 kind = SymbolKind.from_lsp(sym.kind)
 
@@ -131,13 +124,13 @@ class ReferenceCapability(
                     path=path,
                     kind=kind,
                     detail=sym.detail,
-                    hover="",
                     range=Range(
                         start=Position.from_lsp(sym.range.start),
                         end=Position.from_lsp(sym.range.end),
                     ),
                 )
-                if hover := await self.client.request_hover(file_path, range_.start):
+
+                if hover := await self.client.request_hover(file_path, range.start):
                     symbol.hover = hover.value
 
         items.append(
@@ -145,55 +138,8 @@ class ReferenceCapability(
                 location=LSAPLocation(
                     file_path=file_path,
                     range=Range(
-                        start=Position.from_lsp(range_.start),
-                        end=Position.from_lsp(range_.end),
-                    ),
-                ),
-                code=snippet.content,
-                symbol=symbol,
-            )
-        )
-
-        file_path = self.client.from_uri(uri)
-        content = await self.client.read_file(file_path)
-        reader = DocumentReader(content)
-
-        line = range_.start.line
-        context_range = LSPRange(
-            start=LSPPosition(line=max(0, line - context_lines), character=0),
-            end=LSPPosition(line=line + context_lines + 1, character=0),
-        )
-        if not (snippet := reader.read(context_range)):
-            return
-
-        symbol: SymbolDetailInfo | None = None
-        if symbols := await self.client.request_document_symbol_list(file_path):
-            if match := symbol_at(symbols, range_.start):
-                path, sym = match
-                kind = SymbolKind.from_lsp(sym.kind)
-
-                symbol = SymbolDetailInfo(
-                    file_path=file_path,
-                    name=sym.name,
-                    path=path,
-                    kind=kind,
-                    detail=sym.detail,
-                    hover="",
-                    range=Range(
-                        start=Position.from_lsp(sym.range.start),
-                        end=Position.from_lsp(sym.range.end),
-                    ),
-                )
-                if hover := await self.client.request_hover(file_path, range_.start):
-                    symbol.hover = hover.value
-
-        items.append(
-            ReferenceItem(
-                location=LSAPLocation(
-                    file_path=file_path,
-                    range=Range(
-                        start=Position.from_lsp(range_.start),
-                        end=Position.from_lsp(range_.end),
+                        start=Position.from_lsp(range.start),
+                        end=Position.from_lsp(range.end),
                     ),
                 ),
                 code=snippet.content,

@@ -1,5 +1,3 @@
-"""Refer to [document](docs/locate_design.md) for design details."""
-
 import re
 from pathlib import Path
 from typing import Protocol
