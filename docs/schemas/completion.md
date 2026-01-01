@@ -56,6 +56,8 @@ The Completion API (IntelliSense) provides context-aware code suggestions at a s
 ## Top Suggestion Detail: `connect`
 Establishes a connection to the server using the configured credentials. Returns true if successful.
 
+
+
 | Symbol | Kind | Detail |
 | :--- | :--- | :--- |
 | `connect` | Method | (timeout: int = 30) -> bool |
@@ -65,12 +67,10 @@ Establishes a connection to the server using the configured credentials. Returns
 | `get_status` | Method | () -> dict |
 
 ---
-
 > [!TIP]
 > More results available. Use `start_index` to fetch more.
 
 ---
-
 > [!TIP]
 > Use these symbols to construct your next code edit. You can focus on a specific method to get more details.
 ```
@@ -98,6 +98,8 @@ Establishes a connection to the server using the configured credentials. Returns
 ## Top Suggestion Detail: `json`
 Returns the response body parsed as JSON. Raises JSONDecodeError if invalid.
 
+
+
 | Symbol | Kind | Detail |
 | :--- | :--- | :--- |
 | `json` | Method | () -> dict |
@@ -112,12 +114,10 @@ Returns the response body parsed as JSON. Raises JSONDecodeError if invalid.
 | `is_redirect` | Property | bool |
 
 ---
-
 > [!TIP]
 > Use `pagination_id="abc123"` to fetch more suggestions.
 
 ---
-
 > [!TIP]
 > Use these symbols to construct your next code edit. You can focus on a specific method to get more details.
 ```
