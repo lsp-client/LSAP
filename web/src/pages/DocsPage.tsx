@@ -360,15 +360,53 @@ export default function DocsPage() {
                           ).replace(/\n$/, "");
 
                           if (match) {
-                            // For markdown code blocks, display as plain text to preserve table formatting
+                            // For markdown code blocks, use syntax highlighting with CSS overrides
+                            // to ensure proper table formatting
                             if (match[1] === 'markdown') {
                               return (
                                 <div className="my-6">
-                                  <pre className="overflow-x-auto rounded-md border border-border bg-muted p-6 my-0">
-                                    <code className="font-mono text-sm whitespace-pre">
-                                      {codeText}
-                                    </code>
-                                  </pre>
+                                  <SyntaxHighlighter
+                                    style={
+                                      resolvedTheme === "dark"
+                                        ? oneDark
+                                        : oneLight
+                                    }
+                                    language="markdown"
+                                    PreTag="div"
+                                    className="rounded-md border border-border markdown-table-code"
+                                    customStyle={{
+                                      margin: 0,
+                                      padding: "1.5rem",
+                                      fontSize: "0.875rem",
+                                      lineHeight: "1.5",
+                                      backgroundColor: "hsl(var(--muted))",
+                                    }}
+                                    codeTagProps={{
+                                      style: {
+                                        background: "transparent",
+                                        fontFamily: "'Courier New', Courier, monospace",
+                                        fontSize: "0.875rem",
+                                        tabSize: 4,
+                                      },
+                                    }}
+                                  >
+                                    {codeText}
+                                  </SyntaxHighlighter>
+                                  <style>{`
+                                    .markdown-table-code code,
+                                    .markdown-table-code code *,
+                                    .markdown-table-code span {
+                                      font-family: 'Courier New', Courier, monospace !important;
+                                      font-size: 0.875rem !important;
+                                      white-space: pre !important;
+                                      letter-spacing: 0 !important;
+                                      word-spacing: 0 !important;
+                                    }
+                                    .markdown-table-code code {
+                                      display: block !important;
+                                      white-space: pre !important;
+                                    }
+                                  `}</style>
                                 </div>
                               );
                             }
