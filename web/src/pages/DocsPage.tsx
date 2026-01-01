@@ -360,6 +360,19 @@ export default function DocsPage() {
                           ).replace(/\n$/, "");
 
                           if (match) {
+                            // For markdown code blocks, display as plain text to preserve table formatting
+                            if (match[1] === 'markdown') {
+                              return (
+                                <div className="my-6">
+                                  <pre className="overflow-x-auto rounded-md border border-border bg-muted p-6 my-0">
+                                    <code className="font-mono text-sm whitespace-pre">
+                                      {codeText}
+                                    </code>
+                                  </pre>
+                                </div>
+                              );
+                            }
+                            
                             return (
                               <div className="my-6">
                                 <SyntaxHighlighter
