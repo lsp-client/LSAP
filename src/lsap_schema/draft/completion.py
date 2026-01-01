@@ -44,6 +44,7 @@ No completion suggestions found.
 {% if items[0].documentation != nil %}
 ## Top Suggestion Detail: `{{ items[0].label }}`
 {{ items[0].documentation }}
+
 {% endif %}
 
 | Symbol | Kind | Detail |
