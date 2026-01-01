@@ -360,6 +360,56 @@ export default function DocsPage() {
                           ).replace(/\n$/, "");
 
                           if (match) {
+                            // Special handling for markdown code blocks - render them as actual markdown
+                            if (match[1] === 'markdown') {
+                              return (
+                                <div className="my-6 rounded-md border border-border bg-muted p-6">
+                                  <ReactMarkdown
+                                    remarkPlugins={[remarkGfm]}
+                                    components={{
+                                      h1: ({ node, ...props }) => (
+                                        <h1 className="font-serif text-3xl font-light text-foreground mb-4" {...props} />
+                                      ),
+                                      h2: ({ node, ...props }) => (
+                                        <h2 className="font-serif text-xl font-light text-foreground mt-6 mb-3" {...props} />
+                                      ),
+                                      h3: ({ node, ...props }) => (
+                                        <h3 className="font-mono text-base font-medium text-foreground mt-4 mb-2" {...props} />
+                                      ),
+                                      p: ({ node, ...props }) => (
+                                        <p className="font-serif text-sm text-muted-foreground leading-relaxed mb-3" {...props} />
+                                      ),
+                                      code: ({ className, ...props }: any) => (
+                                        <code className={`font-mono text-xs bg-background px-1 py-0.5 rounded text-foreground ${className || ""}`} {...props} />
+                                      ),
+                                      table: ({ node, ...props }) => (
+                                        <div className="overflow-x-auto my-4">
+                                          <table className="w-full border-collapse" {...props} />
+                                        </div>
+                                      ),
+                                      thead: ({ node, ...props }) => (
+                                        <thead className="bg-background/50" {...props} />
+                                      ),
+                                      th: ({ node, ...props }) => (
+                                        <th className="font-mono text-xs font-medium text-left p-2 border border-border" {...props} />
+                                      ),
+                                      td: ({ node, ...props }) => (
+                                        <td className="font-mono text-xs text-muted-foreground p-2 border border-border" {...props} />
+                                      ),
+                                      blockquote: ({ node, ...props }) => (
+                                        <blockquote className="border-l-4 border-primary/20 pl-3 italic text-muted-foreground my-4 text-sm" {...props} />
+                                      ),
+                                      hr: ({ node, ...props }) => (
+                                        <hr className="border-border my-4" {...props} />
+                                      ),
+                                    }}
+                                  >
+                                    {codeText}
+                                  </ReactMarkdown>
+                                </div>
+                              );
+                            }
+                            
                             return (
                               <div className="my-6">
                                 <SyntaxHighlighter
