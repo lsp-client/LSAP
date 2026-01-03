@@ -46,6 +46,12 @@ from .draft.rename import (
     RenameResponse,
 )
 
+# Relation
+from .draft.relation import (
+    RelationRequest,
+    RelationResponse,
+)
+
 # Type hierarchy
 from .draft.type_hierarchy import (
     TypeEdge,
@@ -162,6 +168,9 @@ __all__ = [
     "RenameFileChange",
     "RenameRequest",
     "RenameResponse",
+    # Relation
+    "RelationRequest",
+    "RelationResponse",
     # Symbol
     "SymbolRequest",
     "SymbolResponse",
