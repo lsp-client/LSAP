@@ -17,7 +17,7 @@ from lsprotocol.types import Location
 from lsprotocol.types import Position as LSPPosition
 from lsprotocol.types import Range as LSPRange
 
-from lsap.utils.content import DocumentReader
+from lsap.utils.document import DocumentReader
 from lsap.utils.pagination import paginate
 from lsap.utils.symbol import symbol_at
 

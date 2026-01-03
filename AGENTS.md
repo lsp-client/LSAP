@@ -4,7 +4,7 @@
 
 - Lint & format: `ruff check --fix && ruff format`
 - Type checking: `ty check <dir_or_file>`
-- Run tests: `pytest`
+- Run tests: `uv run pytest`
 - Use `uv` for Python related commands.
 
 ## Code Style Guidelines

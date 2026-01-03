@@ -1,6 +1,6 @@
 from lsprotocol.types import Position, Range
 
-from lsap.utils.content import DocumentReader
+from lsap.utils.document import DocumentReader
 
 
 def test_read_single_line():

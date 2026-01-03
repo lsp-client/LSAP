@@ -21,6 +21,22 @@ It leverages the [Call Hierarchy API](call_hierarchy.md) to trace paths.
 | `chains`    | `CallHierarchyItem[][]` | List of paths connecting source to target. Each path is a sequence of items.|
 | `max_depth` | `number`                | The maximum depth used for the search.                                      |
 
+## Implementation Guide
+
+This API is implemented by orchestrating standard LSP `Call Hierarchy` requests.
+
+### Algorithm: Bidirectional Search
+
+1.  **Resolve Symbols**:
+    *   Use `textDocument/definition` or `textDocument/documentSymbol` to resolve the `source` and `target` locations to valid LSP `CallHierarchyItem`s using `textDocument/prepareCallHierarchy`.
+2.  **Breadth-First Search (BFS)**:
+    *   Perform `callHierarchy/outgoingCalls` from the `source` item.
+    *   (Optional optimization) Simultaneously perform `callHierarchy/incomingCalls` from the `target` item.
+    *   Maintain a `visited` set to detect and break recursive cycles.
+3.  **Path Reconstruction**:
+    *   When the search frontiers meet (or one reaches the other end), reconstruction the full path.
+    *   Filter out paths that exceed `max_depth`.
+
 ## Example Usage
 
 ### Scenario 1: How does `handle_request` reach `db.query`?

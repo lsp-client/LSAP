@@ -18,7 +18,7 @@ from lsprotocol.types import Position as LSPPosition
 from lsprotocol.types import Range as LSPRange
 
 from lsap.exception import NotFoundError
-from lsap.utils.content import DocumentReader
+from lsap.utils.document import DocumentReader
 from lsap.utils.symbol import iter_symbols
 
 from .abc import Capability

@@ -13,7 +13,7 @@ from lsprotocol.types import Position as LSPPosition
 
 from lsap.abc import Capability
 from lsap.locate import LocateCapability
-from lsap.utils.content import DocumentReader
+from lsap.utils.document import DocumentReader
 from lsap.utils.symbol import symbol_at
 
 from .symbol_outline import SymbolOutlineCapability
