@@ -53,7 +53,9 @@ class HierarchyRequest(LocateRequest):
     hierarchy_type: Literal["call", "type"]
     """Type of hierarchy to trace: 'call' for function calls, 'type' for class inheritance"""
 
-    direction: Literal["incoming", "outgoing", "supertypes", "subtypes", "both"] = "both"
+    direction: Literal["incoming", "outgoing", "supertypes", "subtypes", "both"] = (
+        "both"
+    )
     """
     Direction of the trace:
     - For call hierarchy: 'incoming' (callers), 'outgoing' (callees), or 'both'

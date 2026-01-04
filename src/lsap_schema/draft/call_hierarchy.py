@@ -14,9 +14,8 @@ from lsap_schema.draft.hierarchy import (
     HierarchyEdge as CallEdge,
     HierarchyItem as CallHierarchyItem,
     HierarchyNode as CallHierarchyNode,
-    HierarchyRequest,
 )
-from lsap_schema.locate import LocateRequest, Position
+from lsap_schema.locate import LocateRequest
 
 
 class CallHierarchyRequest(LocateRequest):
