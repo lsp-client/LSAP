@@ -75,15 +75,49 @@ class HierarchyEdge(BaseModel):
 
 class HierarchyRequest(LocateRequest):
     """
-    Traces hierarchical relationships in a directed graph.
+    Traces hierarchical relationships in a directed graph of symbols.
 
-    The hierarchy type determines the semantic meaning of relationships:
-    - "call": function/method call relationships
-    - "type": class/interface inheritance relationships
+    This API traces two types of hierarchies:
+    - "call": Function/method call relationships (who calls whom)
+    - "type": Class/interface inheritance relationships (parent-child)
 
-    Direction is specified in graph terms:
-    - "incoming": predecessors in the graph (callers for calls, supertypes for inheritance)
-    - "outgoing": successors in the graph (callees for calls, subtypes for inheritance)
+    Usage Examples:
+
+    1. Find who calls a function (incoming calls):
+       HierarchyRequest(
+           hierarchy_type="call",
+           locate=Locate(file_path="src/main.py", scope=LineScope(line=10), find="process_data"),
+           direction="incoming",
+           depth=2
+       )
+
+    2. Find what a function calls (outgoing calls):
+       HierarchyRequest(
+           hierarchy_type="call",
+           locate=Locate(file_path="src/main.py", scope=LineScope(line=10), find="process_data"),
+           direction="outgoing",
+           depth=2
+       )
+
+    3. Find parent classes (incoming in type hierarchy):
+       HierarchyRequest(
+           hierarchy_type="type",
+           locate=Locate(file_path="src/models.py", scope=LineScope(line=5), find="UserModel"),
+           direction="incoming",
+           depth=2
+       )
+
+    4. Find child classes (outgoing in type hierarchy):
+       HierarchyRequest(
+           hierarchy_type="type",
+           locate=Locate(file_path="src/models.py", scope=LineScope(line=5), find="BaseModel"),
+           direction="outgoing",
+           depth=2
+       )
+
+    Direction is in graph terms (not hierarchy-specific):
+    - "incoming": predecessors (callers for calls, parent classes for types)
+    - "outgoing": successors (callees for calls, child classes for types)
     - "both": explore both directions
     """
 
