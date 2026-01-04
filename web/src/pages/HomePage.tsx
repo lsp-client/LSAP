@@ -5,6 +5,7 @@ import {
   Code2,
   Network,
   Search,
+  FileSearch,
 } from "lucide-react";
 import { isValidElement, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -33,6 +34,53 @@ interface Example {
 }
 
 const EXAMPLES: Example[] = [
+  {
+    id: "reference",
+    title: "Find References",
+    mobileTitle: "Reference",
+    icon: FileSearch,
+    agentIntent: "Find all places where `format_date` is used to refactor it",
+    flowSteps: [
+      { label: "Method", value: "reference" },
+      { label: "File", value: "src/utils.py", highlight: true },
+      { label: "Symbol", value: "format_date", highlight: true },
+    ],
+    processing: [
+      "Locate target symbol",
+      "Find all references",
+      "Extract caller context",
+      "Aggregate code snippets",
+    ],
+    resultMarkdown: `### References Found
+
+**Total:** 45 references | **Showing:** 3
+
+### \`src/ui/header.py\`:28
+
+In \`Header.render\` (\`Method\`)
+
+\`\`\`python
+formatted = format_date(user.last_login)
+\`\`\`
+
+### \`src/api/views.py\`:42
+
+In \`UserDetail.get\` (\`Method\`)
+
+\`\`\`python
+return {"date": format_date(obj.created_at)}
+\`\`\`
+
+### \`src/reports/export.py\`:156
+
+In \`generate_report\` (\`Function\`)
+
+\`\`\`python
+created_date = format_date(report.timestamp)
+\`\`\`
+
+✓ All usages identified with context`,
+  },
   {
     id: "locate",
     title: "Locate Symbol",
@@ -224,15 +272,24 @@ export default function HomePage() {
                     </div>
                     <div className="font-mono text-xs text-muted-foreground pl-4">
                       <span className="opacity-50">
-                        # Natural language intent
+                        # Find all references to a function
                       </span>
                     </div>
                     <div className="font-mono text-xs text-muted-foreground">
-                      result = client.locate(
+                      result = client.reference(
                     </div>
                     <div className="font-mono text-xs text-muted-foreground pl-4">
-                      text=
-                      <span className="text-amber-500">"def authenticate"</span>
+                      locate={"{"}
+                      <span className="text-amber-500">"file_path"</span>:{" "}
+                      <span className="text-amber-500">"src/utils.py"</span>,
+                    </div>
+                    <div className="font-mono text-xs text-muted-foreground pl-12">
+                      <span className="text-amber-500">"find"</span>:{" "}
+                      <span className="text-amber-500">"def format_date"</span>
+                      {"}"},
+                    </div>
+                    <div className="font-mono text-xs text-muted-foreground pl-4">
+                      max_items=<span className="text-amber-500">10</span>
                     </div>
                     <div className="font-mono text-xs text-muted-foreground">
                       )
@@ -240,13 +297,13 @@ export default function HomePage() {
                     <div className="h-px bg-border/40" />
                     <div className="font-mono text-xs text-primary/70 pl-4">
                       <span className="opacity-50">
-                        # → Position, context, source
+                        # → Markdown with all callers + context
                       </span>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground pt-2">
                     <ArrowDown className="h-3 w-3 text-primary" />
-                    <span>Agent-ready structured output</span>
+                    <span>Structured markdown with code snippets</span>
                   </div>
                 </CardContent>
               </Card>
