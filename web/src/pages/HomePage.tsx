@@ -179,9 +179,9 @@ export default function HomePage() {
                 </h1>
 
                 <p className="font-serif text-base sm:text-lg lg:text-xl text-muted-foreground leading-relaxed mb-10">
-                  Semantic abstraction layer transforming LSP into an
-                  agent-native cognitive framework. Progressive disclosure of
-                  codebase intelligence for autonomous reasoning.
+                  Empowering Coding Agents with <strong className="text-foreground">Repository-Scale Intelligence</strong>. 
+                  An orchestration layer transforming low-level LSP capabilities into 
+                  high-level, agent-native cognitive tools for autonomous code understanding.
                 </p>
 
                 <div className="flex flex-wrap gap-4">
@@ -255,6 +255,97 @@ export default function HomePage() {
         </section>
 
         <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <section className="py-16 lg:py-24 border-b border-border/40">
+            <div className="mb-12">
+              <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-normal mb-6">
+                Why LSAP?
+              </h2>
+              <p className="font-serif text-sm sm:text-base text-muted-foreground max-w-3xl mb-10">
+                LSAP transforms how AI agents interact with codebases by providing cognitive capabilities instead of atomic operations.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6 mb-12">
+              <Card className="border-primary/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <span className="text-2xl">🧠</span>
+                    <span>Cognitive vs Atomic</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div>
+                    <div className="font-mono text-xs font-semibold text-muted-foreground mb-2">LSP (Atomic Operations)</div>
+                    <p className="font-serif text-sm text-muted-foreground leading-relaxed">
+                      Agents must orchestrate dozens of sequential operations: open file → calculate offset → request definition → parse URI → read file → extract snippet
+                    </p>
+                  </div>
+                  <div className="h-px bg-border/40" />
+                  <div>
+                    <div className="font-mono text-xs font-semibold text-primary mb-2">LSAP (Cognitive Capabilities)</div>
+                    <p className="font-serif text-sm text-foreground leading-relaxed">
+                      One semantic request returns structured context with all necessary information. LSAP automatically handles the orchestration.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-primary/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <span className="text-2xl">⚡</span>
+                    <span>Token Efficiency</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="font-serif text-sm text-foreground leading-relaxed">
+                    Without LSAP, every agent reimplements orchestration patterns, wasting tokens on coordination instead of problem-solving.
+                  </p>
+                  <div className="h-px bg-border/40" />
+                  <p className="font-serif text-sm text-foreground leading-relaxed">
+                    LSAP centralizes this complexity once, providing battle-tested, optimized capabilities that let agents focus on high-level intent realization.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-primary/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <span className="text-2xl">🔄</span>
+                    <span>Composed Operations</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="font-serif text-sm text-foreground leading-relaxed">
+                    LSAP provides advanced capabilities like <span className="font-mono text-xs bg-primary/5 px-1.5 py-0.5 rounded">Relation API</span> (find all call paths A→B with BFS traversal and cycle detection) and <span className="font-mono text-xs bg-primary/5 px-1.5 py-0.5 rounded">Unified Hierarchy</span> that don't exist in raw LSP.
+                  </p>
+                  <div className="h-px bg-border/40" />
+                  <p className="font-serif text-sm text-muted-foreground leading-relaxed">
+                    These aren't simple wrappers—they're sophisticated compositions that handle graph traversal, deduplication, and markdown formatting automatically.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-primary/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <span className="text-2xl">🛡️</span>
+                    <span>Graceful Degradation</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="font-serif text-sm text-foreground leading-relaxed">
+                    When language servers have limited capabilities, LSAP returns partial results with clear indicators instead of failing.
+                  </p>
+                  <div className="h-px bg-border/40" />
+                  <p className="font-serif text-sm text-foreground leading-relaxed">
+                    The <strong className="text-primary">Markdown-First</strong> design ensures agents always get parseable, actionable output.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+
           <section className="py-16 lg:py-24 border-b border-border/40">
             <div className="mb-16">
               <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-normal mb-4">
