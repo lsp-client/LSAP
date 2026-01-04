@@ -39,9 +39,7 @@ class SearchCapability(Capability[SearchClient, SearchRequest, SearchResponse]):
                     s for s in symbols if SymbolKind.from_lsp(s.kind) in kind_set
                 ]
 
-            valid = [s for s in symbols if isinstance(s.location, Location)]
-            valid.sort(key=lambda x: (x.name, x.location.uri))
-            return valid
+            return list(symbols)
 
         result = await paginate(req, self._symbol_cache, fetcher)
         if result is None:
@@ -63,15 +61,18 @@ class SearchCapability(Capability[SearchClient, SearchRequest, SearchResponse]):
         items = []
         for symbol in symbols:
             location = symbol.location
-            if not isinstance(location, Location):
-                continue
+            line = (
+                location.range.start.line + 1
+                if isinstance(location, Location)
+                else None
+            )
 
             items.append(
                 SearchItem(
                     name=symbol.name,
                     kind=SymbolKind.from_lsp(symbol.kind),
                     file_path=self.client.from_uri(location.uri),
-                    line=location.range.start.line + 1,
+                    line=line,
                     container=symbol.container_name,
                 )
             )
