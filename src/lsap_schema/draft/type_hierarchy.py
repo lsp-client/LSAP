@@ -1,34 +1,22 @@
-from pathlib import Path
-from typing import Final, Literal
+"""
+Type Hierarchy API - Backward compatibility module.
 
-from pydantic import BaseModel, ConfigDict
+This module maintains backward compatibility by re-exporting from the unified hierarchy API.
+The unified hierarchy API (hierarchy.py) should be used for new code.
+"""
+
+from typing import Final
+
+from pydantic import ConfigDict
 
 from lsap_schema.abc import Response
+from lsap_schema.draft.hierarchy import (
+    HierarchyEdge as TypeEdge,
+    HierarchyItem as TypeHierarchyItem,
+    HierarchyNode as TypeHierarchyNode,
+    HierarchyRequest,
+)
 from lsap_schema.locate import LocateRequest, Position
-
-
-class TypeHierarchyNode(BaseModel):
-    id: str
-    name: str
-    kind: str
-    file_path: Path
-    range_start: Position
-    detail: str | None = None
-
-
-class TypeHierarchyItem(BaseModel):
-    name: str
-    kind: str
-    file_path: Path
-    level: int
-    detail: str | None = None
-    is_cycle: bool = False
-
-
-class TypeEdge(BaseModel):
-    from_node_id: str
-    to_node_id: str
-    relationship: Literal["extends", "implements"]
 
 
 class TypeHierarchyRequest(LocateRequest):
@@ -37,9 +25,12 @@ class TypeHierarchyRequest(LocateRequest):
 
     Use this to explore class inheritance, finding base classes (supertypes)
     or derived classes (subtypes).
+
+    Note: This is maintained for backward compatibility. Use HierarchyRequest with
+    hierarchy_type='type' for new code.
     """
 
-    direction: Literal["supertypes", "subtypes", "both"] = "both"
+    direction: str = "both"
     """Whether to trace supertypes, subtypes, or both (default: both)"""
 
     depth: int = 2
@@ -90,6 +81,13 @@ markdown_template: Final = """
 
 
 class TypeHierarchyResponse(Response):
+    """
+    Type Hierarchy Response - Backward compatibility class.
+
+    Note: This is maintained for backward compatibility. Use HierarchyResponse with
+    hierarchy_type='type' for new code.
+    """
+
     root: TypeHierarchyNode
     nodes: dict[str, TypeHierarchyNode]
     """Map of node ID to node details"""
@@ -114,3 +112,12 @@ class TypeHierarchyResponse(Response):
             "markdown": markdown_template,
         }
     )
+
+
+__all__ = [
+    "TypeHierarchyNode",
+    "TypeHierarchyItem",
+    "TypeEdge",
+    "TypeHierarchyRequest",
+    "TypeHierarchyResponse",
+]

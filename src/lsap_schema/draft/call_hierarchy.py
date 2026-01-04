@@ -1,33 +1,22 @@
-from pathlib import Path
-from typing import Final, Literal
+"""
+Call Hierarchy API - Backward compatibility module.
 
-from pydantic import BaseModel, ConfigDict
+This module maintains backward compatibility by re-exporting from the unified hierarchy API.
+The unified hierarchy API (hierarchy.py) should be used for new code.
+"""
+
+from typing import Final
+
+from pydantic import ConfigDict
 
 from lsap_schema.abc import Response
+from lsap_schema.draft.hierarchy import (
+    HierarchyEdge as CallEdge,
+    HierarchyItem as CallHierarchyItem,
+    HierarchyNode as CallHierarchyNode,
+    HierarchyRequest,
+)
 from lsap_schema.locate import LocateRequest, Position
-
-
-class CallHierarchyNode(BaseModel):
-    id: str
-    name: str
-    kind: str
-    file_path: Path
-    range_start: Position
-
-
-class CallHierarchyItem(BaseModel):
-    name: str
-    kind: str
-    file_path: Path
-    level: int
-    is_cycle: bool = False
-
-
-class CallEdge(BaseModel):
-    from_node_id: str
-    to_node_id: str
-    call_sites: list[Position]
-    """Exact positions where the call occurs"""
 
 
 class CallHierarchyRequest(LocateRequest):
@@ -36,9 +25,12 @@ class CallHierarchyRequest(LocateRequest):
 
     Use this to understand function call relationships, find callers (who uses this?),
     or callees (what does this call?).
+
+    Note: This is maintained for backward compatibility. Use HierarchyRequest with
+    hierarchy_type='call' for new code.
     """
 
-    direction: Literal["incoming", "outgoing", "both"] = "both"
+    direction: str = "both"
     """Whether to trace callers (incoming) or callees (outgoing)"""
 
     depth: int = 2
@@ -86,6 +78,13 @@ markdown_template: Final = """
 
 
 class CallHierarchyResponse(Response):
+    """
+    Call Hierarchy Response - Backward compatibility class.
+
+    Note: This is maintained for backward compatibility. Use HierarchyResponse with
+    hierarchy_type='call' for new code.
+    """
+
     root: CallHierarchyNode
 
     nodes: dict[str, CallHierarchyNode]
@@ -111,3 +110,12 @@ class CallHierarchyResponse(Response):
             "markdown": markdown_template,
         }
     )
+
+
+__all__ = [
+    "CallHierarchyNode",
+    "CallHierarchyItem",
+    "CallEdge",
+    "CallHierarchyRequest",
+    "CallHierarchyResponse",
+]
