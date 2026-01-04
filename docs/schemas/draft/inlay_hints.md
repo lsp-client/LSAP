@@ -58,8 +58,8 @@ Instead of returning raw JSON lists of positions (which are hard for LLMs to rea
 {
   "file_path": "src/api.py",
   "range": {
-    "start": {"line": 10, "character": 0},
-    "end": {"line": 15, "character": 0}
+    "start": { "line": 10, "character": 0 },
+    "end": { "line": 15, "character": 0 }
   }
 }
 ```
@@ -93,8 +93,8 @@ def process_data(items /* :list */):
 {
   "file_path": "src/utils.py",
   "range": {
-    "start": {"line": 20, "character": 0},
-    "end": {"line": 20, "character": 80}
+    "start": { "line": 20, "character": 0 },
+    "end": { "line": 20, "character": 80 }
   }
 }
 ```
@@ -123,8 +123,8 @@ response = api_client.post(/* url:= */ "https://api.com/data", /* json:= */ payl
 {
   "file_path": "src/logic.py",
   "range": {
-    "start": {"line": 10, "character": 0},
-    "end": {"line": 20, "character": 0}
+    "start": { "line": 10, "character": 0 },
+    "end": { "line": 20, "character": 0 }
   }
 }
 ```

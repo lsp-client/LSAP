@@ -4,10 +4,10 @@ The Test Relation API bridges the gap between production code and test code. It 
 
 ## TestRelationRequest
 
-| Field       | Type                    | Default     | Description                                               |
-| :---------- | :---------------------- | :---------- | :-------------------------------------------------------- |
-| `locate`    | [`Locate`](locate.md)   | Required    | The symbol to analyze (source function or test case).     |
-| `direction` | `"to_test" \| "to_source"` | `"to_test"` | Find tests for source, or find source for tests.          |
+| Field       | Type                       | Default     | Description                                           |
+| :---------- | :------------------------- | :---------- | :---------------------------------------------------- |
+| `locate`    | [`Locate`](locate.md)      | Required    | The symbol to analyze (source function or test case). |
+| `direction` | `"to_test" \| "to_source"` | `"to_test"` | Find tests for source, or find source for tests.      |
 
 ## TestRelationResponse
 
@@ -19,13 +19,13 @@ The Test Relation API bridges the gap between production code and test code. It 
 
 ### TestRelationItem
 
-| Field       | Type     | Description                                                             |
-| :---------- | :------- | :---------------------------------------------------------------------- |
-| `name`      | `string` | Name of the related item (e.g., `test_add`).                            |
-| `kind`      | `string` | Symbol kind (e.g., `function`, `class`).                                |
-| `file_path` | `string` | Path to the file.                                                       |
-| `range`     | `Range`  | Location in the file.                                                   |
-| `strategy`  | `string` | How the relation was found: `reference`, `convention`, or `import`.     |
+| Field       | Type     | Description                                                         |
+| :---------- | :------- | :------------------------------------------------------------------ |
+| `name`      | `string` | Name of the related item (e.g., `test_add`).                        |
+| `kind`      | `string` | Symbol kind (e.g., `function`, `class`).                            |
+| `file_path` | `string` | Path to the file.                                                   |
+| `range`     | `Range`  | Location in the file.                                               |
+| `strategy`  | `string` | How the relation was found: `reference`, `convention`, or `import`. |
 
 ## Implementation Guide
 
@@ -34,28 +34,28 @@ This API uses a multi-strategy approach to find relations, combining LSP capabil
 ### Direction: `to_test` (Source -> Test)
 
 1.  **LSP References (Strongest Signal)**:
-    *   Call `textDocument/references` on the source symbol.
-    *   Filter results: Keep files located in `tests/` directories or matching pattern `*test*`/`*spec*`.
-    *   Mark as `strategy: reference`.
+    - Call `textDocument/references` on the source symbol.
+    - Filter results: Keep files located in `tests/` directories or matching pattern `*test*`/`*spec*`.
+    - Mark as `strategy: reference`.
 2.  **Naming Convention (Heuristic)**:
-    *   Infer potential test names (e.g., `add` -> `test_add`, `TestAdd`).
-    *   Use `workspace/symbol` to search for these names.
-    *   Mark as `strategy: convention`.
+    - Infer potential test names (e.g., `add` -> `test_add`, `TestAdd`).
+    - Use `workspace/symbol` to search for these names.
+    - Mark as `strategy: convention`.
 3.  **Module Imports (Broadest Signal)**:
-    *   Identify which test files import the source module.
-    *   Mark as `strategy: import`.
+    - Identify which test files import the source module.
+    - Mark as `strategy: import`.
 
 ### Direction: `to_source` (Test -> Source)
 
 1.  **LSP Outgoing Calls (Strongest Signal)**:
-    *   Analyze the test function body.
-    *   Use `textDocument/definition` on symbols used within the test.
-    *   Filter results: Keep symbols defined in the project's source directory (exclude external libs).
-    *   Mark as `strategy: reference`.
+    - Analyze the test function body.
+    - Use `textDocument/definition` on symbols used within the test.
+    - Filter results: Keep symbols defined in the project's source directory (exclude external libs).
+    - Mark as `strategy: reference`.
 2.  **Naming Convention (Heuristic)**:
-    *   Infer source name from test name (e.g., `test_add` -> `add`).
-    *   Use `workspace/symbol` to search.
-    *   Mark as `strategy: convention`.
+    - Infer source name from test name (e.g., `test_add` -> `add`).
+    - Use `workspace/symbol` to search.
+    - Mark as `strategy: convention`.
 
 ## Example Usage
 

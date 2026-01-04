@@ -4,27 +4,27 @@ The Navigation API provides the ability to jump from a symbol usage to its prima
 
 ## DefinitionRequest
 
-| Field             | Type                                                     | Default  | Description                            |
-| :---------------- | :------------------------------------------------------- | :------- | :------------------------------------- |
-| `locate`          | [`LocateText`](locate.md) \| [`LocateSymbol`](locate.md) | Required | The starting location (the reference). |
-| `mode`            | `"definition" \| "declaration" \| "type_definition"`   | `"definition"` | The type of location to find.         |
-| `include_hover`   | `boolean`                                                | `true`   | Whether to include documentation.      |
-| `include_code`    | `boolean`                                                | `true`   | Whether to include source code.        |
+| Field           | Type                                                     | Default        | Description                            |
+| :-------------- | :------------------------------------------------------- | :------------- | :------------------------------------- |
+| `locate`        | [`LocateText`](locate.md) \| [`LocateSymbol`](locate.md) | Required       | The starting location (the reference). |
+| `mode`          | `"definition" \| "declaration" \| "type_definition"`     | `"definition"` | The type of location to find.          |
+| `include_hover` | `boolean`                                                | `true`         | Whether to include documentation.      |
+| `include_code`  | `boolean`                                                | `true`         | Whether to include source code.        |
 
 ## DefinitionResponse
 
 Inherits from [`SymbolInfo`](symbol.md) and `Response`.
 
-| Field            | Type               | Description                                          |
-| :--------------- | :----------------- | :--------------------------------------------------- |
-| `file_path`      | `string`           | Relative path to the file containing the definition. |
-| `path`           | `string[]`         | Hierarchy of the symbol.                             |
-| `name`           | `string`           | Name of the symbol.                                  |
-| `kind`           | `string`           | Symbol kind (e.g., `Function`, `Class`).            |
-| `detail`         | `string \| null`   | Detail information about the symbol.                |
-| `hover`          | `string \| null`   | Markdown documentation for the symbol.               |
-| `code`           | `string \| null`   | The source code of the definition.                   |
-| `request`        | `DefinitionRequest`| The original request.                                |
+| Field       | Type                | Description                                          |
+| :---------- | :------------------ | :--------------------------------------------------- |
+| `file_path` | `string`            | Relative path to the file containing the definition. |
+| `path`      | `string[]`          | Hierarchy of the symbol.                             |
+| `name`      | `string`            | Name of the symbol.                                  |
+| `kind`      | `string`            | Symbol kind (e.g., `Function`, `Class`).             |
+| `detail`    | `string \| null`    | Detail information about the symbol.                 |
+| `hover`     | `string \| null`    | Markdown documentation for the symbol.               |
+| `code`      | `string \| null`    | The source code of the definition.                   |
+| `request`   | `DefinitionRequest` | The original request.                                |
 
 ## Example Usage
 
@@ -56,6 +56,7 @@ If an Agent is reading `main.py` and sees `client.send_message()`, it can find t
 Sends a message to the server.
 
 ## Content
+
 ```python
 def send_message(self, text: str):
     self.connection.post(text)
@@ -88,6 +89,7 @@ def send_message(self, text: str):
 Declaration of the data processing function.
 
 ## Content
+
 ```cpp
 void process_data(const std::vector<int>& data);
 ```
@@ -119,6 +121,7 @@ void process_data(const std::vector<int>& data);
 Represents the result of an operation with success/failure status.
 
 ## Content
+
 ```python
 class Result:
     def __init__(self, success: bool, data: Any = None, error: str = None):

@@ -11,13 +11,13 @@ Both hierarchies are modeled as **directed graph traversal** with generic "incom
 
 Traces hierarchical relationships starting from a symbol.
 
-| Field              | Type                              | Default   | Description                                                    |
-| :----------------- | :-------------------------------- | :-------- | :------------------------------------------------------------- |
-| `locate`           | [`Locate`](../locate.md)          | Required  | The symbol to start tracing from.                              |
-| `hierarchy_type`   | `"call"` \| `"type"`              | Required  | Type of hierarchy to trace.                                    |
-| `direction`        | `"incoming"` \| `"outgoing"` \| `"both"` | `"both"`  | Graph traversal direction.                                     |
-| `depth`            | `number`                          | `2`       | Maximum traversal depth (number of hops).                      |
-| `include_external` | `boolean`                         | `false`   | Whether to include external library references.                |
+| Field              | Type                                     | Default  | Description                                     |
+| :----------------- | :--------------------------------------- | :------- | :---------------------------------------------- |
+| `locate`           | [`Locate`](../locate.md)                 | Required | The symbol to start tracing from.               |
+| `hierarchy_type`   | `"call"` \| `"type"`                     | Required | Type of hierarchy to trace.                     |
+| `direction`        | `"incoming"` \| `"outgoing"` \| `"both"` | `"both"` | Graph traversal direction.                      |
+| `depth`            | `number`                                 | `2`      | Maximum traversal depth (number of hops).       |
+| `include_external` | `boolean`                                | `false`  | Whether to include external library references. |
 
 ### Direction Parameter
 
@@ -36,6 +36,7 @@ Direction uses **generic graph terminology**, not hierarchy-specific terms:
 ### Usage Examples
 
 **Example 1: Find who calls a function**
+
 ```python
 HierarchyRequest(
     hierarchy_type="call",
@@ -50,6 +51,7 @@ HierarchyRequest(
 ```
 
 **Example 2: Find what a function calls**
+
 ```python
 HierarchyRequest(
     hierarchy_type="call",
@@ -64,6 +66,7 @@ HierarchyRequest(
 ```
 
 **Example 3: Find parent classes**
+
 ```python
 HierarchyRequest(
     hierarchy_type="type",
@@ -78,6 +81,7 @@ HierarchyRequest(
 ```
 
 **Example 4: Find child classes**
+
 ```python
 HierarchyRequest(
     hierarchy_type="type",
@@ -95,43 +99,43 @@ HierarchyRequest(
 
 Contains the hierarchy graph and flattened tree for rendering.
 
-| Field              | Type                           | Description                                                    |
-| :----------------- | :----------------------------- | :------------------------------------------------------------- |
-| `hierarchy_type`   | `"call"` \| `"type"`           | Type of hierarchy returned.                                    |
-| `root`             | `HierarchyNode`                | The starting node.                                             |
-| `nodes`            | `Map<string, HierarchyNode>`   | All nodes in the hierarchy graph.                              |
-| `edges_incoming`   | `Map<string, HierarchyEdge[]>` | Incoming edges for each node (predecessors).                   |
-| `edges_outgoing`   | `Map<string, HierarchyEdge[]>` | Outgoing edges for each node (successors).                     |
-| `items_incoming`   | `HierarchyItem[]`              | Flattened list of incoming relationships for tree rendering.   |
-| `items_outgoing`   | `HierarchyItem[]`              | Flattened list of outgoing relationships for tree rendering.   |
-| `direction`        | `string`                       | The direction that was used.                                   |
-| `depth`            | `number`                       | The depth that was used.                                       |
+| Field            | Type                           | Description                                                  |
+| :--------------- | :----------------------------- | :----------------------------------------------------------- |
+| `hierarchy_type` | `"call"` \| `"type"`           | Type of hierarchy returned.                                  |
+| `root`           | `HierarchyNode`                | The starting node.                                           |
+| `nodes`          | `Map<string, HierarchyNode>`   | All nodes in the hierarchy graph.                            |
+| `edges_incoming` | `Map<string, HierarchyEdge[]>` | Incoming edges for each node (predecessors).                 |
+| `edges_outgoing` | `Map<string, HierarchyEdge[]>` | Outgoing edges for each node (successors).                   |
+| `items_incoming` | `HierarchyItem[]`              | Flattened list of incoming relationships for tree rendering. |
+| `items_outgoing` | `HierarchyItem[]`              | Flattened list of outgoing relationships for tree rendering. |
+| `direction`      | `string`                       | The direction that was used.                                 |
+| `depth`          | `number`                       | The depth that was used.                                     |
 
 ### HierarchyNode
 
 Represents a symbol in the hierarchy graph.
 
-| Field         | Type              | Description                                    |
-| :------------ | :---------------- | :--------------------------------------------- |
-| `id`          | `string`          | Unique identifier for the node.                |
-| `name`        | `string`          | Name of the symbol.                            |
-| `kind`        | `string`          | Symbol kind (e.g., `Function`, `Class`).       |
-| `file_path`   | `string`          | Path to the file.                              |
-| `range_start` | `Position`        | Start position of the symbol definition.       |
-| `detail`      | `string \| null`  | Optional detail about the symbol.              |
+| Field         | Type             | Description                              |
+| :------------ | :--------------- | :--------------------------------------- |
+| `id`          | `string`         | Unique identifier for the node.          |
+| `name`        | `string`         | Name of the symbol.                      |
+| `kind`        | `string`         | Symbol kind (e.g., `Function`, `Class`). |
+| `file_path`   | `string`         | Path to the file.                        |
+| `range_start` | `Position`       | Start position of the symbol definition. |
+| `detail`      | `string \| null` | Optional detail about the symbol.        |
 
 ### HierarchyItem
 
 Represents an item in the flattened hierarchy tree for rendering.
 
-| Field       | Type              | Description                              |
-| :---------- | :---------------- | :--------------------------------------- |
-| `name`      | `string`          | Name of the symbol.                      |
-| `kind`      | `string`          | Symbol kind.                             |
-| `file_path` | `string`          | Path to the file.                        |
-| `level`     | `number`          | Nesting level in the tree (0 = root).    |
-| `detail`    | `string \| null`  | Optional detail.                         |
-| `is_cycle`  | `boolean`         | Whether this represents a cycle.         |
+| Field       | Type             | Description                           |
+| :---------- | :--------------- | :------------------------------------ |
+| `name`      | `string`         | Name of the symbol.                   |
+| `kind`      | `string`         | Symbol kind.                          |
+| `file_path` | `string`         | Path to the file.                     |
+| `level`     | `number`         | Nesting level in the tree (0 = root). |
+| `detail`    | `string \| null` | Optional detail.                      |
+| `is_cycle`  | `boolean`        | Whether this represents a cycle.      |
 
 ### HierarchyEdge
 
@@ -139,16 +143,18 @@ Represents a directed edge in the hierarchy graph.
 
 The `metadata` field contains hierarchy-specific information:
 
-| Field          | Type                                            | Description                          |
-| :------------- | :---------------------------------------------- | :----------------------------------- |
-| `from_node_id` | `string`                                        | ID of the source node.               |
-| `to_node_id`   | `string`                                        | ID of the target node.               |
-| `metadata`     | `CallEdgeMetadata \| TypeEdgeMetadata \| null`  | Hierarchy-specific edge metadata.    |
+| Field          | Type                                           | Description                       |
+| :------------- | :--------------------------------------------- | :-------------------------------- |
+| `from_node_id` | `string`                                       | ID of the source node.            |
+| `to_node_id`   | `string`                                       | ID of the target node.            |
+| `metadata`     | `CallEdgeMetadata \| TypeEdgeMetadata \| null` | Hierarchy-specific edge metadata. |
 
 **CallEdgeMetadata** (for call hierarchy):
+
 - `call_sites`: `Position[]` - Exact positions where the call occurs
 
 **TypeEdgeMetadata** (for type hierarchy):
+
 - `relationship`: `"extends" \| "implements"` - Type of inheritance relationship
 
 ## Output Format
@@ -161,12 +167,14 @@ The response includes a markdown template that adapts to the hierarchy type:
 ## Incoming
 
 ### main
+
 - Kind: `Function`
 - File: `src/main.py`
 
 ## Outgoing
 
 ### validate_input
+
 - Kind: `Function`
 - File: `src/utils.py`
 ```

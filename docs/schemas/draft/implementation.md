@@ -4,26 +4,26 @@ The Implementation API finds all concrete implementations of an abstract symbol,
 
 ## ReferenceRequest (with mode="implementations")
 
-| Field             | Type                        | Default        | Description                                      |
-| :---------------- | :-------------------------- | :------------- | :----------------------------------------------- |
-| `locate`          | [`Locate`](locate.md)       | Required       | The symbol to find implementations for.          |
-| `mode`            | `"implementations"`         | `"references"` | Must be set to "implementations" to use this mode. |
-| `context_lines`   | `number`                    | `2`            | Number of lines around the match to include.     |
-| `max_items`       | `number \| null`            | `null`         | Maximum number of implementations to return.     |
-| `start_index`     | `number`                    | `0`            | Number of items to skip for pagination.          |
-| `pagination_id`   | `string \| null`            | `null`         | Token to retrieve the next page of results.      |
+| Field           | Type                  | Default        | Description                                        |
+| :-------------- | :-------------------- | :------------- | :------------------------------------------------- |
+| `locate`        | [`Locate`](locate.md) | Required       | The symbol to find implementations for.            |
+| `mode`          | `"implementations"`   | `"references"` | Must be set to "implementations" to use this mode. |
+| `context_lines` | `number`              | `2`            | Number of lines around the match to include.       |
+| `max_items`     | `number \| null`      | `null`         | Maximum number of implementations to return.       |
+| `start_index`   | `number`              | `0`            | Number of items to skip for pagination.            |
+| `pagination_id` | `string \| null`      | `null`         | Token to retrieve the next page of results.        |
 
 ## ReferenceResponse
 
-| Field           | Type                 | Description                              |
-| :-------------- | :------------------- | :--------------------------------------- |
-| `request`       | `ReferenceRequest`   | The original request (with mode=implementations). |
-| `items`         | `ReferenceItem[]`    | List of concrete implementations.        |
-| `start_index`   | `number`             | Offset of the current page.              |
-| `max_items`     | `number?`            | Number of items per page (if specified). |
-| `total`         | `number \| null`     | Total number of implementations found.   |
-| `has_more`      | `boolean`            | Whether more results are available.      |
-| `pagination_id` | `string?`            | Token for retrieving the next page.      |
+| Field           | Type               | Description                                       |
+| :-------------- | :----------------- | :------------------------------------------------ |
+| `request`       | `ReferenceRequest` | The original request (with mode=implementations). |
+| `items`         | `ReferenceItem[]`  | List of concrete implementations.                 |
+| `start_index`   | `number`           | Offset of the current page.                       |
+| `max_items`     | `number?`          | Number of items per page (if specified).          |
+| `total`         | `number \| null`   | Total number of implementations found.            |
+| `has_more`      | `boolean`          | Whether more results are available.               |
+| `pagination_id` | `string?`          | Token for retrieving the next page.               |
 
 ## Example Usage
 
@@ -53,6 +53,7 @@ The Implementation API finds all concrete implementations of an abstract symbol,
 Total implementations: 5 | Showing: 2 (Offset: 0, max_items: 2)
 
 ### `workers/local.py`:12
+
 In `LocalWorker.run` (`Method`)
 
 ```python
@@ -63,6 +64,7 @@ def run(self):
 ```
 
 ### `workers/remote.py`:15
+
 In `RemoteWorker.run` (`Method`)
 
 ```python
@@ -105,6 +107,7 @@ def run(self):
 Total implementations: 8 | Showing: 5 (Offset: 0, max_items: 5)
 
 ### `src/repositories/user_repo.py`:10
+
 In `UserRepository` (`Class`)
 
 ```python
@@ -114,6 +117,7 @@ class UserRepository(IRepository):
 ```
 
 ### `src/repositories/product_repo.py`:10
+
 In `ProductRepository` (`Class`)
 
 ```python
@@ -123,6 +127,7 @@ class ProductRepository(IRepository):
 ```
 
 ### `src/repositories/order_repo.py`:10
+
 In `OrderRepository` (`Class`)
 
 ```python
@@ -164,6 +169,7 @@ class OrderRepository(IRepository):
 Total implementations: 4 | Showing: 3 (Offset: 0, max_items: 3)
 
 ### `src/sources/sqlite_source.py`:20
+
 In `SQLiteDataSource.query` (`Method`)
 
 ```python
@@ -181,6 +187,7 @@ def query(self, sql, params=None):
 ```
 
 ### `src/sources/postgres_source.py`:22
+
 In `PostgresDataSource.query` (`Method`)
 
 ```python

@@ -4,15 +4,15 @@ The Hover API provides quick access to documentation, type information, or other
 
 ## HoverRequest
 
-| Field    | Type                | Default  | Description                           |
-| :------- | :------------------ | :------- | :------------------------------------ |
-| `locate` | [`Locate`](locate.md) | Required | The location to get hover info for.   |
+| Field    | Type                  | Default  | Description                         |
+| :------- | :-------------------- | :------- | :---------------------------------- |
+| `locate` | [`Locate`](locate.md) | Required | The location to get hover info for. |
 
 ## HoverResponse
 
-| Field      | Type          | Description                                       |
-| :--------- | :------------ | :------------------------------------------------ |
-| `contents` | `string`      | The hover content, usually in markdown format.    |
+| Field      | Type     | Description                                    |
+| :--------- | :------- | :--------------------------------------------- |
+| `contents` | `string` | The hover content, usually in markdown format. |
 
 ## Example Usage
 
@@ -37,6 +37,7 @@ The Hover API provides quick access to documentation, type information, or other
 Calculates the sum of two integers and returns the result.
 
 **Parameters:**
+
 - `x`: First integer to add
 - `y`: Second integer to add
 

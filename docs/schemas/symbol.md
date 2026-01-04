@@ -4,22 +4,22 @@ The Symbol API provides detailed information about a specific code symbol, inclu
 
 ## SymbolRequest
 
-| Field    | Type                | Default  | Description                                              |
-| :------- | :------------------ | :------- | :------------------------------------------------------- |
+| Field    | Type                  | Default  | Description                                              |
+| :------- | :-------------------- | :------- | :------------------------------------------------------- |
 | `locate` | [`Locate`](locate.md) | Required | How to find the symbol (by text pattern or symbol path). |
 
 ## SymbolResponse
 
-| Field            | Type               | Description                                                 |
-| :--------------- | :----------------- | :---------------------------------------------------------- |
-| `file_path`      | `string`           | Relative path to the file containing the symbol.            |
-| `path`           | `string[]`         | Hierarchy of the symbol (e.g., `["MyClass", "my_method"]`). |
-| `name`           | `string`           | Name of the symbol.                                        |
-| `kind`           | `string`           | Symbol kind (e.g., `Function`, `Class`).                  |
-| `detail`         | `string \| null`   | Detail information about the symbol.                       |
-| `hover`          | `string \| null`   | Markdown formatted documentation for the symbol.            |
-| `code`           | `string`           | The source code of the symbol.                              |
-| `range`          | `Range \| null`    | Source code range of the symbol.                            |
+| Field       | Type             | Description                                                 |
+| :---------- | :--------------- | :---------------------------------------------------------- |
+| `file_path` | `string`         | Relative path to the file containing the symbol.            |
+| `path`      | `string[]`       | Hierarchy of the symbol (e.g., `["MyClass", "my_method"]`). |
+| `name`      | `string`         | Name of the symbol.                                         |
+| `kind`      | `string`         | Symbol kind (e.g., `Function`, `Class`).                    |
+| `detail`    | `string \| null` | Detail information about the symbol.                        |
+| `hover`     | `string \| null` | Markdown formatted documentation for the symbol.            |
+| `code`      | `string`         | The source code of the symbol.                              |
+| `range`     | `Range \| null`  | Source code range of the symbol.                            |
 
 ## Example Usage
 
@@ -44,6 +44,7 @@ The Symbol API provides detailed information about a specific code symbol, inclu
 # Symbol: `calculate_total` (`function`) at `src/main.py`
 
 ## Implementation
+
 ```python
 def calculate_total(items, tax_rate):
     return sum(item.price for item in items) * (1 + tax_rate)
@@ -71,6 +72,7 @@ def calculate_total(items, tax_rate):
 # Symbol: `User` (`class`) at `src/models.py`
 
 ## Implementation
+
 ```python
 class User:
     def __init__(self, username: str, email: str):

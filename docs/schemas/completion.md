@@ -4,12 +4,12 @@ The Completion API (IntelliSense) provides context-aware code suggestions at a s
 
 ## CompletionRequest
 
-| Field           | Type                      | Default  | Description                                 |
-| :-------------- | :------------------------ | :------- | :------------------------------------------ |
-| `locate`        | [`Locate`](locate.md)     | Required | Where to trigger the completion.            |
-| `max_items`     | `number \| null`          | `15`     | Maximum number of suggestions to return.    |
-| `start_index`   | `number`                  | `0`      | Number of items to skip.                    |
-| `pagination_id` | `string \| null`          | `null`   | Token to retrieve the next page of results. |
+| Field           | Type                  | Default  | Description                                 |
+| :-------------- | :-------------------- | :------- | :------------------------------------------ |
+| `locate`        | [`Locate`](locate.md) | Required | Where to trigger the completion.            |
+| `max_items`     | `number \| null`      | `15`     | Maximum number of suggestions to return.    |
+| `start_index`   | `number`              | `0`      | Number of items to skip.                    |
+| `pagination_id` | `string \| null`      | `null`   | Token to retrieve the next page of results. |
 
 ## CompletionResponse
 
@@ -24,13 +24,13 @@ The Completion API (IntelliSense) provides context-aware code suggestions at a s
 
 ### CompletionItem
 
-| Field           | Type      | Description                               |
-| :-------------- | :-------- | :---------------------------------------- |
-| `label`         | `string`  | The suggestion name (e.g., `get_data`).   |
-| `kind`          | `string`  | Type (Method, Property, Class, etc.).     |
-| `detail`        | `string?` | Short info like signature or type.        |
-| `documentation` | `string?` | Full markdown documentation for the item. |
-| `insert_text`   | `string?` | The actual snippet that would be inserted.|
+| Field           | Type      | Description                                |
+| :-------------- | :-------- | :----------------------------------------- |
+| `label`         | `string`  | The suggestion name (e.g., `get_data`).    |
+| `kind`          | `string`  | Type (Method, Property, Class, etc.).      |
+| `detail`        | `string?` | Short info like signature or type.         |
+| `documentation` | `string?` | Full markdown documentation for the item.  |
+| `insert_text`   | `string?` | The actual snippet that would be inserted. |
 
 ## Example Usage
 
@@ -54,15 +54,16 @@ The Completion API (IntelliSense) provides context-aware code suggestions at a s
 # Code Completion
 
 ## Top Suggestion Detail: `connect`
+
 Establishes a connection to the server using the configured credentials. Returns true if successful.
 
-| Symbol | Kind | Detail |
-| :--- | :--- | :--- |
-| `connect` | Method | (timeout: int = 30) -> bool |
-| `send_json` | Method | (data: dict, retry: int = 3) -> None |
-| `is_active` | Property | bool |
-| `disconnect` | Method | () -> None |
-| `get_status` | Method | () -> dict |
+| Symbol       | Kind     | Detail                               |
+| :----------- | :------- | :----------------------------------- |
+| `connect`    | Method   | (timeout: int = 30) -> bool          |
+| `send_json`  | Method   | (data: dict, retry: int = 3) -> None |
+| `is_active`  | Property | bool                                 |
+| `disconnect` | Method   | () -> None                           |
+| `get_status` | Method   | () -> dict                           |
 
 ---
 
@@ -96,20 +97,21 @@ Establishes a connection to the server using the configured credentials. Returns
 # Code Completion
 
 ## Top Suggestion Detail: `json`
+
 Returns the response body parsed as JSON. Raises JSONDecodeError if invalid.
 
-| Symbol | Kind | Detail |
-| :--- | :--- | :--- |
-| `json` | Method | () -> dict |
-| `text` | Property | str |
-| `status_code` | Property | int |
-| `headers` | Property | dict |
-| `cookies` | Property | dict |
-| `raise_for_status` | Method | () -> None |
-| `content` | Property | bytes |
-| `iter_content` | Method | (chunk_size: int = None) -> iterator |
-| `close` | Method | () -> None |
-| `is_redirect` | Property | bool |
+| Symbol             | Kind     | Detail                               |
+| :----------------- | :------- | :----------------------------------- |
+| `json`             | Method   | () -> dict                           |
+| `text`             | Property | str                                  |
+| `status_code`      | Property | int                                  |
+| `headers`          | Property | dict                                 |
+| `cookies`          | Property | dict                                 |
+| `raise_for_status` | Method   | () -> None                           |
+| `content`          | Property | bytes                                |
+| `iter_content`     | Method   | (chunk_size: int = None) -> iterator |
+| `close`            | Method   | () -> None                           |
+| `is_redirect`      | Property | bool                                 |
 
 ---
 

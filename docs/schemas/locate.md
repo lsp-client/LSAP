@@ -15,69 +15,69 @@ The `Locate` model uses a two-stage approach: **scope** (optional) → **find** 
 
 ### Locate Fields
 
-| Field       | Type                                    | Default    | Description                                                      |
-| :---------- | :-------------------------------------- | :--------- | :--------------------------------------------------------------- |
-| `file_path` | `string`                                | Required   | Path to search in.                                               |
-| `scope`     | `LineScope` \| `SymbolScope` \| `null`  | `null`     | Optional: narrow search to symbol body or line range.            |
-| `find`      | `string` \| `null`                      | `null`     | Text pattern with marker for exact position.                     |
-| `marker`    | `string`                                | `"<HERE>"` | Position marker in find pattern. Change if source contains `"<HERE>"`. |
+| Field       | Type                                   | Default    | Description                                                            |
+| :---------- | :------------------------------------- | :--------- | :--------------------------------------------------------------------- |
+| `file_path` | `string`                               | Required   | Path to search in.                                                     |
+| `scope`     | `LineScope` \| `SymbolScope` \| `null` | `null`     | Optional: narrow search to symbol body or line range.                  |
+| `find`      | `string` \| `null`                     | `null`     | Text pattern with marker for exact position.                           |
+| `marker`    | `string`                               | `"<HERE>"` | Position marker in find pattern. Change if source contains `"<HERE>"`. |
 
 ### LineScope
 
-| Field  | Type                              | Description                          |
-| :----- | :-------------------------------- | :----------------------------------- |
-| `line` | `number` \| `[number, number]`    | Line number or (start, end) range (1-based). |
+| Field  | Type                           | Description                                  |
+| :----- | :----------------------------- | :------------------------------------------- |
+| `line` | `number` \| `[number, number]` | Line number or (start, end) range (1-based). |
 
 ### SymbolScope
 
-| Field         | Type       | Description                                              |
-| :------------ | :--------- | :------------------------------------------------------- |
-| `symbol_path` | `string[]` | Symbol hierarchy, e.g., `["MyClass", "my_method"]`.      |
+| Field         | Type       | Description                                         |
+| :------------ | :--------- | :-------------------------------------------------- |
+| `symbol_path` | `string[]` | Symbol hierarchy, e.g., `["MyClass", "my_method"]`. |
 
 ## LocateRange
 
 For selecting a range of text instead of a point.
 
-| Field       | Type                                    | Default    | Description                                       |
-| :---------- | :-------------------------------------- | :--------- | :------------------------------------------------ |
-| `file_path` | `string`                                | Required   | Path to search in.                                |
-| `scope`     | `LineScope` \| `SymbolScope` \| `null`  | `null`     | Scope defines the range; if symbol, uses symbol's full range. |
-| `find`      | `string` \| `null`                      | `null`     | Text to match; matched text becomes the range.     |
+| Field       | Type                                   | Default  | Description                                                   |
+| :---------- | :------------------------------------- | :------- | :------------------------------------------------------------ |
+| `file_path` | `string`                               | Required | Path to search in.                                            |
+| `scope`     | `LineScope` \| `SymbolScope` \| `null` | `null`   | Scope defines the range; if symbol, uses symbol's full range. |
+| `find`      | `string` \| `null`                     | `null`   | Text to match; matched text becomes the range.                |
 
 ## LocateRequest
 
-| Field    | Type      | Description                   |
-| :------- | :-------- | :---------------------------- |
-| `locate` | `Locate`  | The location to find.         |
+| Field    | Type     | Description           |
+| :------- | :------- | :-------------------- |
+| `locate` | `Locate` | The location to find. |
 
 ## LocateRangeRequest
 
-| Field    | Type         | Description                   |
-| :------- | :----------- | :---------------------------- |
-| `locate` | `LocateRange`| The range to locate.          |
+| Field    | Type          | Description          |
+| :------- | :------------ | :------------------- |
+| `locate` | `LocateRange` | The range to locate. |
 
 ## LocateResponse
 
-| Field       | Type       | Description                                               |
-| :---------- | :--------- | :-------------------------------------------------------- |
-| `file_path` | `string`   | Resolved file path.                                       |
-| `position`  | `Position` | The coordinates (line, character) of the match.           |
+| Field       | Type       | Description                                     |
+| :---------- | :--------- | :---------------------------------------------- |
+| `file_path` | `string`   | Resolved file path.                             |
+| `position`  | `Position` | The coordinates (line, character) of the match. |
 
 ## Common Types
 
 ### Position
 
-| Field       | Type     | Description                 |
-| :---------- | :------- | :-------------------------- |
-| `line`      | `number` | 1-based line number.        |
-| `character` | `number` | 1-based character offset.   |
+| Field       | Type     | Description               |
+| :---------- | :------- | :------------------------ |
+| `line`      | `number` | 1-based line number.      |
+| `character` | `number` | 1-based character offset. |
 
 ### Range
 
-| Field   | Type       | Description                   |
-| :------ | :--------- | :---------------------------- |
-| `start` | `Position` | Start position (inclusive).   |
-| `end`   | `Position` | End position (exclusive).     |
+| Field   | Type       | Description                 |
+| :------ | :--------- | :-------------------------- |
+| `start` | `Position` | Start position (inclusive). |
+| `end`   | `Position` | End position (exclusive).   |
 
 ## Example Usage
 
