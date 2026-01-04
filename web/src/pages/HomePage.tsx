@@ -279,14 +279,12 @@ export default function HomePage() {
                       result = client.reference(
                     </div>
                     <div className="font-mono text-xs text-muted-foreground pl-4">
-                      locate={"{"}
-                      <span className="text-amber-500">"file_path"</span>:{" "}
+                      file_path=
                       <span className="text-amber-500">"src/utils.py"</span>,
                     </div>
-                    <div className="font-mono text-xs text-muted-foreground pl-12">
-                      <span className="text-amber-500">"find"</span>:{" "}
-                      <span className="text-amber-500">"def format_date"</span>
-                      {"}"},
+                    <div className="font-mono text-xs text-muted-foreground pl-4">
+                      symbol=
+                      <span className="text-amber-500">"format_date"</span>,
                     </div>
                     <div className="font-mono text-xs text-muted-foreground pl-4">
                       max_items=<span className="text-amber-500">10</span>
