@@ -5,6 +5,7 @@ import {
   Code2,
   Network,
   Search,
+  FileSearch,
 } from "lucide-react";
 import { isValidElement, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -33,6 +34,53 @@ interface Example {
 }
 
 const EXAMPLES: Example[] = [
+  {
+    id: "reference",
+    title: "Find References",
+    mobileTitle: "Reference",
+    icon: FileSearch,
+    agentIntent: "Find all places where `format_date` is used to refactor it",
+    flowSteps: [
+      { label: "Method", value: "reference" },
+      { label: "File", value: "src/utils.py", highlight: true },
+      { label: "Symbol", value: "format_date", highlight: true },
+    ],
+    processing: [
+      "Locate target symbol",
+      "Find all references",
+      "Extract caller context",
+      "Aggregate code snippets",
+    ],
+    resultMarkdown: `### References Found
+
+**Total:** 45 references | **Showing:** 3
+
+### \`src/ui/header.py\`:28
+
+In \`Header.render\` (\`Method\`)
+
+\`\`\`python
+formatted = format_date(user.last_login)
+\`\`\`
+
+### \`src/api/views.py\`:42
+
+In \`UserDetail.get\` (\`Method\`)
+
+\`\`\`python
+return {"date": format_date(obj.created_at)}
+\`\`\`
+
+### \`src/reports/export.py\`:156
+
+In \`generate_report\` (\`Function\`)
+
+\`\`\`python
+created_date = format_date(report.timestamp)
+\`\`\`
+
+✓ All usages identified with context`,
+  },
   {
     id: "locate",
     title: "Locate Symbol",
@@ -179,9 +227,9 @@ export default function HomePage() {
                 </h1>
 
                 <p className="font-serif text-base sm:text-lg lg:text-xl text-muted-foreground leading-relaxed mb-10">
-                  Semantic abstraction layer transforming LSP into an
-                  agent-native cognitive framework. Progressive disclosure of
-                  codebase intelligence for autonomous reasoning.
+                  Empowering Coding Agents with <strong className="text-foreground">Repository-Scale Intelligence</strong>. 
+                  An orchestration layer transforming low-level LSP capabilities into 
+                  high-level, agent-native cognitive tools for autonomous code understanding.
                 </p>
 
                 <div className="flex flex-wrap gap-4">
@@ -203,50 +251,85 @@ export default function HomePage() {
               <Card className="border-primary/20 shadow-lg bg-card">
                 <CardHeader>
                   <div className="flex items-center gap-2 mb-1">
-                    <div className="h-3 w-3 rounded-full bg-primary/20" />
-                    <div className="h-3 w-3 rounded-full bg-primary/20" />
-                    <div className="h-3 w-3 rounded-full bg-primary/20" />
-                    <span className="font-mono text-xs text-muted-foreground ml-auto">
-                      lsap-demo.py
+                    <span className="font-mono text-xs font-semibold text-primary">
+                      Orchestration Flow
                     </span>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2 bg-muted/30 p-4 rounded-sm border border-border/20">
-                    <div className="font-mono text-xs text-muted-foreground">
-                      <span className="text-primary">from</span> lsap{" "}
-                      <span className="text-primary">import</span> Client
+                  <div className="space-y-3">
+                    {/* Agent Request */}
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-lg">
+                        🤖
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-mono text-xs font-semibold text-foreground mb-1">
+                          Agent
+                        </div>
+                        <div className="bg-primary/5 rounded px-3 py-2 border border-primary/20">
+                          <div className="font-serif text-xs text-foreground italic">
+                            "Find all references of format_date"
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="h-px bg-border/40" />
-                    <div className="font-mono text-xs text-muted-foreground">
-                      client = Client(
-                      <span className="text-amber-500">"workspace/"</span>)
+
+                    {/* Arrow Down */}
+                    <div className="flex justify-center">
+                      <ArrowDown className="h-4 w-4 text-primary" />
                     </div>
-                    <div className="font-mono text-xs text-muted-foreground pl-4">
-                      <span className="opacity-50">
-                        # Natural language intent
-                      </span>
+
+                    {/* LSAP Orchestration */}
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-lg">
+                        🧠
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-mono text-xs font-semibold text-primary mb-1">
+                          LSAP Orchestration
+                        </div>
+                        <div className="bg-muted/50 rounded px-3 py-2 space-y-1.5 border border-border/40">
+                          <div className="font-mono text-[10px] text-muted-foreground flex items-center gap-2">
+                            <span className="text-primary">→</span> Locate symbol
+                          </div>
+                          <div className="font-mono text-[10px] text-muted-foreground flex items-center gap-2">
+                            <span className="text-primary">→</span> Find references
+                          </div>
+                          <div className="font-mono text-[10px] text-muted-foreground flex items-center gap-2">
+                            <span className="text-primary">→</span> Extract context
+                          </div>
+                          <div className="font-mono text-[10px] text-muted-foreground flex items-center gap-2">
+                            <span className="text-primary">→</span> Format markdown
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="font-mono text-xs text-muted-foreground">
-                      result = client.locate(
+
+                    {/* Arrow Down */}
+                    <div className="flex justify-center">
+                      <ArrowDown className="h-4 w-4 text-primary" />
                     </div>
-                    <div className="font-mono text-xs text-muted-foreground pl-4">
-                      text=
-                      <span className="text-amber-500">"def authenticate"</span>
+
+                    {/* Result */}
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center text-lg">
+                        ✓
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-mono text-xs font-semibold text-foreground mb-1">
+                          Structured Result
+                        </div>
+                        <div className="bg-muted/30 rounded px-3 py-2 border border-border/20">
+                          <div className="font-mono text-[10px] text-muted-foreground">
+                            Markdown with code snippets,
+                          </div>
+                          <div className="font-mono text-[10px] text-muted-foreground">
+                            caller context, locations
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="font-mono text-xs text-muted-foreground">
-                      )
-                    </div>
-                    <div className="h-px bg-border/40" />
-                    <div className="font-mono text-xs text-primary/70 pl-4">
-                      <span className="opacity-50">
-                        # → Position, context, source
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground pt-2">
-                    <ArrowDown className="h-3 w-3 text-primary" />
-                    <span>Agent-ready structured output</span>
                   </div>
                 </CardContent>
               </Card>
@@ -255,6 +338,97 @@ export default function HomePage() {
         </section>
 
         <div className="container max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <section className="py-16 lg:py-24 border-b border-border/40">
+            <div className="mb-12">
+              <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-normal mb-6">
+                Why LSAP?
+              </h2>
+              <p className="font-serif text-sm sm:text-base text-muted-foreground max-w-3xl mb-10">
+                LSAP transforms how AI agents interact with codebases by providing cognitive capabilities instead of atomic operations.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6 mb-12">
+              <Card className="border-primary/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <span className="text-2xl">🧠</span>
+                    <span>Cognitive vs Atomic</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div>
+                    <div className="font-mono text-xs font-semibold text-muted-foreground mb-2">LSP (Atomic Operations)</div>
+                    <p className="font-serif text-sm text-muted-foreground leading-relaxed">
+                      Agents must orchestrate dozens of sequential operations: open file → calculate offset → request definition → parse URI → read file → extract snippet
+                    </p>
+                  </div>
+                  <div className="h-px bg-border/40" />
+                  <div>
+                    <div className="font-mono text-xs font-semibold text-primary mb-2">LSAP (Cognitive Capabilities)</div>
+                    <p className="font-serif text-sm text-foreground leading-relaxed">
+                      One semantic request returns structured context with all necessary information. LSAP automatically handles the orchestration.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-primary/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <span className="text-2xl">⚡</span>
+                    <span>Token Efficiency</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="font-serif text-sm text-foreground leading-relaxed">
+                    Without LSAP, every agent reimplements orchestration patterns, wasting tokens on coordination instead of problem-solving.
+                  </p>
+                  <div className="h-px bg-border/40" />
+                  <p className="font-serif text-sm text-foreground leading-relaxed">
+                    LSAP centralizes this complexity once, providing battle-tested, optimized capabilities that let agents focus on high-level intent realization.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-primary/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <span className="text-2xl">🔄</span>
+                    <span>Composed Operations</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="font-serif text-sm text-foreground leading-relaxed">
+                    LSAP provides advanced capabilities like <span className="font-mono text-xs bg-primary/5 px-1.5 py-0.5 rounded">Relation API</span> (find all call paths A→B with BFS traversal and cycle detection) and <span className="font-mono text-xs bg-primary/5 px-1.5 py-0.5 rounded">Unified Hierarchy</span> that don't exist in raw LSP.
+                  </p>
+                  <div className="h-px bg-border/40" />
+                  <p className="font-serif text-sm text-muted-foreground leading-relaxed">
+                    These aren't simple wrappers—they're sophisticated compositions that handle graph traversal, deduplication, and markdown formatting automatically.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-primary/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <span className="text-2xl">🛡️</span>
+                    <span>Graceful Degradation</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="font-serif text-sm text-foreground leading-relaxed">
+                    When language servers have limited capabilities, LSAP returns partial results with clear indicators instead of failing.
+                  </p>
+                  <div className="h-px bg-border/40" />
+                  <p className="font-serif text-sm text-foreground leading-relaxed">
+                    The <strong className="text-primary">Markdown-First</strong> design ensures agents always get parseable, actionable output.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </section>
+
           <section className="py-16 lg:py-24 border-b border-border/40">
             <div className="mb-16">
               <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-normal mb-4">
