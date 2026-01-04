@@ -53,6 +53,51 @@ from .workspace_symbol import (
     WorkspaceSymbolResponse,
 )
 
+# Draft - Hierarchy API
+from .draft.hierarchy import (
+    CallEdgeMetadata,
+    HierarchyEdge,
+    HierarchyItem,
+    HierarchyNode,
+    HierarchyRequest,
+    HierarchyResponse,
+    TypeEdgeMetadata,
+)
+
+# Draft - Completion
+from .draft.completion import (
+    CompletionItem,
+    CompletionRequest,
+    CompletionResponse,
+)
+
+# Draft - Diagnostics
+from .draft.diagnostics import (
+    Diagnostic,
+    FileDiagnosticsRequest,
+    FileDiagnosticsResponse,
+    WorkspaceDiagnosticItem,
+    WorkspaceDiagnosticsRequest,
+    WorkspaceDiagnosticsResponse,
+)
+
+# Draft - Rename
+from .draft.rename import (
+    RenameDiff,
+    RenameFileChange,
+    RenameRequest,
+    RenameResponse,
+)
+
+# Draft - Inlay Hints
+from .draft.inlay_hint import (
+    DecoratedContentResponse,
+    InlayHintItem,
+    InlayHintRequest,
+    InlineValueItem,
+    InlineValueRequest,
+)
+
 __all__ = [
     # Base classes
     "PaginatedRequest",
@@ -96,4 +141,34 @@ __all__ = [
     "WorkspaceSymbolItem",
     "WorkspaceSymbolRequest",
     "WorkspaceSymbolResponse",
+    # Draft - Hierarchy API
+    "CallEdgeMetadata",
+    "HierarchyEdge",
+    "HierarchyItem",
+    "HierarchyNode",
+    "HierarchyRequest",
+    "HierarchyResponse",
+    "TypeEdgeMetadata",
+    # Draft - Completion
+    "CompletionItem",
+    "CompletionRequest",
+    "CompletionResponse",
+    # Draft - Diagnostics
+    "Diagnostic",
+    "FileDiagnosticsRequest",
+    "FileDiagnosticsResponse",
+    "WorkspaceDiagnosticItem",
+    "WorkspaceDiagnosticsRequest",
+    "WorkspaceDiagnosticsResponse",
+    # Draft - Rename
+    "RenameDiff",
+    "RenameFileChange",
+    "RenameRequest",
+    "RenameResponse",
+    # Draft - Inlay Hints
+    "DecoratedContentResponse",
+    "InlayHintItem",
+    "InlayHintRequest",
+    "InlineValueItem",
+    "InlineValueRequest",
 ]

@@ -3,7 +3,7 @@ from typing import Final
 from pydantic import ConfigDict
 
 from lsap_schema.abc import Request, Response
-from lsap_schema.draft.call_hierarchy import CallHierarchyItem
+from lsap_schema.draft.hierarchy import HierarchyItem
 from lsap_schema.locate import Locate
 
 
@@ -40,9 +40,9 @@ No connection found between `{{ source.name }}` and `{{ target.name }}` (depth: 
 
 
 class RelationResponse(Response):
-    source: CallHierarchyItem
-    target: CallHierarchyItem
-    chains: list[list[CallHierarchyItem]]
+    source: HierarchyItem
+    target: HierarchyItem
+    chains: list[list[HierarchyItem]]
     """List of paths, where each path is a sequence of items from source to target."""
 
     max_depth: int

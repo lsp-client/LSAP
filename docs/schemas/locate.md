@@ -1,6 +1,6 @@
 # Locate API
 
-The Locate API provides a unified way to specify a position or range in the codebase. It is used as a base for many other requests like [`SymbolRequest`](symbol.md), [`ReferenceRequest`](reference.md), and [`CallHierarchyRequest`](call_hierarchy.md).
+The Locate API provides a unified way to specify a position or range in the codebase. It is used as a base for many other requests like [`SymbolRequest`](symbol.md), [`ReferenceRequest`](reference.md), and [`HierarchyRequest`](draft/hierarchy.md).
 
 ## Locate
 

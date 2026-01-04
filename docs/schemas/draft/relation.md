@@ -2,7 +2,7 @@
 
 The Relation API allows finding all call chains (paths) that connect two specific symbols. This is useful for understanding how one part of the system interacts with another, validating architectural dependencies, or impact analysis.
 
-It leverages the [Call Hierarchy API](call_hierarchy.md) to trace paths.
+It leverages the [Hierarchy API](hierarchy.md) to trace call relationship paths.
 
 ## RelationRequest
 
@@ -14,12 +14,12 @@ It leverages the [Call Hierarchy API](call_hierarchy.md) to trace paths.
 
 ## RelationResponse
 
-| Field       | Type                    | Description                                                                 |
-| :---------- | :---------------------- | :-------------------------------------------------------------------------- |
-| `source`    | `CallHierarchyItem`     | The resolved source symbol.                                                 |
-| `target`    | `CallHierarchyItem`     | The resolved target symbol.                                                 |
-| `chains`    | `CallHierarchyItem[][]` | List of paths connecting source to target. Each path is a sequence of items.|
-| `max_depth` | `number`                | The maximum depth used for the search.                                      |
+| Field       | Type                | Description                                                                 |
+| :---------- | :------------------ | :-------------------------------------------------------------------------- |
+| `source`    | `HierarchyItem`     | The resolved source symbol.                                                 |
+| `target`    | `HierarchyItem`     | The resolved target symbol.                                                 |
+| `chains`    | `HierarchyItem[][]` | List of paths connecting source to target. Each path is a sequence of items.|
+| `max_depth` | `number`            | The maximum depth used for the search.                                      |
 
 ## Implementation Guide
 

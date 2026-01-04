@@ -13,8 +13,7 @@ This directory contains the specifications for the LLM-friendly LSP (Language Se
 - [**Completion**](completion.md): Get code completion suggestions at a specific position.
 - [**Reference**](reference.md): Find all usages of a symbol in the project.
 - [**Implementation**](implementation.md): Find concrete implementations of interfaces or abstract methods.
-- [**Call Hierarchy**](call_hierarchy.md): Trace incoming and outgoing function call relationships.
-- [**Type Hierarchy**](type_hierarchy.md): Explore inheritance relationships (supertypes and subtypes).
+- [**Hierarchy**](draft/hierarchy.md): Unified API for tracing call relationships and type inheritance hierarchies.
 - [**Diagnostics**](diagnostics.md): Access linting issues and syntax errors.
 - [**Rename**](rename.md): Preview and execute safe workspace-wide symbol renaming.
 - [**Inlay Hints & Inline Values**](inlay_hints.md): Read code with static hints and runtime values injected.
