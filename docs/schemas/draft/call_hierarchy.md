@@ -158,3 +158,7 @@ The Call Hierarchy API allows tracing the relationships between functions, showi
 > [!NOTE]
 > Tree is truncated at depth 3. Use `depth` parameter to explore further.
 ```
+
+## Pending Issues
+
+- **TBD**: Cycle detection and performance for extremely deep call hierarchies.

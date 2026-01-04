@@ -200,3 +200,7 @@ Summary: Affects 5 files and 12 occurrences.
 > This is a permanent workspace-wide change.
 > Please verify the diffs above before proceeding with further edits.
 ```
+
+## Pending Issues
+
+- **TBD**: Handling of dynamic references (e.g., `getattr`, reflection) and safe rollback mechanisms.

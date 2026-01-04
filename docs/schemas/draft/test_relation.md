@@ -120,3 +120,7 @@ Found 1 related item(s):
   - Line: 42
   - Strategy: `reference`
 ```
+
+## Pending Issues
+
+- **TBD**: Improving heuristic accuracy and supporting more language-specific test patterns (e.g., nested test classes).

@@ -179,3 +179,11 @@ Total issues: 15 | Showing: 10 (Offset: 0, Limit: 10)
 > More issues available.
 > To see the rest, specify a `max_items` and use: `start_index=10`
 ```
+
+## Pending Issues
+
+- **Interface Design**: Diagnostics are split into workspace-wide and document-specific types. Designing an interface that elegantly handles both (e.g., how to unify the request/response models while maintaining performance) is a major design hurdle.
+
+## Pending Issues
+
+- **Interface Design**: Diagnostics are split into workspace-wide and document-specific types. Designing an interface that elegantly handles both (e.g., how to unify the request/response models while maintaining performance) is a major design hurdle.

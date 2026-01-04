@@ -120,22 +120,10 @@ The Type Hierarchy API allows exploring the inheritance relationships of a class
 > Tree is truncated at depth 2. Increase `depth` parameter to explore further if needed.
 ```
 
-### Scenario 3: Exploring complete hierarchy (both directions)
+## Pending Issues
 
-#### Request
+- **TBD**: Handling of multiple inheritance and integration with external types not defined in the workspace.
 
-```json
-{
-  "locate": {
-    "file_path": "src/controllers.py",
-    "scope": {
-      "symbol_path": ["AuthController"]
-    }
-  },
-  "direction": "both",
-  "depth": 2
-}
-```
 
 #### Markdown Rendered for LLM
 

@@ -79,3 +79,7 @@ Found 2 call chain(s):
 3. **SessionManager.get_session** (`Method`) - `src/services/session.py`
 4. **db.query** (`Function`) - `src/db.py`
 ```
+
+## Pending Issues
+
+- **TBD**: Search algorithm efficiency for large-scale dependency graphs and path filtering criteria.

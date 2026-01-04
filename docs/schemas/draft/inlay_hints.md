@@ -184,3 +184,7 @@ class DataService:
 > Annotations like `/* :type */` or `/* param:= */` are injected for clarity.
 > Runtime values (if any) are shown as `// value: x=42`.
 ````
+
+## Pending Issues
+
+- **Debugger Integration**: The difficulty of `Inline Values` lies in the need to interface with a debugger. This involves the Debug Adapter Protocol (DAP) to retrieve runtime states, which introduces complexities regarding debug session management and synchronization.

@@ -201,3 +201,7 @@ def query(self, sql, params=None):
 > More implementations available.
 > To see more, specify a `max_items` and use: `start_index=3`
 ````
+
+## Pending Issues
+
+- **TBD**: Performance considerations when searching for implementations in extremely large workspaces.
