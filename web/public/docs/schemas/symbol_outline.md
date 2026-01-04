@@ -48,7 +48,7 @@ The Symbol Outline API returns a hierarchical tree of all symbols defined within
 Represents a user in the system with authentication credentials.
 User model for authentication and profile management.
 
-### `__init__` (`method`)
+### **init** (`method`)
 
 Initializes the user instance with username and email.
 

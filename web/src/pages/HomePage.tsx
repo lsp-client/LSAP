@@ -251,57 +251,85 @@ export default function HomePage() {
               <Card className="border-primary/20 shadow-lg bg-card">
                 <CardHeader>
                   <div className="flex items-center gap-2 mb-1">
-                    <div className="h-3 w-3 rounded-full bg-primary/20" />
-                    <div className="h-3 w-3 rounded-full bg-primary/20" />
-                    <div className="h-3 w-3 rounded-full bg-primary/20" />
-                    <span className="font-mono text-xs text-muted-foreground ml-auto">
-                      lsap-demo.py
+                    <span className="font-mono text-xs font-semibold text-primary">
+                      Orchestration Flow
                     </span>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2 bg-muted/30 p-4 rounded-sm border border-border/20">
-                    <div className="font-mono text-xs text-muted-foreground">
-                      <span className="text-primary">from</span> lsap{" "}
-                      <span className="text-primary">import</span> Client
+                  <div className="space-y-3">
+                    {/* Agent Request */}
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-lg">
+                        🤖
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-mono text-xs font-semibold text-foreground mb-1">
+                          Agent
+                        </div>
+                        <div className="bg-primary/5 rounded px-3 py-2 border border-primary/20">
+                          <div className="font-serif text-xs text-foreground italic">
+                            "Find all references of format_date"
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="h-px bg-border/40" />
-                    <div className="font-mono text-xs text-muted-foreground">
-                      client = Client(
-                      <span className="text-amber-500">"workspace/"</span>)
+
+                    {/* Arrow Down */}
+                    <div className="flex justify-center">
+                      <ArrowDown className="h-4 w-4 text-primary" />
                     </div>
-                    <div className="font-mono text-xs text-muted-foreground pl-4">
-                      <span className="opacity-50">
-                        # Find all references to a function
-                      </span>
+
+                    {/* LSAP Orchestration */}
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-lg">
+                        🧠
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-mono text-xs font-semibold text-primary mb-1">
+                          LSAP Orchestration
+                        </div>
+                        <div className="bg-muted/50 rounded px-3 py-2 space-y-1.5 border border-border/40">
+                          <div className="font-mono text-[10px] text-muted-foreground flex items-center gap-2">
+                            <span className="text-primary">→</span> Locate symbol
+                          </div>
+                          <div className="font-mono text-[10px] text-muted-foreground flex items-center gap-2">
+                            <span className="text-primary">→</span> Find references
+                          </div>
+                          <div className="font-mono text-[10px] text-muted-foreground flex items-center gap-2">
+                            <span className="text-primary">→</span> Extract context
+                          </div>
+                          <div className="font-mono text-[10px] text-muted-foreground flex items-center gap-2">
+                            <span className="text-primary">→</span> Format markdown
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="font-mono text-xs text-muted-foreground">
-                      result = client.reference(
+
+                    {/* Arrow Down */}
+                    <div className="flex justify-center">
+                      <ArrowDown className="h-4 w-4 text-primary" />
                     </div>
-                    <div className="font-mono text-xs text-muted-foreground pl-4">
-                      file_path=
-                      <span className="text-amber-500">"src/utils.py"</span>,
+
+                    {/* Result */}
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center text-lg">
+                        ✓
+                      </div>
+                      <div className="flex-1">
+                        <div className="font-mono text-xs font-semibold text-foreground mb-1">
+                          Structured Result
+                        </div>
+                        <div className="bg-muted/30 rounded px-3 py-2 border border-border/20">
+                          <div className="font-mono text-[10px] text-muted-foreground">
+                            Markdown with code snippets,
+                          </div>
+                          <div className="font-mono text-[10px] text-muted-foreground">
+                            caller context, locations
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="font-mono text-xs text-muted-foreground pl-4">
-                      symbol=
-                      <span className="text-amber-500">"format_date"</span>,
-                    </div>
-                    <div className="font-mono text-xs text-muted-foreground pl-4">
-                      max_items=<span className="text-amber-500">10</span>
-                    </div>
-                    <div className="font-mono text-xs text-muted-foreground">
-                      )
-                    </div>
-                    <div className="h-px bg-border/40" />
-                    <div className="font-mono text-xs text-primary/70 pl-4">
-                      <span className="opacity-50">
-                        # → Markdown with all callers + context
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground pt-2">
-                    <ArrowDown className="h-3 w-3 text-primary" />
-                    <span>Structured markdown with code snippets</span>
                   </div>
                 </CardContent>
               </Card>
