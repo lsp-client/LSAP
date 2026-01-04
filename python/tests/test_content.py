@@ -13,7 +13,7 @@ def test_read_single_line():
     result = reader.read(read_range)
     assert result is not None
     assert result.exact_content == "hello"
-    assert result.content == "hello world\n"
+    assert result.content == "00001| hello world\n"
     assert result.range == read_range
 
 
@@ -28,7 +28,7 @@ def test_read_multi_line():
     assert result is not None
     # "one\nline two"
     assert result.exact_content == "one\nline two"
-    assert result.content == "line one\nline two\n"
+    assert result.content == "00001| line one\n00002| line two\n"
     assert result.range == read_range
 
 
@@ -60,7 +60,7 @@ def test_read_across_all_lines():
     result = reader.read(read_range)
     assert result is not None
     assert result.exact_content == "a\nb\nc"
-    assert result.content == "a\nb\nc"
+    assert result.content == "00001| a\n00002| b\n00003| c"
 
 
 def test_read_end_line_out_of_bounds():
@@ -73,7 +73,7 @@ def test_read_end_line_out_of_bounds():
     result = reader.read(read_range)
     assert result is not None
     assert result.exact_content == "line 0\nline 1"
-    assert result.content == "line 0\nline 1"
+    assert result.content == "00001| line 0\n00002| line 1"
 
 
 def test_read_with_trailing_newline():
@@ -85,7 +85,7 @@ def test_read_with_trailing_newline():
     result = reader.read(read_range)
     assert result is not None
     assert result.exact_content == "line 0\n"
-    assert result.content == "line 0\n"
+    assert result.content == "00001| line 0\n"
 
 
 def test_read_large_character_offset():
@@ -98,7 +98,7 @@ def test_read_large_character_offset():
     result = reader.read(read_range)
     assert result is not None
     assert result.exact_content == "short"
-    assert result.content == "short"
+    assert result.content == "00001| short"
 
 
 def test_read_dedent():
@@ -110,4 +110,4 @@ def test_read_dedent():
     result = reader.read(read_range)
     assert result is not None
     assert result.exact_content == "pass"
-    assert result.content == "pass"
+    assert result.content == "00002| pass"

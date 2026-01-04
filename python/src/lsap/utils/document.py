@@ -14,7 +14,7 @@ class Snippet:
     """
 
     content: str
-    """Full lines within the range, dedented."""
+    """Full lines within the range, dedented and prefixed with line numbers."""
 
     exact_content: str
     """The exact text within the specified range."""
@@ -107,7 +107,12 @@ class DocumentReader:
             if end_char > 0
             else max(start_line, read_range.end.line - 1)
         )
-        lines = self._lines[start_line : min(last_line_idx + 1, len(self._lines))]
-        content = textwrap.dedent("".join(lines))
+        raw_lines = self._lines[start_line : min(last_line_idx + 1, len(self._lines))]
+        dedented_lines = textwrap.dedent("".join(raw_lines)).splitlines(keepends=True)
+
+        numbered_lines = [
+            f"{start_line + i + 1:05d}| {line}" for i, line in enumerate(dedented_lines)
+        ]
+        content = "".join(numbered_lines)
 
         return Snippet(content=content, exact_content=exact_content, range=read_range)
