@@ -159,7 +159,7 @@ dev = [
 [[package]]
 name = "lsap-schema"
 version = "0.1.0"
-source = { git = "https://github.com/lsp-client/LSAP.git#2a899e5805189d3063df8fd5acb737d0c07336c9" }
+source = { git = "https://github.com/lsp-client/LSAP.git#02e9f41f673cd6588486849d9eaf4f1b0f217382" }
 dependencies = [
     { name = "lsprotocol" },
     { name = "pydantic" },
@@ -168,8 +168,8 @@ dependencies = [
 
 [[package]]
 name = "lsp-client"
-version = "0.1.0"
-source = { git = "https://github.com/lsp-client/python-sdk.git#2704a45b7380ce2281d019a8304a89e175885a9f" }
+version = "0.2.3"
+source = { git = "https://github.com/lsp-client/python-sdk.git#df367cbc8da660c047ba55ec4d406e7a6af750c3" }
 dependencies = [
     { name = "aioshutil" },
     { name = "anyio" },

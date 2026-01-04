@@ -1,0 +1,2 @@
+sync:
+    uv sync --upgrade

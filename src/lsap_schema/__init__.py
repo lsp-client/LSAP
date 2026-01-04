@@ -47,6 +47,7 @@ from .symbol_outline import (
 )
 
 # Search
+from . import search
 from .search import (
     SearchItem,
     SearchRequest,
@@ -138,6 +139,7 @@ __all__ = [
     "SymbolOutlineRequest",
     "SymbolOutlineResponse",
     # Search
+    "search",
     "SearchItem",
     "SearchRequest",
     "SearchResponse",

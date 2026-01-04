@@ -5,16 +5,11 @@ from typing import Protocol, override, runtime_checkable
 
 from attrs import Factory, define
 from lsap_schema.models import SymbolKind
-from lsap_schema.search import (
-    SearchItem,
-    SearchRequest,
-    SearchResponse,
-)
+from lsap_schema.search import SearchItem, SearchRequest, SearchResponse
 from lsp_client.capability.request import WithRequestWorkspaceSymbol
-from lsp_client.protocol import CapabilityClientProtocol
 from lsprotocol.types import Location, WorkspaceSymbol
 
-from lsap.abc import Capability
+from lsap.abc import Capability, ClientProtocol
 from lsap.utils.cache import PaginationCache
 from lsap.utils.pagination import paginate
 
@@ -22,7 +17,7 @@ from lsap.utils.pagination import paginate
 @runtime_checkable
 class SearchClient(
     WithRequestWorkspaceSymbol,
-    CapabilityClientProtocol,
+    ClientProtocol,
     Protocol,
 ): ...
 
@@ -38,13 +33,15 @@ class SearchCapability(Capability[SearchClient, SearchRequest, SearchResponse]):
             if symbols is None:
                 return None
 
-            filtered = symbols
             if req.kinds:
-                kind_set = {k.name for k in req.kinds}
-                filtered = [s for s in symbols if s.kind.name in kind_set]
+                kind_set = set(req.kinds)
+                symbols = [
+                    s for s in symbols if SymbolKind.from_lsp(s.kind) in kind_set
+                ]
 
-            items = sorted(filtered, key=lambda x: (x.name, x.location.uri))
-            return list(items)
+            valid = [s for s in symbols if isinstance(s.location, Location)]
+            valid.sort(key=lambda x: (x.name, x.location.uri))
+            return valid
 
         result = await paginate(req, self._symbol_cache, fetcher)
         if result is None:
