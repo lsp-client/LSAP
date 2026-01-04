@@ -54,7 +54,7 @@ LSAP's interaction design strictly follows the **Markdown-First** principle: inp
 
 The Agent only needs to issue a high-level command without worrying about underlying row/column calculations or file reading:
 
-```json
+```jsonc
 // Intent: Find all usages of 'format_date' to refactor it
 {
   "locate": {
