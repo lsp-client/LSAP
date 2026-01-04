@@ -3,15 +3,15 @@ from pathlib import Path
 import pytest
 
 from lsap_schema import (
-    CallHierarchyItem,
-    CallHierarchyNode,
-    CallHierarchyResponse,
     CompletionItem,
     CompletionResponse,
     DefinitionResponse,
     Diagnostic,
     FileDiagnosticsResponse,
     DecoratedContentResponse,
+    HierarchyItem,
+    HierarchyNode,
+    HierarchyResponse,
     LocateResponse,
     Position,
     Range,
@@ -24,9 +24,6 @@ from lsap_schema import (
     SymbolCodeInfo,
     SymbolDetailInfo,
     SymbolKind,
-    TypeHierarchyItem,
-    TypeHierarchyNode,
-    TypeHierarchyResponse,
     WorkspaceSymbolItem,
     WorkspaceSymbolResponse,
     WorkspaceDiagnosticItem,
@@ -246,24 +243,25 @@ def test_decorated_content_response_format():
 
 
 def test_call_hierarchy_response_format():
-    node = CallHierarchyNode(
+    node = HierarchyNode(
         id="1",
         name="root",
         kind="Function",
         file_path=Path("test.py"),
         range_start=Position(line=1, character=1),
     )
-    item = CallHierarchyItem(
+    item = HierarchyItem(
         name="caller", kind="Function", file_path=Path("test.py"), level=1
     )
-    resp = CallHierarchyResponse(
+    resp = HierarchyResponse(
+        hierarchy_type="call",
         root=node,
         nodes={"1": node},
-        edges_in={},
-        edges_out={},
-        calls_in=[item],
-        calls_out=[],
-        direction="both",
+        edges_incoming={},
+        edges_outgoing={},
+        items_incoming=[item],
+        items_outgoing=[],
+        direction="incoming",
         depth=2,
     )
     rendered = resp.format()
@@ -272,24 +270,23 @@ def test_call_hierarchy_response_format():
 
 
 def test_type_hierarchy_response_format():
-    node = TypeHierarchyNode(
+    node = HierarchyNode(
         id="1",
         name="Base",
         kind="Class",
         file_path=Path("test.py"),
         range_start=Position(line=1, character=1),
     )
-    item = TypeHierarchyItem(
-        name="Sub", kind="Class", file_path=Path("test.py"), level=1
-    )
-    resp = TypeHierarchyResponse(
+    item = HierarchyItem(name="Sub", kind="Class", file_path=Path("test.py"), level=1)
+    resp = HierarchyResponse(
+        hierarchy_type="type",
         root=node,
         nodes={"1": node},
-        edges_up={},
-        edges_down={},
-        types_up=[],
-        types_down=[item],
-        direction="both",
+        edges_incoming={},
+        edges_outgoing={},
+        items_incoming=[],
+        items_outgoing=[item],
+        direction="outgoing",
         depth=2,
     )
     rendered = resp.format()

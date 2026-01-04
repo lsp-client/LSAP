@@ -44,10 +44,10 @@ def test_unified_hierarchy_call_type():
         depth=2,
     )
     rendered = resp.format()
-    assert "Call Hierarchy" in rendered
     assert "root_function" in rendered
     assert "caller_function" in rendered
-    assert "Incoming Calls" in rendered
+    assert "Incoming" in rendered
+    assert "call" in rendered  # hierarchy_type is shown
 
 
 def test_unified_hierarchy_type_type():
@@ -84,10 +84,10 @@ def test_unified_hierarchy_type_type():
         depth=2,
     )
     rendered = resp.format()
-    assert "Type Hierarchy" in rendered
     assert "BaseClass" in rendered
     assert "DerivedClass" in rendered
-    assert "Supertypes" in rendered
+    assert "Incoming" in rendered
+    assert "type" in rendered  # hierarchy_type is shown
 
 
 def test_unified_hierarchy_request_call():

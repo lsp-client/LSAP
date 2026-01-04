@@ -100,43 +100,11 @@ class HierarchyRequest(LocateRequest):
     """Whether to include external references (applicable to certain hierarchy types)"""
 
 
-# Template that adapts based on hierarchy_type
 markdown_template: Final = """
-{% if hierarchy_type == "call" %}
-# Call Hierarchy for `{{ root.name }}` (Depth: {{ depth }}, Direction: {{ direction }})
+# {{ root.name }} Hierarchy ({{ hierarchy_type }}, depth: {{ depth }})
 
 {% if direction == "incoming" or direction == "both" %}
-## Incoming Calls (Who calls this?)
-
-{% for item in items_incoming %}
-{% for i in (1..item.level) %}#{% endfor %}## {{ item.name }}
-- **Kind**: `{{ item.kind }}`
-- **File**: `{{ item.file_path }}`
-{%- if item.is_cycle %}
-- **Recursive cycle detected**
-{%- endif %}
-
-{% endfor %}
-{% endif %}
-
-{% if direction == "outgoing" or direction == "both" %}
-## Outgoing Calls (What does this call?)
-
-{% for item in items_outgoing %}
-{% for i in (1..item.level) %}#{% endfor %}## {{ item.name }}
-- **Kind**: `{{ item.kind }}`
-- **File**: `{{ item.file_path }}`
-{%- if item.is_cycle %}
-- **Recursive cycle detected**
-{%- endif %}
-
-{% endfor %}
-{% endif %}
-{% else %}
-# Type Hierarchy for `{{ root.name }}` (Depth: {{ depth }}, Direction: {{ direction }})
-
-{% if direction == "incoming" or direction == "both" %}
-## Supertypes (Parents/Base Classes)
+## Incoming
 
 {% for item in items_incoming %}
 {% for i in (1..item.level) %}#{% endfor %}## {{ item.name }}
@@ -146,14 +114,14 @@ markdown_template: Final = """
 - Detail: {{ item.detail }}
 {%- endif %}
 {%- if item.is_cycle %}
-- Recursive cycle detected
+- ⚠️ Cycle detected
 {%- endif %}
 
 {% endfor %}
 {% endif %}
 
 {% if direction == "outgoing" or direction == "both" %}
-## Subtypes (Children/Implementations)
+## Outgoing
 
 {% for item in items_outgoing %}
 {% for i in (1..item.level) %}#{% endfor %}## {{ item.name }}
@@ -163,16 +131,11 @@ markdown_template: Final = """
 - Detail: {{ item.detail }}
 {%- endif %}
 {%- if item.is_cycle %}
-- Recursive cycle detected
+- ⚠️ Cycle detected
 {%- endif %}
 
 {% endfor %}
 {% endif %}
-{% endif %}
-
----
-> [!NOTE]
-> Tree is truncated at depth {{ depth }}.
 """
 
 

@@ -53,31 +53,15 @@ from .workspace_symbol import (
     WorkspaceSymbolResponse,
 )
 
-# Draft - Unified Hierarchy API
+# Draft - Hierarchy API
 from .draft.hierarchy import (
+    CallEdgeMetadata,
     HierarchyEdge,
     HierarchyItem,
     HierarchyNode,
     HierarchyRequest,
     HierarchyResponse,
-)
-
-# Draft - Backward compatibility for Call Hierarchy
-from .draft.call_hierarchy import (
-    CallEdge,
-    CallHierarchyItem,
-    CallHierarchyNode,
-    CallHierarchyRequest,
-    CallHierarchyResponse,
-)
-
-# Draft - Backward compatibility for Type Hierarchy
-from .draft.type_hierarchy import (
-    TypeEdge,
-    TypeHierarchyItem,
-    TypeHierarchyNode,
-    TypeHierarchyRequest,
-    TypeHierarchyResponse,
+    TypeEdgeMetadata,
 )
 
 # Draft - Completion
@@ -157,24 +141,14 @@ __all__ = [
     "WorkspaceSymbolItem",
     "WorkspaceSymbolRequest",
     "WorkspaceSymbolResponse",
-    # Draft - Unified Hierarchy API
+    # Draft - Hierarchy API
+    "CallEdgeMetadata",
     "HierarchyEdge",
     "HierarchyItem",
     "HierarchyNode",
     "HierarchyRequest",
     "HierarchyResponse",
-    # Draft - Call Hierarchy (backward compatibility)
-    "CallEdge",
-    "CallHierarchyItem",
-    "CallHierarchyNode",
-    "CallHierarchyRequest",
-    "CallHierarchyResponse",
-    # Draft - Type Hierarchy (backward compatibility)
-    "TypeEdge",
-    "TypeHierarchyItem",
-    "TypeHierarchyNode",
-    "TypeHierarchyRequest",
-    "TypeHierarchyResponse",
+    "TypeEdgeMetadata",
     # Draft - Completion
     "CompletionItem",
     "CompletionRequest",
