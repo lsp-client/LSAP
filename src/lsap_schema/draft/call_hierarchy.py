@@ -7,15 +7,24 @@ The unified hierarchy API (hierarchy.py) should be used for new code.
 
 from typing import Final, Literal
 
-from pydantic import ConfigDict
+from pydantic import BaseModel, ConfigDict
 
 from lsap_schema.abc import Response
 from lsap_schema.draft.hierarchy import (
-    HierarchyEdge as CallEdge,
     HierarchyItem as CallHierarchyItem,
     HierarchyNode as CallHierarchyNode,
+    Position,
 )
 from lsap_schema.locate import LocateRequest
+
+
+class CallEdge(BaseModel):
+    """Call edge with call sites"""
+
+    from_node_id: str
+    to_node_id: str
+    call_sites: list[Position]
+    """Exact positions where the call occurs"""
 
 
 class CallHierarchyRequest(LocateRequest):

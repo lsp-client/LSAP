@@ -1,14 +1,18 @@
 from pathlib import Path
-from typing import Final, Literal
+from typing import Annotated, Final, Literal, Union
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from lsap_schema.abc import Response
 from lsap_schema.locate import LocateRequest, Position
 
 
 class HierarchyNode(BaseModel):
-    """Unified node for both call and type hierarchies"""
+    """
+    Represents a node in a hierarchy graph.
+
+    Applicable to any hierarchical relationship: function calls, type inheritance, etc.
+    """
 
     id: str
     name: str
@@ -16,59 +20,87 @@ class HierarchyNode(BaseModel):
     file_path: Path
     range_start: Position
     detail: str | None = None
-    """Optional detail (used for type hierarchy)"""
 
 
 class HierarchyItem(BaseModel):
-    """Unified item for both call and type hierarchies"""
+    """
+    Represents an item in a flattened hierarchy tree for rendering.
+
+    Applicable to any hierarchical relationship.
+    """
 
     name: str
     kind: str
     file_path: Path
     level: int
     detail: str | None = None
-    """Optional detail (used for type hierarchy)"""
     is_cycle: bool = False
 
 
+class CallEdgeMetadata(BaseModel):
+    """Metadata specific to call relationships"""
+
+    call_sites: list[Position]
+    """Positions where the call occurs"""
+
+
+class TypeEdgeMetadata(BaseModel):
+    """Metadata specific to type inheritance relationships"""
+
+    relationship: Literal["extends", "implements"]
+    """Type of inheritance relationship"""
+
+
 class HierarchyEdge(BaseModel):
-    """Unified edge for both call and type hierarchies"""
+    """
+    Represents a directed edge in the hierarchy graph.
+
+    The edge connects two nodes and may carry metadata specific to the relationship type.
+    """
 
     from_node_id: str
     to_node_id: str
-    call_sites: list[Position] | None = None
-    """Exact positions where the call occurs (for call hierarchy)"""
-    relationship: Literal["extends", "implements"] | None = None
-    """Type of relationship (for type hierarchy)"""
+    metadata: (
+        Annotated[
+            Union[CallEdgeMetadata, TypeEdgeMetadata],
+            Field(
+                discriminator="relationship"
+                if hasattr(TypeEdgeMetadata, "relationship")
+                else None
+            ),
+        ]
+        | None
+    ) = None
 
 
 class HierarchyRequest(LocateRequest):
     """
-    Unified API for tracing hierarchies - both call relationships and type inheritance.
+    Traces hierarchical relationships in a directed graph.
 
-    For call hierarchy: traces incoming or outgoing calls for a symbol.
-    For type hierarchy: traces supertypes or subtypes of a class or interface.
+    The hierarchy type determines the semantic meaning of relationships:
+    - "call": function/method call relationships
+    - "type": class/interface inheritance relationships
+
+    Direction is specified in graph terms:
+    - "incoming": predecessors in the graph (callers for calls, supertypes for inheritance)
+    - "outgoing": successors in the graph (callees for calls, subtypes for inheritance)
+    - "both": explore both directions
     """
 
     hierarchy_type: Literal["call", "type"]
-    """Type of hierarchy to trace: 'call' for function calls, 'type' for class inheritance"""
+    """Type of hierarchical relationship to trace"""
 
-    direction: Literal["incoming", "outgoing", "supertypes", "subtypes", "both"] = (
-        "both"
-    )
-    """
-    Direction of the trace:
-    - For call hierarchy: 'incoming' (callers), 'outgoing' (callees), or 'both'
-    - For type hierarchy: 'supertypes' (parents), 'subtypes' (children), or 'both'
-    """
+    direction: Literal["incoming", "outgoing", "both"] = "both"
+    """Graph traversal direction"""
 
     depth: int = 2
-    """How many hops/levels to trace (default: 2)"""
+    """Maximum traversal depth"""
 
     include_external: bool = False
-    """Whether to include calls to/from external libraries (only for call hierarchy)"""
+    """Whether to include external references (applicable to certain hierarchy types)"""
 
 
+# Template that adapts based on hierarchy_type
 markdown_template: Final = """
 {% if hierarchy_type == "call" %}
 # Call Hierarchy for `{{ root.name }}` (Depth: {{ depth }}, Direction: {{ direction }})
@@ -76,7 +108,7 @@ markdown_template: Final = """
 {% if direction == "incoming" or direction == "both" %}
 ## Incoming Calls (Who calls this?)
 
-{% for item in items_in %}
+{% for item in items_incoming %}
 {% for i in (1..item.level) %}#{% endfor %}## {{ item.name }}
 - **Kind**: `{{ item.kind }}`
 - **File**: `{{ item.file_path }}`
@@ -90,7 +122,7 @@ markdown_template: Final = """
 {% if direction == "outgoing" or direction == "both" %}
 ## Outgoing Calls (What does this call?)
 
-{% for item in items_out %}
+{% for item in items_outgoing %}
 {% for i in (1..item.level) %}#{% endfor %}## {{ item.name }}
 - **Kind**: `{{ item.kind }}`
 - **File**: `{{ item.file_path }}`
@@ -103,10 +135,10 @@ markdown_template: Final = """
 {% else %}
 # Type Hierarchy for `{{ root.name }}` (Depth: {{ depth }}, Direction: {{ direction }})
 
-{% if direction == "supertypes" or direction == "both" %}
+{% if direction == "incoming" or direction == "both" %}
 ## Supertypes (Parents/Base Classes)
 
-{% for item in items_in %}
+{% for item in items_incoming %}
 {% for i in (1..item.level) %}#{% endfor %}## {{ item.name }}
 - Kind: `{{ item.kind }}`
 - File: `{{ item.file_path }}`
@@ -120,10 +152,10 @@ markdown_template: Final = """
 {% endfor %}
 {% endif %}
 
-{% if direction == "subtypes" or direction == "both" %}
+{% if direction == "outgoing" or direction == "both" %}
 ## Subtypes (Children/Implementations)
 
-{% for item in items_out %}
+{% for item in items_outgoing %}
 {% for i in (1..item.level) %}#{% endfor %}## {{ item.name }}
 - Kind: `{{ item.kind }}`
 - File: `{{ item.file_path }}`
@@ -140,48 +172,41 @@ markdown_template: Final = """
 
 ---
 > [!NOTE]
-> Tree is truncated at depth {{ depth }}. {% if hierarchy_type == "call" %}Use `depth` parameter to explore further.{% else %}Increase `depth` parameter to explore further if needed.{% endif %}
+> Tree is truncated at depth {{ depth }}.
 """
 
 
 class HierarchyResponse(Response):
-    """Unified response for both call and type hierarchies"""
+    """
+    Response containing the hierarchy graph and flattened tree.
+
+    The response uses generic graph terminology:
+    - edges_incoming: edges pointing to nodes (callers or supertypes)
+    - edges_outgoing: edges pointing from nodes (callees or subtypes)
+    - items_incoming: flattened list of incoming relationships
+    - items_outgoing: flattened list of outgoing relationships
+    """
 
     hierarchy_type: Literal["call", "type"]
-    """Type of hierarchy: 'call' or 'type'"""
+    """Type of hierarchical relationship"""
 
     root: HierarchyNode
+    """The starting node"""
 
     nodes: dict[str, HierarchyNode]
-    """Map of node ID to node details"""
+    """All nodes in the hierarchy graph"""
 
-    edges_in: dict[str, list[HierarchyEdge]]
-    """
-    Map of node ID to its incoming edges:
-    - For call hierarchy: incoming calls (callers)
-    - For type hierarchy: edges to supertypes (parent edges)
-    """
+    edges_incoming: dict[str, list[HierarchyEdge]]
+    """Incoming edges for each node (predecessors in the graph)"""
 
-    edges_out: dict[str, list[HierarchyEdge]]
-    """
-    Map of node ID to its outgoing edges:
-    - For call hierarchy: outgoing calls (callees)
-    - For type hierarchy: edges to subtypes (child edges)
-    """
+    edges_outgoing: dict[str, list[HierarchyEdge]]
+    """Outgoing edges for each node (successors in the graph)"""
 
-    items_in: list[HierarchyItem] = []
-    """
-    Flat list for tree rendering:
-    - For call hierarchy: incoming calls
-    - For type hierarchy: supertypes
-    """
+    items_incoming: list[HierarchyItem] = []
+    """Flattened list of incoming relationships for tree rendering"""
 
-    items_out: list[HierarchyItem] = []
-    """
-    Flat list for tree rendering:
-    - For call hierarchy: outgoing calls
-    - For type hierarchy: subtypes
-    """
+    items_outgoing: list[HierarchyItem] = []
+    """Flattened list of outgoing relationships for tree rendering"""
 
     direction: str
     depth: int
@@ -197,6 +222,8 @@ __all__ = [
     "HierarchyNode",
     "HierarchyItem",
     "HierarchyEdge",
+    "CallEdgeMetadata",
+    "TypeEdgeMetadata",
     "HierarchyRequest",
     "HierarchyResponse",
 ]

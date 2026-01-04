@@ -7,15 +7,23 @@ The unified hierarchy API (hierarchy.py) should be used for new code.
 
 from typing import Final, Literal
 
-from pydantic import ConfigDict
+from pydantic import BaseModel, ConfigDict
 
 from lsap_schema.abc import Response
 from lsap_schema.draft.hierarchy import (
-    HierarchyEdge as TypeEdge,
     HierarchyItem as TypeHierarchyItem,
     HierarchyNode as TypeHierarchyNode,
 )
 from lsap_schema.locate import LocateRequest
+
+
+class TypeEdge(BaseModel):
+    """Type edge with relationship info"""
+
+    from_node_id: str
+    to_node_id: str
+    relationship: Literal["extends", "implements"]
+    """Type of inheritance relationship"""
 
 
 class TypeHierarchyRequest(LocateRequest):

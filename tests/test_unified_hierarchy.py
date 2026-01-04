@@ -9,6 +9,7 @@ from lsap_schema import (
     HierarchyResponse,
     Position,
 )
+from lsap_schema.draft.hierarchy import CallEdgeMetadata, TypeEdgeMetadata
 
 
 def test_unified_hierarchy_call_type():
@@ -29,16 +30,16 @@ def test_unified_hierarchy_call_type():
     edge = HierarchyEdge(
         from_node_id="2",
         to_node_id="1",
-        call_sites=[Position(line=5, character=10)],
+        metadata=CallEdgeMetadata(call_sites=[Position(line=5, character=10)]),
     )
     resp = HierarchyResponse(
         hierarchy_type="call",
         root=node,
         nodes={"1": node},
-        edges_in={"1": [edge]},
-        edges_out={},
-        items_in=[item],
-        items_out=[],
+        edges_incoming={"1": [edge]},
+        edges_outgoing={},
+        items_incoming=[item],
+        items_outgoing=[],
         direction="incoming",
         depth=2,
     )
@@ -69,17 +70,17 @@ def test_unified_hierarchy_type_type():
     edge = HierarchyEdge(
         from_node_id="2",
         to_node_id="1",
-        relationship="extends",
+        metadata=TypeEdgeMetadata(relationship="extends"),
     )
     resp = HierarchyResponse(
         hierarchy_type="type",
         root=node,
         nodes={"1": node},
-        edges_in={"1": [edge]},
-        edges_out={},
-        items_in=[item],
-        items_out=[],
-        direction="supertypes",
+        edges_incoming={"1": [edge]},
+        edges_outgoing={},
+        items_incoming=[item],
+        items_outgoing=[],
+        direction="incoming",
         depth=2,
     )
     rendered = resp.format()
@@ -121,39 +122,42 @@ def test_unified_hierarchy_request_type():
             scope=LineScope(line=5),
             find="MyClass",
         ),
-        direction="subtypes",
+        direction="outgoing",
         depth=2,
     )
     assert req.hierarchy_type == "type"
-    assert req.direction == "subtypes"
+    assert req.direction == "outgoing"
     assert req.depth == 2
     assert req.include_external is False  # default
 
 
-def test_hierarchy_edge_call_sites():
-    """Test hierarchy edge with call sites (for call hierarchy)"""
+def test_hierarchy_edge_call_metadata():
+    """Test hierarchy edge with call metadata (for call hierarchy)"""
     edge = HierarchyEdge(
         from_node_id="1",
         to_node_id="2",
-        call_sites=[
-            Position(line=10, character=5),
-            Position(line=15, character=8),
-        ],
+        metadata=CallEdgeMetadata(
+            call_sites=[
+                Position(line=10, character=5),
+                Position(line=15, character=8),
+            ]
+        ),
     )
-    assert edge.call_sites is not None
-    assert len(edge.call_sites) == 2
-    assert edge.relationship is None
+    assert edge.metadata is not None
+    assert isinstance(edge.metadata, CallEdgeMetadata)
+    assert len(edge.metadata.call_sites) == 2
 
 
-def test_hierarchy_edge_relationship():
-    """Test hierarchy edge with relationship (for type hierarchy)"""
+def test_hierarchy_edge_type_metadata():
+    """Test hierarchy edge with type metadata (for type hierarchy)"""
     edge = HierarchyEdge(
         from_node_id="1",
         to_node_id="2",
-        relationship="implements",
+        metadata=TypeEdgeMetadata(relationship="implements"),
     )
-    assert edge.relationship == "implements"
-    assert edge.call_sites is None
+    assert edge.metadata is not None
+    assert isinstance(edge.metadata, TypeEdgeMetadata)
+    assert edge.metadata.relationship == "implements"
 
 
 def test_hierarchy_node_with_detail():
