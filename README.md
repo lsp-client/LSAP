@@ -104,6 +104,18 @@ Similarly, the **[Unified Hierarchy API](docs/schemas/draft/hierarchy.md)** goes
 
 **Why It Matters**: Without LSAP, every Agent reimplements these patterns, wasting tokens on orchestration instead of problem-solving. LSAP is continuously evolving with more **Agent-Native** capabilities like architectural analysis, impact analysis, and semantic search—building a comprehensive toolkit for **Repository-Scale Intelligence**.
 
+### "Why Not Just Use Existing Tools?"
+
+Existing tools serve different purposes: GitHub Copilot excels at code completion, tree-sitter at parsing. LSAP doesn't replace these—it **orchestrates** them. Think of LSAP as the "brain" that coordinates LSP (the eyes) to give Agents repository-wide understanding, not just local code snippets.
+
+### "This Adds Complexity"
+
+LSAP **removes** complexity for Agent developers. The alternative is each Agent implementing custom LSP orchestration logic—multiplying complexity across every Agent project. LSAP centralizes this once, providing a battle-tested, optimized layer.
+
+### "What About LSP Quality Variations?"
+
+LSAP gracefully degrades. If a language server has limited capabilities, LSAP returns partial results with clear indicators. The **Markdown-First** design ensures Agents always get parseable output, even when underlying LSP support is incomplete.
+
 ## Project Structure
 
 - [`docs/`](docs/): Core protocol definitions and Schema documentation.
