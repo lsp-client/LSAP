@@ -92,63 +92,17 @@ return {"date": format_date(obj.created_at)}
 ```
 ````
 
-## I'm not convinced...
+## I'm Not Convinced...
 
-### "LSAP seems to just replicate LSP capabilities, what makes it special?"
+### "LSAP Just Replicates LSP—What's Special?"
 
-This is a common initial reaction, but LSAP offers **far more** than simple replication of LSP protocol capabilities. Let's clarify this with concrete examples:
+**The Key Distinction**: LSP provides **atomic operations** (like `textDocument/references`), while LSAP provides **composed cognitive capabilities** designed for Agents.
 
-**The key distinction**: LSP provides **atomic** operations (like `textDocument/references`, `textDocument/definition`), while LSAP provides **composed cognitive capabilities** that are specifically designed for Agent understanding at the repository scale.
+Take the **[Relation API](docs/schemas/draft/relation.md)**: Finding all call paths from function A to B requires manually orchestrating multiple LSP calls—BFS traversal, cycle detection, path reconstruction, and markdown formatting. LSAP does this in one request, returning a structured report.
 
-#### Example: Relation API - Tracing Call Chains
+Similarly, the **[Unified Hierarchy API](docs/schemas/draft/hierarchy.md)** goes beyond `callHierarchy`/`typeHierarchy` with unified graph representation, automatic cycle handling, and agent-ready output—capabilities that don't exist in raw LSP.
 
-Consider the **[Relation API](docs/schemas/draft/relation.md)**: When an Agent wants to understand "How does function A ultimately reach function B?", using raw LSP would require:
-
-1. Manual BFS/DFS implementation across multiple `callHierarchy/outgoingCalls` requests
-2. Cycle detection to prevent infinite loops
-3. Path reconstruction and ranking
-4. Reading code context for each node in the path
-5. Formatting results into understandable markdown
-
-With LSAP's Relation API, the Agent simply expresses the intent: "Find paths from A to B", and receives a **structured markdown report** showing all call chains with complete context. This API doesn't exist in LSP at all—it's a **composition** of multiple LSP capabilities orchestrated intelligently.
-
-#### Example: Unified Hierarchy API - Repository-Scale Navigation
-
-The **[Unified Hierarchy API](docs/schemas/draft/hierarchy.md)** goes beyond LSP's `callHierarchy` and `typeHierarchy` by:
-
-- **Unified interface**: Generic "incoming/outgoing" terminology that works for both call and type hierarchies
-- **Graph representation**: Exposes full graph structure with nodes and edges, enabling complex analysis
-- **Smart traversal**: Automatic cycle detection, depth control, and external reference filtering
-- **Agent-ready format**: Flattened tree structure (`HierarchyItem[]`) ready for markdown rendering
-
-Without LSAP, an Agent would need to:
-- Understand the semantic differences between call and type hierarchies
-- Implement separate traversal logic for each
-- Handle cycles and recursion manually
-- Parse and aggregate raw LSP responses
-- Format complex graph data into readable output
-
-#### Why This Matters for Agents
-
-These high-level APIs transform repository exploration from a **tedious scripting task** into **semantic understanding**:
-
-- **Cognitive Load**: Agents can focus on "What do I need to know?" rather than "How do I orchestrate 15 LSP calls?"
-- **Reliability**: LSAP handles edge cases (cycles, external refs, large graphs) that Agents might miss
-- **Performance**: Optimized orchestration reduces redundant LSP round-trips
-- **Consistency**: Standardized markdown output format ensures reliable parsing
-
-**Without LSAP**, every Agent would need to implement these orchestration patterns from scratch—leading to bugs, inconsistencies, and wasted tokens on implementation details rather than actual problem-solving.
-
-#### The Roadmap: More Power Ahead
-
-LSAP is not a static protocol. We are continuously designing and adding **Agent-Native** capabilities:
-
-- **Architectural Analysis**: APIs for detecting patterns, anti-patterns, and architectural violations
-- **Impact Analysis**: Understanding change propagation across the codebase
-- **Semantic Code Search**: Beyond text matching, understanding code intent and behavior
-- **Cross-Language Support**: Unified abstractions that work across language barriers
-
-LSAP is building a **comprehensive toolkit** that empowers Agents with **Repository-Scale Intelligence**—something that raw LSP, designed for editors, simply cannot provide.
+**Why It Matters**: Without LSAP, every Agent reimplements these patterns, wasting tokens on orchestration instead of problem-solving. LSAP is continuously evolving with more **Agent-Native** capabilities like architectural analysis, impact analysis, and semantic search—building a comprehensive toolkit for **Repository-Scale Intelligence**.
 
 ## Project Structure
 
