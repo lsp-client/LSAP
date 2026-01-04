@@ -5,7 +5,7 @@ This module maintains backward compatibility by re-exporting from the unified hi
 The unified hierarchy API (hierarchy.py) should be used for new code.
 """
 
-from typing import Final
+from typing import Final, Literal
 
 from pydantic import ConfigDict
 
@@ -29,7 +29,7 @@ class TypeHierarchyRequest(LocateRequest):
     hierarchy_type='type' for new code.
     """
 
-    direction: str = "both"
+    direction: Literal["supertypes", "subtypes", "both"] = "both"
     """Whether to trace supertypes, subtypes, or both (default: both)"""
 
     depth: int = 2

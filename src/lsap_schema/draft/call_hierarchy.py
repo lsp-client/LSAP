@@ -5,7 +5,7 @@ This module maintains backward compatibility by re-exporting from the unified hi
 The unified hierarchy API (hierarchy.py) should be used for new code.
 """
 
-from typing import Final
+from typing import Final, Literal
 
 from pydantic import ConfigDict
 
@@ -29,7 +29,7 @@ class CallHierarchyRequest(LocateRequest):
     hierarchy_type='call' for new code.
     """
 
-    direction: str = "both"
+    direction: Literal["incoming", "outgoing", "both"] = "both"
     """Whether to trace callers (incoming) or callees (outgoing)"""
 
     depth: int = 2
