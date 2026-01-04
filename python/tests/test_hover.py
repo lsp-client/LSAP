@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from lsap_schema.hover import HoverRequest
 from lsap_schema.locate import LineScope, Locate
-from lsprotocol.types import Hover, MarkupContent, MarkupKind
+from lsprotocol.types import MarkupContent, MarkupKind
 from lsprotocol.types import Position as LSPPosition
 
 from lsap.hover import HoverCapability

@@ -9,10 +9,9 @@ This directory contains the specifications for the LLM-friendly LSP (Language Se
 - [**Symbol Outline**](symbol_outline.md): Get a hierarchical overview of all symbols in a file.
 - [**Definition**](definition.md): Navigate from a symbol usage to its declaration or definition.
 - [**Hover**](hover.md): Quick access to documentation and type information at a specific location.
-- [**Workspace**](workspace.md): Global search for symbols across the entire project with pagination.
+- [**Search**](search.md): Global search for symbols across the entire project with pagination.
 - [**Completion**](completion.md): Get code completion suggestions at a specific position.
-- [**Reference**](reference.md): Find all usages of a symbol in the project.
-- [**Implementation**](implementation.md): Find concrete implementations of interfaces or abstract methods.
+- [**Reference & Implementation**](reference.md): Find all usages or concrete implementations of a symbol in the project.
 - [**Hierarchy**](draft/hierarchy.md): Unified API for tracing call relationships and type inheritance hierarchies.
 - [**Diagnostics**](diagnostics.md): Access linting issues and syntax errors.
 - [**Rename**](rename.md): Preview and execute safe workspace-wide symbol renaming.

@@ -46,11 +46,11 @@ from .symbol_outline import (
     SymbolOutlineResponse,
 )
 
-# Workspace
-from .workspace_symbol import (
-    WorkspaceSymbolItem,
-    WorkspaceSymbolRequest,
-    WorkspaceSymbolResponse,
+# Search
+from .search import (
+    SearchItem,
+    SearchRequest,
+    SearchResponse,
 )
 
 # Draft - Hierarchy API
@@ -137,10 +137,10 @@ __all__ = [
     # Symbol outline
     "SymbolOutlineRequest",
     "SymbolOutlineResponse",
-    # Workspace
-    "WorkspaceSymbolItem",
-    "WorkspaceSymbolRequest",
-    "WorkspaceSymbolResponse",
+    # Search
+    "SearchItem",
+    "SearchRequest",
+    "SearchResponse",
     # Draft - Hierarchy API
     "CallEdgeMetadata",
     "HierarchyEdge",

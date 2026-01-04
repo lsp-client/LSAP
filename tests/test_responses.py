@@ -13,6 +13,7 @@ from lsap_schema import (
     HierarchyNode,
     HierarchyResponse,
     LocateResponse,
+    Location,
     Position,
     Range,
     ReferenceResponse,
@@ -24,8 +25,8 @@ from lsap_schema import (
     SymbolCodeInfo,
     SymbolDetailInfo,
     SymbolKind,
-    WorkspaceSymbolItem,
-    WorkspaceSymbolResponse,
+    SearchItem,
+    SearchResponse,
     WorkspaceDiagnosticItem,
     WorkspaceDiagnosticsResponse,
 )
@@ -66,27 +67,24 @@ def test_symbol_response_format():
 
 
 def test_workspace_symbol_response_format():
-    from lsap_schema.workspace_symbol import WorkspaceSymbolRequest
+    from lsap_schema.search import SearchRequest
 
-    req = WorkspaceSymbolRequest(query="test")
-    resp = WorkspaceSymbolResponse(
+    req = SearchRequest(query="test")
+    resp = SearchResponse(
         request=req,
         items=[
-            WorkspaceSymbolItem(
+            SearchItem(
                 file_path=Path("test.py"),
                 name="class MyClass",
-                path=["MyClass"],
                 kind=SymbolKind.Class,
-                detail="class",
-                hover="A test class",
+                line=1,
             ),
-            WorkspaceSymbolItem(
+            SearchItem(
                 file_path=Path("test.py"),
                 name="my_method",
-                path=["MyClass", "my_method"],
                 kind=SymbolKind.Method,
-                detail="method",
-                hover="documentation",
+                line=5,
+                container="MyClass",
             ),
         ],
         start_index=0,
@@ -104,8 +102,13 @@ def test_reference_response_format():
     from lsap_schema.locate import Locate, LineScope
 
     item = ReferenceItem(
-        file_path=Path("test.py"),
-        line=10,
+        location=Location(
+            file_path=Path("test.py"),
+            range=Range(
+                start=Position(line=10, character=1),
+                end=Position(line=10, character=1),
+            ),
+        ),
         code="test_content",
         symbol=SymbolDetailInfo(
             file_path=Path("test.py"),
@@ -136,8 +139,13 @@ def test_implementation_response_format():
     from lsap_schema.locate import Locate, LineScope
 
     item = ReferenceItem(
-        file_path=Path("test.py"),
-        line=10,
+        location=Location(
+            file_path=Path("test.py"),
+            range=Range(
+                start=Position(line=10, character=1),
+                end=Position(line=10, character=1),
+            ),
+        ),
         code="test_content",
         symbol=SymbolDetailInfo(
             file_path=Path("test.py"),

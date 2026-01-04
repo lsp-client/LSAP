@@ -10,9 +10,9 @@ The Hover API provides quick access to documentation, type information, or other
 
 ## HoverResponse
 
-| Field      | Type     | Description                                    |
-| :--------- | :------- | :--------------------------------------------- |
-| `contents` | `string` | The hover content, usually in markdown format. |
+| Field     | Type     | Description                                    |
+| :-------- | :------- | :--------------------------------------------- |
+| `content` | `string` | The hover content, usually in markdown format. |
 
 ## Example Usage
 

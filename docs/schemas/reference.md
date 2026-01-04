@@ -27,12 +27,11 @@ The Reference API finds all locations where a specific symbol is used across the
 
 ### ReferenceItem
 
-| Field       | Type                 | Description                                      |
-| :---------- | :------------------- | :----------------------------------------------- |
-| `file_path` | `string`             | Relative path to the file.                       |
-| `line`      | `number`             | 1-based line number.                             |
-| `code`      | `string`             | Surrounding code snippet.                        |
-| `symbol`    | `SymbolInfo \| null` | The symbol containing this reference (optional). |
+| Field      | Type                       | Description                                      |
+| :--------- | :------------------------- | :----------------------------------------------- |
+| `location` | [`Location`](locate.md)    | The location of the reference.                   |
+| `code`     | `string`                   | Surrounding code snippet.                        |
+| `symbol`   | `SymbolDetailInfo \| null` | The symbol containing this reference (optional). |
 
 ## Example Usage
 
