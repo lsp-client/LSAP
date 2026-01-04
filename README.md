@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Protocol Version](https://img.shields.io/badge/Protocol-v1.0.0--alpha-blue.svg)]()
 
-**LSAP (Language Server Agent Protocol)** is an **Agent-Native** interaction protocol designed specifically for Coding Agents.
+**LSAP (Language Server Agent Protocol)** empowers Coding Agents with **Repository-Scale Intelligence** by transforming low-level LSP capabilities into high-level, **Agent-Native** cognitive tools.
 
 Unlike traditional LSP, LSAP does not simply expose LSP to Agents. Instead, it serves as an **Orchestration Layer**, building high-level semantic interfaces that align with Agent cognitive logic by **Composing** the atomic capabilities provided by LSP.
 
