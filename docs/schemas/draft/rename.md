@@ -1,46 +1,42 @@
 # Rename API (Refactoring)
 
-The Rename API provides a **safe, two-phase** workspace-wide symbol renaming capability. It automates the task of updating all references to a symbol (variable, function, class, etc.) across multiple files.
+The Rename API provides a workspace-wide symbol renaming preview capability. It returns a preview of all changes that would be made by renaming a symbol (variable, function, class, etc.) across multiple files.
 
 ## Design Philosophy
 
-This API is designed with **security**, **agent-friendliness**, and **minimal context usage** in mind:
+This API is designed with **agent-friendliness** and **minimal context usage** in mind:
 
-1. **Two-Phase Operation**: Preview first (default), then execute explicitly
+1. **Preview-Only**: Returns a preview of changes; actual execution is handled by the client (editor/IDE)
 2. **Minimal Context by Default**: Returns compact summaries, detailed diffs only on request
-3. **Scope Control**: Can limit changes to specific files/directories
-4. **Clear State Communication**: Response clearly indicates if changes were made or not
+3. **Workspace-Wide**: LSP rename is always workspace-wide, covering all references
+4. **Agent-Optimized Output**: Structured format optimized for LLM understanding
 
 ## RenameRequest
 
-| Field          | Type                  | Default     | Description                                                              |
-| :------------- | :-------------------- | :---------- | :----------------------------------------------------------------------- |
-| `locate`       | [`Locate`](locate.md) | Required    | The location of the symbol to rename.                                    |
-| `new_name`     | `string`              | Required    | The target name for the symbol.                                          |
-| `mode`         | `"preview" \| "execute"` | `"preview"` | Operation mode: preview (safe, no changes) or execute (applies changes). |
-| `show_diffs`   | `boolean`             | `false`     | Include detailed line-by-line diffs (increases context usage).           |
-| `scope_filter` | `Path[]?`             | `null`      | Optional: Limit rename to specific files/directories.                    |
-| `max_files`    | `number?`             | `null`      | Optional: Maximum number of files to show in preview.                    |
+| Field        | Type                  | Default  | Description                                                    |
+| :----------- | :-------------------- | :------- | :------------------------------------------------------------- |
+| `locate`     | [`Locate`](locate.md) | Required | The location of the symbol to rename.                          |
+| `new_name`   | `string`              | Required | The target name for the symbol.                                |
+| `show_diffs` | `boolean`             | `false`  | Include detailed line-by-line diffs (increases context usage). |
+| `max_files`  | `number?`             | `null`   | Optional: Maximum number of files to show in preview.          |
 
 ## RenameResponse
 
-| Field               | Type                 | Description                                                        |
-| :------------------ | :------------------- | :----------------------------------------------------------------- |
-| `old_name`          | `string`             | The original symbol name that was (or will be) renamed.            |
-| `new_name`          | `string`             | The new symbol name.                                               |
-| `status`            | `"preview" \| "completed"` | Operation status: 'preview' (no changes) or 'completed' (applied). |
-| `scope_description` | `string`             | Human-readable description of the rename scope.                    |
-| `total_files`       | `number`             | Total number of files that contain the symbol.                     |
-| `total_occurrences` | `number`             | Total number of times the symbol appears across all files.         |
-| `changes`           | `RenameFileChange[]` | Per-file change details (may be truncated based on max_files).     |
-| `has_more_files`    | `boolean`            | True if the changes list was truncated due to max_files limit.     |
+| Field               | Type                 | Description                                                    |
+| :------------------ | :------------------- | :------------------------------------------------------------- |
+| `old_name`          | `string`             | The original symbol name.                                      |
+| `new_name`          | `string`             | The new symbol name.                                           |
+| `total_files`       | `number`             | Total number of files that contain the symbol.                 |
+| `total_occurrences` | `number`             | Total number of times the symbol appears across all files.     |
+| `changes`           | `RenameFileChange[]` | Per-file change details (may be truncated based on max_files). |
+| `has_more_files`    | `boolean`            | True if the changes list was truncated due to max_files limit. |
 
 ### RenameFileChange
 
-| Field         | Type           | Description                                                          |
-| :------------ | :------------- | :------------------------------------------------------------------- |
-| `file_path`   | `Path`         | File path affected by the rename.                                    |
-| `occurrences` | `number`       | Number of occurrences in this file.                                  |
+| Field         | Type           | Description                                                     |
+| :------------ | :------------- | :-------------------------------------------------------------- |
+| `file_path`   | `Path`         | File path affected by the rename.                               |
+| `occurrences` | `number`       | Number of occurrences in this file.                             |
 | `diffs`       | `RenameDiff[]` | Detailed line-by-line diffs (only included if show_diffs=true). |
 
 ### RenameDiff
@@ -53,19 +49,11 @@ This API is designed with **security**, **agent-friendliness**, and **minimal co
 
 ## Example Usage
 
-### Workflow: Safe Two-Phase Rename
-
-The recommended workflow is to **preview first**, verify the changes, then **execute**:
-
-1. **Step 1: Preview** - Send a request with `mode: "preview"` (default)
-2. **Step 2: Verify** - Agent reviews the summary
-3. **Step 3: Execute** - Send the same request with `mode: "execute"`
-
 ### Scenario 1: Minimal Context Rename (Recommended for Agents)
 
-Rename a method with minimal token usage - get a compact summary without detailed diffs.
+Get a compact summary of rename impact without detailed diffs to minimize token usage.
 
-#### Request (Preview with Minimal Context)
+#### Request
 
 ```json
 {
@@ -75,8 +63,7 @@ Rename a method with minimal token usage - get a compact summary without detaile
       "symbol_path": ["APIClient", "fetch_data"]
     }
   },
-  "new_name": "get_resource",
-  "mode": "preview"
+  "new_name": "get_resource"
 }
 ```
 
@@ -84,9 +71,6 @@ Rename a method with minimal token usage - get a compact summary without detaile
 
 ```markdown
 # Rename Preview: `fetch_data` → `get_resource`
-
-**Status**: preview
-**Scope**: Workspace-wide
 
 ## Summary
 - **Files affected**: 2
@@ -98,50 +82,13 @@ Rename a method with minimal token usage - get a compact summary without detaile
 
 ---
 > [!NOTE]
-> This is a **preview only** - no changes have been made.
-> To apply these changes, send the same request with `mode: "execute"`.
+> This is a preview of changes. The actual rename operation will be executed by your editor/IDE.
+> Review the changes above before applying them.
 ```
 
-#### Request (Execute After Verification)
+### Scenario 2: Detailed Preview with Diffs
 
-```json
-{
-  "locate": {
-    "file_path": "src/client.py",
-    "scope": {
-      "symbol_path": ["APIClient", "fetch_data"]
-    }
-  },
-  "new_name": "get_resource",
-  "mode": "execute"
-}
-```
-
-#### Response (Execution Confirmation)
-
-```markdown
-# Rename Preview: `fetch_data` → `get_resource`
-
-**Status**: completed
-**Scope**: Workspace-wide
-
-## Summary
-- **Files affected**: 2
-- **Total occurrences**: 3
-
-## Affected Files
-- `src/client.py`: 1 occurrence(s)
-- `src/main.py`: 2 occurrence(s)
-
----
-> [!SUCCESS]
-> Rename operation completed successfully.
-> 3 occurrence(s) renamed across 2 file(s).
-```
-
-### Scenario 2: Preview with Detailed Diffs
-
-When the agent needs to see exactly what will change, use `show_diffs: true`.
+When you need to see exactly what will change, use `show_diffs: true`.
 
 #### Request
 
@@ -152,7 +99,6 @@ When the agent needs to see exactly what will change, use `show_diffs: true`.
     "find": "temp"
   },
   "new_name": "buffer",
-  "mode": "preview",
   "show_diffs": true
 }
 ```
@@ -161,9 +107,6 @@ When the agent needs to see exactly what will change, use `show_diffs: true`.
 
 ```markdown
 # Rename Preview: `temp` → `buffer`
-
-**Status**: preview
-**Scope**: Workspace-wide
 
 ## Summary
 - **Files affected**: 1
@@ -193,53 +136,11 @@ When the agent needs to see exactly what will change, use `show_diffs: true`.
 
 ---
 > [!NOTE]
-> This is a **preview only** - no changes have been made.
-> To apply these changes, send the same request with `mode: "execute"`.
+> This is a preview of changes. The actual rename operation will be executed by your editor/IDE.
+> Review the changes above before applying them.
 ```
 
-### Scenario 3: Scoped Rename (Limit to Specific Files)
-
-Rename only within a specific directory or file set for more control.
-
-#### Request
-
-```json
-{
-  "locate": {
-    "file_path": "src/models.py",
-    "scope": {
-      "symbol_path": ["UserAccount"]
-    }
-  },
-  "new_name": "UserProfile",
-  "scope_filter": ["src/models.py", "src/auth.py"],
-  "mode": "preview"
-}
-```
-
-#### Response
-
-```markdown
-# Rename Preview: `UserAccount` → `UserProfile`
-
-**Status**: preview
-**Scope**: Limited to 2 file(s)/directory(ies)
-
-## Summary
-- **Files affected**: 2
-- **Total occurrences**: 3
-
-## Affected Files
-- `src/models.py`: 1 occurrence(s)
-- `src/auth.py`: 2 occurrence(s)
-
----
-> [!NOTE]
-> This is a **preview only** - no changes have been made.
-> To apply these changes, send the same request with `mode: "execute"`.
-```
-
-### Scenario 4: Large Rename with Truncation
+### Scenario 3: Large Rename with Truncation
 
 For very large renames, limit the preview to avoid excessive context usage.
 
@@ -254,7 +155,6 @@ For very large renames, limit the preview to avoid excessive context usage.
     }
   },
   "new_name": "Account",
-  "mode": "preview",
   "max_files": 5
 }
 ```
@@ -263,9 +163,6 @@ For very large renames, limit the preview to avoid excessive context usage.
 
 ```markdown
 # Rename Preview: `User` → `Account`
-
-**Status**: preview
-**Scope**: Workspace-wide
 
 ## Summary
 - **Files affected**: 25 (showing 5/25)
@@ -281,22 +178,36 @@ For very large renames, limit the preview to avoid excessive context usage.
 
 ---
 > [!NOTE]
-> This is a **preview only** - no changes have been made.
-> To apply these changes, send the same request with `mode: "execute"`.
+> This is a preview of changes. The actual rename operation will be executed by your editor/IDE.
+> Review the changes above before applying them.
 ```
 
-## Security Features
+## Implementation Notes
 
-1. **Preview by Default**: The `mode` parameter defaults to `"preview"`, ensuring agents must explicitly request execution
-2. **Clear Status Communication**: Responses clearly indicate whether changes were made via the `status` field
-3. **Scope Control**: The `scope_filter` allows limiting changes to specific files/directories
-4. **Verification Support**: Compact summaries enable quick verification without excessive token usage
-5. **Explicit Execution**: Changes only occur when `mode: "execute"` is explicitly set
+### LSP Integration
+
+This API is built on top of LSP's `textDocument/rename` capability:
+
+1. The request is translated to LSP `RenameParams` with the located position and new name
+2. LSP returns a `WorkspaceEdit` containing all affected files and their text edits
+3. LSAP transforms this into an agent-friendly format with summaries and optional diffs
+4. The client (editor/IDE) is responsible for applying the actual changes
+
+### Workspace-Wide Behavior
+
+LSP rename is always workspace-wide by design. It will find and include **all** references to the symbol across **all** files in the workspace. There is no way to limit the scope through the LSP protocol.
+
+### Preview Generation
+
+The preview is generated from the LSP `WorkspaceEdit`:
+- By default (`show_diffs: false`), only file paths and occurrence counts are returned
+- With `show_diffs: true`, detailed line-by-line diffs are included
+- The `max_files` parameter limits the number of files shown, not the files affected
 
 ## Best Practices for Agents
 
-1. **Always Preview First**: Start with `mode: "preview"` to understand the impact
-2. **Use Minimal Context**: Avoid `show_diffs: true` unless necessary to reduce token usage
-3. **Limit Scope When Possible**: Use `scope_filter` for targeted renames
-4. **Truncate Large Results**: Use `max_files` for very large rename operations
-5. **Verify Before Execute**: Review the summary before sending `mode: "execute"`
+1. **Start with Compact Mode**: Use default settings (no `show_diffs`) to get a quick overview
+2. **Verify Impact**: Review the file list and occurrence count before applying
+3. **Use Diffs for Complex Cases**: Enable `show_diffs: true` only when you need to verify specific changes
+4. **Handle Large Renames**: Use `max_files` to get a representative sample for very large refactorings
+5. **Let the Client Execute**: Remember that LSAP only provides the preview; the client handles execution

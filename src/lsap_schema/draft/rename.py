@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Final, Literal
+from typing import Final
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -31,29 +31,24 @@ class RenameFileChange(BaseModel):
 
 class RenameRequest(LocateRequest):
     """
-    Preview or execute a safe, workspace-wide symbol rename.
+    Previews a workspace-wide symbol rename operation.
 
-    This API operates in two modes for safety:
-    1. Preview (mode="preview", default): Returns a summary without making changes
-    2. Execute (mode="execute"): Actually performs the rename operation
+    This API returns a preview of all changes that would be made by renaming
+    the specified symbol. The actual execution of changes is handled by the
+    client (editor/IDE) based on the returned preview.
 
-    The preview mode provides minimal context by default to reduce token usage.
+    By default, returns a compact summary to minimize token usage.
     Use show_diffs=true to see detailed line-by-line changes.
 
-    Scope can be limited to specific files or directories using the scope_filter.
+    Note: LSP rename is always workspace-wide. All references to the symbol
+    across all files will be included in the preview.
     """
 
     new_name: str
     """The new name to apply to the symbol"""
 
-    mode: Literal["preview", "execute"] = "preview"
-    """Operation mode: 'preview' (default, safe) or 'execute' (applies changes)"""
-
     show_diffs: bool = False
     """Include detailed line diffs in preview (increases context usage)"""
-
-    scope_filter: list[Path] | None = None
-    """Optional: Limit rename to specific files/directories. If None, applies workspace-wide."""
 
     max_files: int | None = Field(default=None, ge=1)
     """Optional: Maximum number of files to show in preview (for large renames)"""
@@ -61,9 +56,6 @@ class RenameRequest(LocateRequest):
 
 preview_template: Final = """
 # Rename Preview: `{{ old_name }}` → `{{ new_name }}`
-
-**Status**: {{ status }}
-**Scope**: {{ scope_description }}
 
 ## Summary
 - **Files affected**: {{ total_files }}{% if has_more_files %} (showing {{ changes | size }}/{{ total_files }}){% endif %}
@@ -93,30 +85,18 @@ preview_template: Final = """
 {%- endif %}
 
 ---
-{%- if status == "preview" %}
 > [!NOTE]
-> This is a **preview only** - no changes have been made.
-> To apply these changes, send the same request with `mode: "execute"`.
-{%- else %}
-> [!SUCCESS]
-> Rename operation completed successfully.
-> {{ total_occurrences }} occurrence(s) renamed across {{ total_files }} file(s).
-{%- endif %}
+> This is a preview of changes. The actual rename operation will be executed by your editor/IDE.
+> Review the changes above before applying them.
 """
 
 
 class RenameResponse(Response):
     old_name: str
-    """The original symbol name that was (or will be) renamed"""
+    """The original symbol name"""
 
     new_name: str
     """The new symbol name"""
-
-    status: Literal["preview", "completed"]
-    """Operation status: 'preview' (no changes made) or 'completed' (changes applied)"""
-
-    scope_description: str
-    """Human-readable description of the rename scope"""
 
     total_files: int
     """Total number of files that contain the symbol"""

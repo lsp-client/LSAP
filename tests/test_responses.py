@@ -225,8 +225,6 @@ def test_rename_response_format():
     resp = RenameResponse(
         old_name="old",
         new_name="new",
-        status="preview",
-        scope_description="Workspace-wide",
         total_files=1,
         total_occurrences=1,
         changes=[
@@ -242,15 +240,12 @@ def test_rename_response_format():
     assert "new" in rendered
     assert "test.py" in rendered
     assert "preview" in rendered.lower()
-    assert "no changes have been made" in rendered.lower()
 
 
-def test_rename_response_completed_format():
+def test_rename_response_compact_format():
     resp = RenameResponse(
         old_name="fetch_data",
         new_name="get_resource",
-        status="completed",
-        scope_description="Limited to 2 file(s)/directory(ies)",
         total_files=2,
         total_occurrences=5,
         changes=[
@@ -269,18 +264,15 @@ def test_rename_response_completed_format():
     rendered = resp.format()
     assert "fetch_data" in rendered
     assert "get_resource" in rendered
-    assert "completed" in rendered.lower()
-    assert "success" in rendered.lower()
     assert "2" in rendered  # total files
     assert "5" in rendered  # total occurrences
+    assert "editor" in rendered.lower() or "IDE" in rendered
 
 
 def test_rename_response_with_diffs():
     resp = RenameResponse(
         old_name="temp",
         new_name="buffer",
-        status="preview",
-        scope_description="Workspace-wide",
         total_files=1,
         total_occurrences=3,
         changes=[
@@ -289,8 +281,12 @@ def test_rename_response_with_diffs():
                 occurrences=3,
                 diffs=[
                     RenameDiff(line=10, original="temp = []", modified="buffer = []"),
-                    RenameDiff(line=15, original="temp.append(x)", modified="buffer.append(x)"),
-                    RenameDiff(line=20, original="return temp", modified="return buffer"),
+                    RenameDiff(
+                        line=15, original="temp.append(x)", modified="buffer.append(x)"
+                    ),
+                    RenameDiff(
+                        line=20, original="return temp", modified="return buffer"
+                    ),
                 ],
             )
         ],
@@ -307,17 +303,20 @@ def test_rename_response_truncated():
     resp = RenameResponse(
         old_name="User",
         new_name="Account",
-        status="preview",
-        scope_description="Workspace-wide",
         total_files=10,
         total_occurrences=50,
         has_more_files=True,
         changes=[
-            RenameFileChange(file_path=Path(f"file{i}.py"), occurrences=i+1, diffs=[])
+            RenameFileChange(file_path=Path(f"file{i}.py"), occurrences=i + 1, diffs=[])
             for i in range(3)
         ],
     )
     rendered = resp.format()
+    assert "User" in rendered
+    assert "Account" in rendered
+    assert "10" in rendered  # total files
+    assert "50" in rendered  # total occurrences
+    assert "showing 3/10" in rendered.lower() or "3/10" in rendered
     assert "User" in rendered
     assert "Account" in rendered
     assert "10" in rendered  # total files
