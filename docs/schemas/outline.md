@@ -1,14 +1,14 @@
-# Symbol Outline API
+# Outline API
 
-The Symbol Outline API returns a hierarchical tree of all symbols defined within a specific file. This allows an Agent to understand the structure of a file without reading the entire source code.
+The Outline API returns a hierarchical tree of all symbols defined within a specific file. This allows an Agent to understand the structure of a file without reading the entire source code.
 
-## SymbolOutlineRequest
+## OutlineRequest
 
 | Field       | Type     | Default  | Description                           |
 | :---------- | :------- | :------- | :------------------------------------ |
 | `file_path` | `string` | Required | Relative path to the file to inspect. |
 
-## SymbolOutlineResponse
+## OutlineResponse
 
 | Field       | Type                 | Description                                 |
 | :---------- | :------------------- | :------------------------------------------ |
@@ -41,7 +41,7 @@ The Symbol Outline API returns a hierarchical tree of all symbols defined within
 #### Markdown Rendered for LLM
 
 ```markdown
-# Symbol Outline for `src/models.py`
+# Outline for `src/models.py`
 
 ## User (`class`)
 
@@ -78,7 +78,7 @@ Makes an HTTP request to the specified URL.
 #### Markdown Rendered for LLM
 
 ```markdown
-# Symbol Outline for `src/controllers.py`
+# Outline for `src/controllers.py`
 
 ## AuthController (`class`)
 

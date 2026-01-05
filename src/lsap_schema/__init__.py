@@ -40,10 +40,10 @@ from .reference import ReferenceItem, ReferenceRequest, ReferenceResponse
 # Symbol
 from .symbol import SymbolRequest, SymbolResponse
 
-# Symbol outline
-from .symbol_outline import (
-    SymbolOutlineRequest,
-    SymbolOutlineResponse,
+# Outline
+from .outline import (
+    OutlineRequest,
+    OutlineResponse,
 )
 
 # Search
@@ -135,9 +135,9 @@ __all__ = [
     # Symbol
     "SymbolRequest",
     "SymbolResponse",
-    # Symbol outline
-    "SymbolOutlineRequest",
-    "SymbolOutlineResponse",
+    # Outline
+    "OutlineRequest",
+    "OutlineResponse",
     # Search
     "search",
     "SearchItem",

@@ -7,7 +7,7 @@ from .abc import Request, Response
 from .models import SymbolDetailInfo
 
 
-class SymbolOutlineRequest(Request):
+class OutlineRequest(Request):
     """
     Retrieves a hierarchical outline of symbols within a file.
 
@@ -19,7 +19,7 @@ class SymbolOutlineRequest(Request):
 
 
 markdown_template: Final = """
-# Symbol Outline for `{{ file_path }}`
+# Outline for `{{ file_path }}`
 
 {% for item in items -%}
 {% assign level = item.path | size | plus: 1 -%}
@@ -31,7 +31,7 @@ markdown_template: Final = """
 """
 
 
-class SymbolOutlineResponse(Response):
+class OutlineResponse(Response):
     file_path: Path
     items: list[SymbolDetailInfo]
 

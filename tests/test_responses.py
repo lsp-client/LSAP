@@ -20,8 +20,7 @@ from lsap_schema import (
     RenameDiff,
     RenameFileChange,
     RenameResponse,
-    SymbolResponse,
-    SymbolOutlineResponse,
+    OutlineResponse,
     SymbolCodeInfo,
     SymbolDetailInfo,
     SymbolKind,
@@ -193,8 +192,8 @@ def test_diagnostics_response_format():
     assert "test error" in rendered
 
 
-def test_symbol_outline_response_format():
-    resp = SymbolOutlineResponse(
+def test_outline_response_format():
+    resp = OutlineResponse(
         file_path=Path("test.py"),
         items=[
             SymbolDetailInfo(

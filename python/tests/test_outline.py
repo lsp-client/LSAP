@@ -8,11 +8,11 @@ from lsprotocol.types import (
     SymbolKind,
 )
 
-from lsap.symbol_outline import SymbolOutlineCapability
-from lsap_schema.symbol_outline import SymbolOutlineRequest
+from lsap.outline import OutlineCapability
+from lsap_schema.outline import OutlineRequest
 
 
-class MockSymbolOutlineClient:
+class MockOutlineClient:
     async def read_file(self, file_path: Path) -> str:
         return "class A:\n    def foo(self):\n        pass"
 
@@ -52,11 +52,11 @@ class MockSymbolOutlineClient:
 
 
 @pytest.mark.asyncio
-async def test_symbol_outline():
-    client = MockSymbolOutlineClient()
-    capability = SymbolOutlineCapability(client=client)  # type: ignore
+async def test_outline():
+    client = MockOutlineClient()
+    capability = OutlineCapability(client=client)  # type: ignore
 
-    req = SymbolOutlineRequest(file_path=Path("test.py"))
+    req = OutlineRequest(file_path=Path("test.py"))
 
     resp = await capability(req)
     assert resp is not None

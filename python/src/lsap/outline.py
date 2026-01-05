@@ -7,7 +7,7 @@ from typing import Protocol, override, runtime_checkable
 import asyncer
 from attrs import define
 from lsap_schema.models import Position, Range, SymbolDetailInfo, SymbolKind
-from lsap_schema.symbol_outline import SymbolOutlineRequest, SymbolOutlineResponse
+from lsap_schema.outline import OutlineRequest, OutlineResponse
 from lsap_schema.types import SymbolPath
 from lsp_client.capability.request import WithRequestDocumentSymbol, WithRequestHover
 from lsp_client.protocol import CapabilityClientProtocol
@@ -19,7 +19,7 @@ from lsap.utils.symbol import iter_symbols
 
 
 @runtime_checkable
-class SymbolOutlineClient(
+class OutlineClient(
     WithRequestDocumentSymbol,
     WithRequestHover,
     CapabilityClientProtocol,
@@ -28,11 +28,9 @@ class SymbolOutlineClient(
 
 
 @define
-class SymbolOutlineCapability(
-    Capability[SymbolOutlineClient, SymbolOutlineRequest, SymbolOutlineResponse]
-):
+class OutlineCapability(Capability[OutlineClient, OutlineRequest, OutlineResponse]):
     @override
-    async def __call__(self, req: SymbolOutlineRequest) -> SymbolOutlineResponse | None:
+    async def __call__(self, req: OutlineRequest) -> OutlineResponse | None:
         symbols = await self.client.request_document_symbol_list(req.file_path)
         if symbols is None:
             return None
@@ -42,7 +40,7 @@ class SymbolOutlineCapability(
             iter_symbols(symbols),
         )
 
-        return SymbolOutlineResponse(file_path=req.file_path, items=items)
+        return OutlineResponse(file_path=req.file_path, items=items)
 
     async def resolve_symbols(
         self,

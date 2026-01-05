@@ -814,7 +814,7 @@ export default function HomePage() {
                 title="Deep Inspection"
                 items={[
                   { label: "Symbol Info", href: "/docs/symbol" },
-                  { label: "Symbol Outline", href: "/docs/symbol_outline" },
+                  { label: "Outline", href: "/docs/outline" },
                   { label: "Inlay Hints", href: "/docs/inlay_hints" },
                 ]}
               />

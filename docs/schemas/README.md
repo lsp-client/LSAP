@@ -6,7 +6,7 @@ This directory contains the specifications for the LLM-friendly LSP (Language Se
 
 - [**Locate**](locate.md): Resolve text snippets or symbol paths to exact file coordinates.
 - [**Symbol**](symbol.md): Retrieve detailed information, documentation, and source code for specific symbols.
-- [**Symbol Outline**](symbol_outline.md): Get a hierarchical overview of all symbols in a file.
+- [**Outline**](outline.md): Get a hierarchical overview of all symbols in a file.
 - [**Definition**](definition.md): Navigate from a symbol usage to its declaration or definition.
 - [**Hover**](hover.md): Quick access to documentation and type information at a specific location.
 - [**Search**](search.md): Global search for symbols across the entire project with pagination.

@@ -16,7 +16,7 @@ from lsap.locate import LocateCapability
 from lsap.utils.document import DocumentReader
 from lsap.utils.symbol import symbol_at
 
-from .symbol_outline import SymbolOutlineCapability
+from .outline import OutlineCapability
 
 
 @runtime_checkable
@@ -35,8 +35,8 @@ class SymbolCapability(Capability[SymbolClient, SymbolRequest, SymbolResponse]):
         return LocateCapability(self.client)
 
     @cached_property
-    def outline(self) -> SymbolOutlineCapability:
-        return SymbolOutlineCapability(self.client)
+    def outline(self) -> OutlineCapability:
+        return OutlineCapability(self.client)
 
     @override
     async def __call__(self, req: SymbolRequest) -> SymbolResponse | None:
