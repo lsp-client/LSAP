@@ -1,3 +1,3 @@
-export * from "./WorkspaceSymbolItem";
-export * from "./WorkspaceSymbolRequest";
-export * from "./WorkspaceSymbolResponse";
+export * from "./SearchItem";
+export * from "./SearchRequest";
+export * from "./SearchResponse";

@@ -1,0 +1,3 @@
+import { z } from "zod";
+
+export const HierarchyNode = z.object({ "id": z.string(), "name": z.string(), "kind": z.string(), "file_path": z.string(), "range_start": z.object({ "line": z.number().int().gte(1), "character": z.number().int().gte(1) }).describe("Represents a specific position in a file using line and character numbers.\n\nNote: Line and character are 1-based indices. 0-based indices are used in LSP, so conversion is needed when interfacing with LSP."), "detail": z.union([z.string(), z.null()]).default(null) }).describe("Represents a node in a hierarchy graph.\n\nApplicable to any hierarchical relationship: function calls, type inheritance, etc.");

@@ -22,7 +22,7 @@ class MockSearchClient:
 
     async def request_workspace_symbol_list(
         self, query: str
-    ) -> Sequence[WorkspaceSymbol] | None:
+    ) -> Sequence[WorkspaceSymbol]:
         if query == "foo":
             return [
                 WorkspaceSymbol(
@@ -86,6 +86,11 @@ class MockSearchClient:
                 )
             ]
         return []
+
+    async def resolve_workspace_symbols(
+        self, symbols: Sequence[WorkspaceSymbol]
+    ) -> Sequence[WorkspaceSymbol]:
+        return symbols
 
     def __getattr__(self, name: str) -> Any:
         return None
@@ -175,3 +180,35 @@ async def test_search_uri_only():
     assert resp.items[0].name == "uri_only_sym"
     assert resp.items[0].file_path == Path("/uri_only.py")
     assert resp.items[0].line is None
+
+
+@pytest.mark.asyncio
+async def test_search_resolve():
+    class ResolveMockClient(MockSearchClient):
+        async def resolve_workspace_symbols(
+            self, symbols: Sequence[WorkspaceSymbol]
+        ) -> Sequence[WorkspaceSymbol]:
+            resolved = []
+            for s in symbols:
+                if s.name == "uri_only_sym":
+                    # Give it a range
+                    s.location = Location(
+                        uri=s.location.uri,
+                        range=LSPRange(
+                            start=LSPPosition(line=10, character=0),
+                            end=LSPPosition(line=10, character=5),
+                        ),
+                    )
+                resolved.append(s)
+            return resolved
+
+    client = ResolveMockClient()
+    capability = SearchCapability(client=client)  # type: ignore
+
+    req = SearchRequest(query="uri_only")
+    resp = await capability(req)
+
+    assert resp is not None
+    assert len(resp.items) == 1
+    assert resp.items[0].name == "uri_only_sym"
+    assert resp.items[0].line == 11  # 10 + 1

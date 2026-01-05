@@ -17,7 +17,7 @@ def test_rename_request_defaults():
     )
 
     assert req.show_diffs is False
-    assert req.max_files is None
+    assert req.max_items == 100
 
 
 def test_rename_request_with_diffs():
@@ -34,22 +34,22 @@ def test_rename_request_with_diffs():
     assert req.show_diffs is True
 
 
-def test_rename_request_with_max_files():
-    """Test RenameRequest with max_files"""
+def test_rename_request_with_max_items():
+    """Test RenameRequest with max_items"""
     req = RenameRequest(
         locate=Locate(
             file_path=Path("test.py"),
             scope=SymbolScope(symbol_path=["MyClass", "my_method"]),
         ),
         new_name="new_method",
-        max_files=10,
+        max_items=10,
     )
 
-    assert req.max_files == 10
+    assert req.max_items == 10
 
 
-def test_rename_request_max_files_validation():
-    """Test that max_files must be >= 1"""
+def test_rename_request_max_items_validation():
+    """Test that max_items must be >= 1"""
     with pytest.raises(ValidationError):
         RenameRequest(
             locate=Locate(
@@ -57,7 +57,7 @@ def test_rename_request_max_files_validation():
                 scope=SymbolScope(symbol_path=["MyClass", "my_method"]),
             ),
             new_name="new_method",
-            max_files=0,
+            max_items=0,
         )
 
 
@@ -70,8 +70,10 @@ def test_rename_request_full_configuration():
         ),
         new_name="new_method",
         show_diffs=True,
-        max_files=5,
+        max_items=5,
+        start_index=10,
     )
 
     assert req.show_diffs is True
-    assert req.max_files == 5
+    assert req.max_items == 5
+    assert req.start_index == 10

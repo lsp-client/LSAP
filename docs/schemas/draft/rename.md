@@ -13,23 +13,27 @@ This API is designed with **agent-friendliness** and **minimal context usage** i
 
 ## RenameRequest
 
-| Field        | Type                  | Default  | Description                                                    |
-| :----------- | :-------------------- | :------- | :------------------------------------------------------------- |
-| `locate`     | [`Locate`](locate.md) | Required | The location of the symbol to rename.                          |
-| `new_name`   | `string`              | Required | The target name for the symbol.                                |
-| `show_diffs` | `boolean`             | `false`  | Include detailed line-by-line diffs (increases context usage). |
-| `max_files`  | `number?`             | `null`   | Optional: Maximum number of files to show in preview.          |
+| Field           | Type                  | Default | Description                                                    |
+| :-------------- | :-------------------- | :------ | :------------------------------------------------------------- |
+| `locate`        | [`Locate`](locate.md) | Required | The location of the symbol to rename.                          |
+| `new_name`      | `string`              | Required | The target name for the symbol.                                |
+| `show_diffs`    | `boolean`             | `false` | Include detailed line-by-line diffs (increases context usage). |
+| `max_items`     | `number?`             | `100`   | Maximum number of files to show in preview.                    |
+| `start_index`   | `number`              | `0`     | Number of files to skip.                                       |
+| `pagination_id` | `string?`             | `null`  | Token to retrieve the next page of results.                    |
 
 ## RenameResponse
 
-| Field               | Type                 | Description                                                    |
-| :------------------ | :------------------- | :------------------------------------------------------------- |
-| `old_name`          | `string`             | The original symbol name.                                      |
-| `new_name`          | `string`             | The new symbol name.                                           |
-| `total_files`       | `number`             | Total number of files that contain the symbol.                 |
-| `total_occurrences` | `number`             | Total number of times the symbol appears across all files.     |
-| `changes`           | `RenameFileChange[]` | Per-file change details (may be truncated based on max_files). |
-| `has_more_files`    | `boolean`            | True if the changes list was truncated due to max_files limit. |
+| Field               | Type                 | Description                                                     |
+| :------------------ | :------------------- | :-------------------------------------------------------------- |
+| `old_name`          | `string`             | The original symbol name.                                       |
+| `new_name`          | `string`             | The new symbol name.                                            |
+| `total`             | `number`             | Total number of files that contain the symbol.                  |
+| `start_index`       | `number`             | Number of files skipped.                                        |
+| `has_more`          | `boolean`            | True if more files are available.                               |
+| `total_occurrences` | `number`             | Total number of times the symbol appears across all files.      |
+| `changes`           | `RenameFileChange[]` | Per-file change details (may be truncated based on `max_items`). |
+| `pagination_id`     | `string?`            | Token for next page.                                            |
 
 ### RenameFileChange
 
@@ -140,9 +144,9 @@ When you need to see exactly what will change, use `show_diffs: true`.
 > Review the changes above before applying them.
 ```
 
-### Scenario 3: Large Rename with Truncation
+### Scenario 3: Large Rename with Pagination
 
-For very large renames, limit the preview to avoid excessive context usage.
+For very large renames, use pagination to review the impact in chunks.
 
 #### Request
 
@@ -155,7 +159,7 @@ For very large renames, limit the preview to avoid excessive context usage.
     }
   },
   "new_name": "Account",
-  "max_files": 5
+  "max_items": 5
 }
 ```
 
@@ -174,7 +178,11 @@ For very large renames, limit the preview to avoid excessive context usage.
 - `src/views.py`: 8 occurrence(s)
 - `src/api.py`: 7 occurrence(s)
 - `tests/test_models.py`: 6 occurrence(s)
-- ... and 20 more file(s)
+- ... and more file(s) available.
+
+---
+> [!TIP]
+> More changes available. To see more, use: `start_index=5`
 
 ---
 > [!NOTE]
@@ -203,7 +211,7 @@ The preview is generated from the LSP `WorkspaceEdit`:
 - The `WorkspaceEdit` contains all text edits across all affected files
 - By default (`show_diffs: false`), only file paths and occurrence counts are extracted
 - With `show_diffs: true`, detailed line-by-line diffs are generated from the text edits
-- The `max_files` parameter limits the number of files shown, not the files affected
+- The `max_items` and `start_index` parameters control pagination of the file list
 
 **Note**: The same `WorkspaceEdit` can be used by the client to apply the changes. LSAP's role is to transform it into an agent-readable preview format.
 

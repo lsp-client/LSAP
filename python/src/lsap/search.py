@@ -28,10 +28,8 @@ class SearchCapability(Capability[SearchClient, SearchRequest, SearchResponse]):
 
     @override
     async def __call__(self, req: SearchRequest) -> SearchResponse | None:
-        async def fetcher() -> list[WorkspaceSymbol] | None:
+        async def fetcher() -> list[WorkspaceSymbol]:
             symbols = await self.client.request_workspace_symbol_list(req.query)
-            if symbols is None:
-                return None
 
             if req.kinds:
                 kind_set = set(req.kinds)
@@ -45,7 +43,9 @@ class SearchCapability(Capability[SearchClient, SearchRequest, SearchResponse]):
         if result is None:
             return None
 
-        items = self._to_search_items(result.items)
+        # Resolve items in the current page
+        symbols = await self.client.resolve_workspace_symbols(result.items)
+        items = self._to_search_items(symbols)
 
         return SearchResponse(
             request=req,

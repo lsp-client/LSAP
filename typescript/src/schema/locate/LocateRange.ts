@@ -1,0 +1,3 @@
+import { z } from "zod";
+
+export const LocateRange = z.object({ "file_path": z.string(), "scope": z.union([z.object({ "line": z.union([z.number().int(), z.array(z.any()).min(2).max(2)]) }).describe("Scope by line range"), z.object({ "symbol_path": z.array(z.string()) }).describe("Scope by symbol, also serves as declaration locator when find is omitted"), z.null()]).default(null), "find": z.union([z.string(), z.null()]).default(null) }).describe("Locate a range.\n\nExamples:\n    # Select symbol body\n    LocateRange(file_path=\"foo.py\", scope=SymbolScope(symbol_path=[\"MyClass\"]))\n\n    # Select specific text\n    LocateRange(file_path=\"foo.py\", find=\"if condition: return True\")");

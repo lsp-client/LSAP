@@ -1,0 +1,3 @@
+import { z } from "zod";
+
+export const SearchRequest = z.object({ "max_items": z.union([z.number().int(), z.null()]).default(null), "start_index": z.number().int().default(0), "pagination_id": z.union([z.string(), z.null()]).default(null), "query": z.string(), "kinds": z.union([z.array(z.enum(["file","module","namespace","package","class","method","property","field","constructor","enum","interface","function","variable","constant","string","number","boolean","array","object","key","null","enumMember","struct","event","operator","typeParameter"])), z.null()]).default(null) }).describe("Searches for symbols across the workspace by name pattern.\n\nReturns concise results for quick discovery. Use SymbolRequest\nto get detailed information about a specific symbol.");

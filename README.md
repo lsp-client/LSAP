@@ -111,6 +111,14 @@ LSAP **centralizes** complexity. Instead of every Agent reimplementing LSP orche
 - [`typescript/`](typescript/): TypeScript type definitions and utility library.
 - [`web/`](web/): Protocol documentation site.
 
+## Alternatives
+
+- Claude Code have native LSP supports now.
+- [claude-code-lsps](https://github.com/Piebald-AI/claude-code-lsps)
+- [serena](https://github.com/oraios/serena)
+- [cclsp](https://github.com/ktnyt/cclsp)
+- [mcpls](https://github.com/bug-ops/mcpls)
+
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details on development workflows and design principles.

@@ -20,6 +20,7 @@ from lsap_schema import (
     RenameDiff,
     RenameFileChange,
     RenameResponse,
+    SymbolResponse,
     OutlineResponse,
     SymbolCodeInfo,
     SymbolDetailInfo,
@@ -225,7 +226,8 @@ def test_rename_response_format():
     resp = RenameResponse(
         old_name="old",
         new_name="new",
-        total_files=1,
+        total=1,
+        start_index=0,
         total_occurrences=1,
         changes=[
             RenameFileChange(
@@ -246,7 +248,8 @@ def test_rename_response_compact_format():
     resp = RenameResponse(
         old_name="fetch_data",
         new_name="get_resource",
-        total_files=2,
+        total=2,
+        start_index=0,
         total_occurrences=5,
         changes=[
             RenameFileChange(
@@ -273,7 +276,8 @@ def test_rename_response_with_diffs():
     resp = RenameResponse(
         old_name="temp",
         new_name="buffer",
-        total_files=1,
+        total=1,
+        start_index=0,
         total_occurrences=3,
         changes=[
             RenameFileChange(
@@ -303,9 +307,10 @@ def test_rename_response_truncated():
     resp = RenameResponse(
         old_name="User",
         new_name="Account",
-        total_files=10,
+        total=10,
+        start_index=0,
         total_occurrences=50,
-        has_more_files=True,
+        has_more=True,
         changes=[
             RenameFileChange(file_path=Path(f"file{i}.py"), occurrences=i + 1, diffs=[])
             for i in range(3)

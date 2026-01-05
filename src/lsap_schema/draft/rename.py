@@ -3,7 +3,7 @@ from typing import Final
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from lsap_schema.abc import Response
+from lsap_schema.abc import PaginatedRequest, PaginatedResponse
 from lsap_schema.locate import LocateRequest
 
 
@@ -29,7 +29,7 @@ class RenameFileChange(BaseModel):
     """Detailed line-by-line diffs (only included if show_diffs=true)"""
 
 
-class RenameRequest(LocateRequest):
+class RenameRequest(PaginatedRequest, LocateRequest):
     """
     Previews a workspace-wide symbol rename operation.
 
@@ -53,23 +53,23 @@ class RenameRequest(LocateRequest):
     show_diffs: bool = False
     """Include detailed line diffs in preview (increases context usage)"""
 
-    max_files: int | None = Field(default=None, ge=1)
-    """Optional: Maximum number of files to show in preview (for large renames)"""
+    max_items: int | None = Field(default=100, ge=1)
+    """Maximum number of files to show in preview (for large renames)"""
 
 
 preview_template: Final = """
 # Rename Preview: `{{ old_name }}` → `{{ new_name }}`
 
 ## Summary
-- **Files affected**: {{ total_files }}{% if has_more_files %} (showing {{ changes | size }}/{{ total_files }}){% endif %}
+- **Files affected**: {{ total }}{% if has_more or start_index > 0 %} (showing {{ changes | size }}/{{ total }}){% endif %}
 - **Total occurrences**: {{ total_occurrences }}
 
 ## Affected Files
 {%- for file in changes %}
 - `{{ file.file_path }}`: {{ file.occurrences }} occurrence(s)
 {%- endfor %}
-{%- if has_more_files %}
-- ... and {{ total_files | minus: changes | size }} more file(s)
+{%- if has_more %}
+- ... and more file(s) available.
 {%- endif %}
 
 {%- if changes.size > 0 -%}
@@ -89,6 +89,13 @@ preview_template: Final = """
 {%- endif %}
 {%- endif %}
 
+{%- if has_more %}
+
+---
+> [!TIP]
+> More changes available. To see more, use: `start_index={{ start_index | plus: max_items }}`
+{%- endif %}
+
 ---
 > [!NOTE]
 > This is a preview of changes. The actual rename operation will be executed by your editor/IDE.
@@ -96,24 +103,18 @@ preview_template: Final = """
 """
 
 
-class RenameResponse(Response):
+class RenameResponse(PaginatedResponse):
     old_name: str
     """The original symbol name"""
 
     new_name: str
     """The new symbol name"""
 
-    total_files: int
-    """Total number of files that contain the symbol"""
-
     total_occurrences: int
     """Total number of times the symbol appears across all files"""
 
     changes: list[RenameFileChange]
-    """Per-file change details (may be truncated based on max_files)"""
-
-    has_more_files: bool = False
-    """True if the changes list was truncated due to max_files limit"""
+    """Per-file change details (may be truncated based on max_items limit)"""
 
     model_config = ConfigDict(
         json_schema_extra={
