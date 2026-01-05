@@ -25,7 +25,7 @@ markdown_template: Final = """
 {% assign level = item.path | size | plus: 1 -%}
 {% for i in (1..level) %}#{% endfor %} {{ item.path | join: "." }} (`{{ item.kind }}`)
 {% if item.detail != nil %}{{ item.detail }}{% endif %}
-{% if item.hover != nil %}{{ item.hover | strip | truncate: 120 }}{% endif %}
+{% if item.hover != nil %}{{ item.hover | strip }}{% endif %}
 
 {% endfor -%}
 """

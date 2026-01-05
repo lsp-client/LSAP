@@ -55,7 +55,7 @@ No completion suggestions found.
 - Insert: `{{ item.insert_text }}`
 {%- endif %}
 {%- if item.documentation %}
-- Doc: {{ item.documentation | truncate: 300 }}
+- Doc: {{ item.documentation }}
 {%- endif %}
 {%- endfor %}
 
