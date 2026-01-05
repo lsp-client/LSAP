@@ -14,7 +14,7 @@ This directory contains the specifications for the LLM-friendly LSP (Language Se
 - [**Reference & Implementation**](reference.md): Find all usages or concrete implementations of a symbol in the project.
 - [**Hierarchy**](draft/hierarchy.md): Unified API for tracing call relationships and type inheritance hierarchies.
 - [**Diagnostics**](diagnostics.md): Access linting issues and syntax errors.
-- [**Rename**](rename.md): Preview and execute safe workspace-wide symbol renaming.
+- [**Rename**](draft/rename.md): Preview and execute safe workspace-wide symbol renaming.
 - [**Inlay Hints & Inline Values**](inlay_hints.md): Read code with static hints and runtime values injected.
 
 ## Design Principles
