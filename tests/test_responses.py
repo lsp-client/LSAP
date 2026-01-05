@@ -317,11 +317,6 @@ def test_rename_response_truncated():
     assert "10" in rendered  # total files
     assert "50" in rendered  # total occurrences
     assert "showing 3/10" in rendered.lower() or "3/10" in rendered
-    assert "User" in rendered
-    assert "Account" in rendered
-    assert "10" in rendered  # total files
-    assert "50" in rendered  # total occurrences
-    assert "showing 3/10" in rendered.lower() or "3/10" in rendered
 
 
 def test_decorated_content_response_format():

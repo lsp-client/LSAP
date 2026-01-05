@@ -72,6 +72,7 @@ preview_template: Final = """
 - ... and {{ total_files | minus: changes | size }} more file(s)
 {%- endif %}
 
+{%- if changes.size > 0 -%}
 {%- assign first_file = changes[0] -%}
 {%- if first_file.diffs.size > 0 %}
 
@@ -85,6 +86,7 @@ preview_template: Final = """
   + `{{ diff.modified }}`
 {%- endfor %}
 {%- endfor %}
+{%- endif %}
 {%- endif %}
 
 ---

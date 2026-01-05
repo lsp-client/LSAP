@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from lsap_schema import Locate, RenameRequest, SymbolScope
 
@@ -49,7 +50,7 @@ def test_rename_request_with_max_files():
 
 def test_rename_request_max_files_validation():
     """Test that max_files must be >= 1"""
-    with pytest.raises(Exception):  # Pydantic validation error
+    with pytest.raises(ValidationError):
         RenameRequest(
             locate=Locate(
                 file_path=Path("test.py"),
