@@ -22,6 +22,13 @@ class SearchClient(
 ): ...
 
 
+@runtime_checkable
+class CanResolveWorkspaceSymbol(Protocol):
+    async def resolve_workspace_symbols(
+        self, symbols: Sequence[WorkspaceSymbol]
+    ) -> Sequence[WorkspaceSymbol]: ...
+
+
 @define
 class SearchCapability(Capability[SearchClient, SearchRequest, SearchResponse]):
     _symbol_cache: PaginationCache[WorkspaceSymbol] = Factory(PaginationCache)
@@ -44,7 +51,10 @@ class SearchCapability(Capability[SearchClient, SearchRequest, SearchResponse]):
             return None
 
         # Resolve items in the current page
-        symbols = await self.client.resolve_workspace_symbols(result.items)
+        symbols = result.items
+        if isinstance(self.client, CanResolveWorkspaceSymbol):
+            symbols = await self.client.resolve_workspace_symbols(symbols)
+
         items = self._to_search_items(symbols)
 
         return SearchResponse(
