@@ -200,9 +200,12 @@ LSP rename is always workspace-wide by design. It will find and include **all** 
 ### Preview Generation
 
 The preview is generated from the LSP `WorkspaceEdit`:
-- By default (`show_diffs: false`), only file paths and occurrence counts are returned
-- With `show_diffs: true`, detailed line-by-line diffs are included
+- The `WorkspaceEdit` contains all text edits across all affected files
+- By default (`show_diffs: false`), only file paths and occurrence counts are extracted
+- With `show_diffs: true`, detailed line-by-line diffs are generated from the text edits
 - The `max_files` parameter limits the number of files shown, not the files affected
+
+**Note**: The same `WorkspaceEdit` can be used by the client to apply the changes. LSAP's role is to transform it into an agent-readable preview format.
 
 ## Best Practices for Agents
 

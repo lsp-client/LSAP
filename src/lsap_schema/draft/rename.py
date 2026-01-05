@@ -34,11 +34,14 @@ class RenameRequest(LocateRequest):
     Previews a workspace-wide symbol rename operation.
 
     This API returns a preview of all changes that would be made by renaming
-    the specified symbol. The actual execution of changes is handled by the
-    client (editor/IDE) based on the returned preview.
+    the specified symbol. The preview is generated from LSP's WorkspaceEdit,
+    which contains all the text edits needed for the rename. The actual
+    execution of changes is handled by the client (editor/IDE) using the
+    same WorkspaceEdit.
 
     By default, returns a compact summary to minimize token usage.
-    Use show_diffs=true to see detailed line-by-line changes.
+    Use show_diffs=true to see detailed line-by-line changes extracted
+    from the WorkspaceEdit.
 
     Note: LSP rename is always workspace-wide. All references to the symbol
     across all files will be included in the preview.
