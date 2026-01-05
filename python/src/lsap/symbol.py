@@ -71,7 +71,7 @@ class SymbolCapability(Capability[SymbolClient, SymbolRequest, SymbolResponse]):
         document = await self.client.read_file(file_path)
         reader = DocumentReader(document)
 
-        code = ""
+        code: str | None = None
         if snippet := reader.read(symbol.range):
             code = snippet.content
 

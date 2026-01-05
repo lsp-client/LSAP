@@ -67,8 +67,7 @@ class OutlineCapability(Capability[OutlineClient, OutlineRequest, OutlineRespons
             name=symbol.name,
             path=path,
             kind=SymbolKind.from_lsp(symbol.kind),
-            detail=symbol.detail or "",
-            hover="",
+            detail=symbol.detail,
             range=Range(
                 start=Position.from_lsp(symbol.range.start),
                 end=Position.from_lsp(symbol.range.end),
