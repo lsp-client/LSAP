@@ -1,3 +1,6 @@
+sync:
+    uv sync --upgrade
+
 # Export JSON schemas from Python
 schema-json output:
     cd schema && uv run -m lsap_schema -o {{output}}
