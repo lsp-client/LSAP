@@ -1,15 +1,12 @@
 from pathlib import Path
 
 import pytest
-from lsprotocol.types import (
-    DocumentSymbol,
-    Position as LSPPosition,
-    Range as LSPRange,
-    SymbolKind,
-)
+from lsap_schema.outline import OutlineRequest
+from lsprotocol.types import DocumentSymbol, SymbolKind
+from lsprotocol.types import Position as LSPPosition
+from lsprotocol.types import Range as LSPRange
 
 from lsap.outline import OutlineCapability
-from lsap_schema.outline import OutlineRequest
 
 
 class MockOutlineClient:

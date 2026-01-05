@@ -22,6 +22,7 @@ from lsap.utils.pagination import paginate
 from lsap.utils.symbol import symbol_at
 
 from .abc import Capability
+from .exception import UnsupportedCapabilityError
 from .locate import LocateCapability
 from .utils.cache import PaginationCache
 
@@ -29,7 +30,6 @@ from .utils.cache import PaginationCache
 @runtime_checkable
 class ReferenceClient(
     WithRequestReferences,
-    WithRequestImplementation,
     WithRequestDocumentSymbol,
     WithRequestHover,
     CapabilityClientProtocol,
@@ -61,6 +61,14 @@ class ReferenceCapability(
                 ):
                     locations.extend(refs)
             elif req.mode == "implementations":
+                if not isinstance(self.client, WithRequestImplementation):
+                    raise UnsupportedCapabilityError(
+                        "Client does not support 'textDocument/implementation'. "
+                        "To find implementations, you can: "
+                        "1) Use 'references' mode to find all usages (often including implementations); "
+                        "2) Find the symbol definition and then search for its references; "
+                        "3) Use 'search' or 'symbol' capability to find name-matched definitions."
+                    )
                 if impls := await self.client.request_implementation_locations(
                     file_path, lsp_pos
                 ):

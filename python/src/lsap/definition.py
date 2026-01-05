@@ -17,6 +17,7 @@ from lsp_client.capability.request import (
 from lsprotocol.types import Location
 
 from .abc import Capability, ClientProtocol
+from .exception import UnsupportedCapabilityError
 from .locate import LocateCapability
 from .symbol import SymbolCapability
 
@@ -24,8 +25,6 @@ from .symbol import SymbolCapability
 @runtime_checkable
 class DefinitionClient(
     WithRequestDefinition,
-    WithRequestDeclaration,
-    WithRequestTypeDefinition,
     WithRequestDocumentSymbol,
     WithRequestHover,
     ClientProtocol,
@@ -59,10 +58,24 @@ class DefinitionCapability(
                     file_path, lsp_pos
                 )
             case "declaration":
+                if not isinstance(self.client, WithRequestDeclaration):
+                    raise UnsupportedCapabilityError(
+                        "Client does not support 'textDocument/declaration'. "
+                        "To find declarations, you can: "
+                        "1) Use 'definition' mode (most language servers treat them similarly); "
+                        "2) For C/C++, check corresponding header files manually."
+                    )
                 locations = await self.client.request_declaration_locations(
                     file_path, lsp_pos
                 )
             case "type_definition":
+                if not isinstance(self.client, WithRequestTypeDefinition):
+                    raise UnsupportedCapabilityError(
+                        "Client does not support 'textDocument/typeDefinition'. "
+                        "To find type definitions, you can: "
+                        "1) Use 'definition' on the type name itself if visible; "
+                        "2) Use 'hover' to see the type name and then search for it."
+                    )
                 locations = await self.client.request_type_definition_locations(
                     file_path, lsp_pos
                 )

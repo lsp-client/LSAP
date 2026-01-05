@@ -7,6 +7,7 @@ from lsprotocol.types import (
     Position as LSPPosition,
     Location,
 )
+from lsap.exception import UnsupportedCapabilityError
 from lsap.reference import ReferenceCapability
 from lsap_schema.reference import ReferenceRequest
 from lsap_schema.locate import LineScope, Locate
@@ -122,3 +123,20 @@ async def test_reference_pagination():
     assert len(resp2.items) == 1
     assert resp2.has_more is False
     assert resp2.pagination_id is None
+
+
+@pytest.mark.asyncio
+async def test_unsupported_implementation():
+    client = MockReferenceClient()
+    capability = ReferenceCapability(client=client)  # type: ignore
+
+    req = ReferenceRequest(
+        locate=Locate(file_path=Path("test.py"), scope=LineScope(line=2), find="foo"),
+        mode="implementations",
+    )
+
+    with pytest.raises(UnsupportedCapabilityError) as excinfo:
+        await capability(req)
+
+    assert "textDocument/implementation" in str(excinfo.value)
+    assert "references" in str(excinfo.value)

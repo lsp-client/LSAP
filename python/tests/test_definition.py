@@ -9,6 +9,7 @@ from lsprotocol.types import Position as LSPPosition
 from lsprotocol.types import Range as LSPRange
 
 from lsap.definition import DefinitionCapability
+from lsap.exception import UnsupportedCapabilityError
 
 
 class MockDefinitionClient:
@@ -87,3 +88,20 @@ async def test_definition():
     assert resp.items[0].path == ["foo"]
     assert resp.items[0].code is not None
     assert "def foo():" in resp.items[0].code
+
+
+@pytest.mark.asyncio
+async def test_unsupported_declaration():
+    client = MockDefinitionClient()
+    capability = DefinitionCapability(client=client)  # type: ignore
+
+    req = DefinitionRequest(
+        locate=Locate(file_path=Path("main.py"), scope=LineScope(line=2), find="foo"),
+        mode="declaration",
+    )
+
+    with pytest.raises(UnsupportedCapabilityError) as excinfo:
+        await capability(req)
+
+    assert "textDocument/declaration" in str(excinfo.value)
+    assert "definition" in str(excinfo.value)

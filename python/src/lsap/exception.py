@@ -11,3 +11,7 @@ class AmbiguousError(LSAPError):
 
 class NotFoundError(LSAPError):
     """Raised when something is not found."""
+
+
+class UnsupportedCapabilityError(LSAPError):
+    """Raised when a capability is not supported by the client."""
