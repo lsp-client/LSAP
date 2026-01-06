@@ -86,8 +86,11 @@ A concise string syntax is provided for easy location specification:
 **Format:** `<file_path>:<scope>@<find>`
 
 **Scope formats:**
-- `L<line>` - Single line (e.g., `L42`)
-- `L<start>-<end>` - Line range (e.g., `L10-20`)
+- `<line>` - Single line number (e.g., `42`)
+- `<start>,<end>` - Line range with comma (e.g., `10,20`)
+- `<start>-<end>` - Line range with dash (e.g., `10-20`)
+- `L<line>` - Single line with L prefix (e.g., `L42`)
+- `L<start>-<end>` - Line range with L prefix (e.g., `L10-20`)
 - `<symbol_path>` - Symbol path with dots (e.g., `MyClass.my_method`)
 
 **Examples:**
@@ -95,8 +98,13 @@ A concise string syntax is provided for easy location specification:
 # File with find pattern only
 "foo.py@self.<|>"
 
-# Line scope with find
+# Line scope with find (various formats)
+"foo.py:42@return <|>result"
 "foo.py:L42@return <|>result"
+
+# Line range scope (comma or dash)
+"foo.py:10,20@if <|>condition"
+"foo.py:10-20@if <|>condition"
 
 # Symbol scope with find
 "foo.py:MyClass.my_method@self.<|>"
@@ -104,7 +112,7 @@ A concise string syntax is provided for easy location specification:
 # Symbol scope only (for declaration position)
 "foo.py:MyClass"
 
-# Line range scope
+# Line range with L prefix
 "foo.py:L10-20@if <|>condition"
 ```
 

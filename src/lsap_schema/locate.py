@@ -58,16 +58,20 @@ def parse_locate_string(locate_str: str) -> "Locate":
         - <file_path> - Only file (invalid, will raise error)
 
     Scope formats:
-        - L<line> - Single line (e.g., "L42")
-        - L<start>-<end> - Line range (e.g., "L10-20")
+        - <line> - Single line number (e.g., "42")
+        - <start>,<end> - Line range with comma (e.g., "10,20")
+        - <start>-<end> - Line range with dash (e.g., "10-20")
+        - L<line> - Single line with L prefix (e.g., "L42")
+        - L<start>-<end> - Line range with L prefix (e.g., "L10-20")
         - <symbol_path> - Symbol path with dots (e.g., "MyClass.my_method")
 
     Examples:
-        - "foo.py:L42@return <|>result" - Line 42, find pattern
+        - "foo.py:42@return <|>result" - Line 42, find pattern
+        - "foo.py:10,20@if <|>condition" - Line range 10-20, find pattern
         - "foo.py:MyClass.my_method@self.<|>" - Symbol scope, find pattern
         - "foo.py@self.<|>" - Whole file, find pattern
         - "foo.py:MyClass" - Symbol scope only
-        - "foo.py:L10-20" - Line range scope
+        - "foo.py:L10-20" - Line range scope (L prefix)
     """
     # Split by @ first to separate find from file_path:scope
     if "@" in locate_str:
@@ -87,14 +91,26 @@ def parse_locate_string(locate_str: str) -> "Locate":
     # Parse scope
     scope = None
     if scope_str:
-        # Check if it's a line scope
+        # Check if it's a line scope (starts with L or is numeric)
         if scope_str.startswith("L"):
+            # L prefix format
             line_part = scope_str[1:]
             if "-" in line_part:
                 start, end = line_part.split("-", 1)
                 scope = LineScope(line=(int(start), int(end)))
             else:
                 scope = LineScope(line=int(line_part))
+        elif "," in scope_str:
+            # Comma-separated line range: "10,20"
+            start, end = scope_str.split(",", 1)
+            scope = LineScope(line=(int(start), int(end)))
+        elif "-" in scope_str and scope_str.replace("-", "").isdigit():
+            # Dash-separated line range: "10-20"
+            start, end = scope_str.split("-", 1)
+            scope = LineScope(line=(int(start), int(end)))
+        elif scope_str.isdigit():
+            # Single line number: "42"
+            scope = LineScope(line=int(scope_str))
         else:
             # Treat as symbol path
             symbol_path = scope_str.split(".")

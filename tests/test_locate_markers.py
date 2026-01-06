@@ -174,3 +174,43 @@ class TestParseLocateString:
         locate = parse_locate_string("foo.py@x = <|> + y <<|>> z")
         assert locate.file_path == Path("foo.py")
         assert locate.find == "x = <|> + y <<|>> z"
+
+    def test_parse_line_number_without_prefix(self):
+        """Test parsing with line number without L prefix."""
+        locate = parse_locate_string("foo.py:42@return <|>result")
+        assert locate.file_path == Path("foo.py")
+        assert isinstance(locate.scope, LineScope)
+        assert locate.scope.line == 42
+        assert locate.find == "return <|>result"
+
+    def test_parse_line_range_with_comma(self):
+        """Test parsing with line range using comma separator."""
+        locate = parse_locate_string("foo.py:10,20@if <|>condition")
+        assert locate.file_path == Path("foo.py")
+        assert isinstance(locate.scope, LineScope)
+        assert locate.scope.line == (10, 20)
+        assert locate.find == "if <|>condition"
+
+    def test_parse_line_range_with_dash_no_prefix(self):
+        """Test parsing with line range using dash without L prefix."""
+        locate = parse_locate_string("foo.py:10-20@while <|>loop")
+        assert locate.file_path == Path("foo.py")
+        assert isinstance(locate.scope, LineScope)
+        assert locate.scope.line == (10, 20)
+        assert locate.find == "while <|>loop"
+
+    def test_parse_line_number_only_no_find(self):
+        """Test parsing with line number only, no find pattern."""
+        locate = parse_locate_string("foo.py:123")
+        assert locate.file_path == Path("foo.py")
+        assert isinstance(locate.scope, LineScope)
+        assert locate.scope.line == 123
+        assert locate.find is None
+
+    def test_parse_line_range_comma_no_find(self):
+        """Test parsing with comma-separated line range, no find pattern."""
+        locate = parse_locate_string("foo.py:12,14")
+        assert locate.file_path == Path("foo.py")
+        assert isinstance(locate.scope, LineScope)
+        assert locate.scope.line == (12, 14)
+        assert locate.find is None

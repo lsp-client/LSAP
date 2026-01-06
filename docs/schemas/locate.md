@@ -28,13 +28,18 @@ The system automatically selects the marker with the deepest nesting level that 
 A concise string syntax is available: `<file_path>:<scope>@<find>`
 
 **Scope formats:**
-- `L<line>` - Single line (e.g., `L42`)
-- `L<start>-<end>` - Line range (e.g., `L10-20`)
+- `<line>` - Single line number (e.g., `42`)
+- `<start>,<end>` - Line range with comma (e.g., `10,20`)
+- `<start>-<end>` - Line range with dash (e.g., `10-20`)
+- `L<line>` - Single line with L prefix (e.g., `L42`)
+- `L<start>-<end>` - Line range with L prefix (e.g., `L10-20`)
 - `<symbol_path>` - Symbol path with dots (e.g., `MyClass.my_method`)
 
 **Examples:**
 ```
 foo.py@self.<|>
+foo.py:42@return <|>result
+foo.py:10,20@if <|>condition
 foo.py:L42@return <|>result
 foo.py:MyClass.my_method@self.<|>
 foo.py:MyClass
