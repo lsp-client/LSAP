@@ -57,7 +57,7 @@ The Agent only needs to issue a high-level command without worrying about underl
 {
   "locate": {
     "file_path": "src/utils.py",
-    "find": "def format_date<HERE>", // Semantic Anchor
+    "find": "def format_date<|>", // Semantic Anchor
   },
   "mode": "references",
   "max_items": 10,

@@ -9,18 +9,44 @@ The `Locate` model uses a two-stage approach: **scope** (optional) → **find** 
 ### Resolution Rules
 
 1. **SymbolScope without find**: Returns the symbol declaration position (for references, rename)
-2. **With find containing marker**: Returns the marker position
+2. **With find containing marker**: Returns the marker position (auto-detected using nested brackets)
 3. **With find only**: Returns the start of matched text
 4. **No scope + find**: Searches the entire file
 
+### Automatic Marker Detection
+
+Markers are automatically detected using nested bracket notation:
+- `<|>` - Single level (default)
+- `<<|>>` - Double level (if `<|>` appears multiple times)
+- `<<<|>>>` - Triple level (if `<<|>>` appears multiple times)
+- ... up to 10 nesting levels
+
+The system automatically selects the marker with the deepest nesting level that appears exactly once in the find text.
+
+### String Syntax
+
+A concise string syntax is available: `<file_path>:<scope>@<find>`
+
+**Scope formats:**
+- `L<line>` - Single line (e.g., `L42`)
+- `L<start>-<end>` - Line range (e.g., `L10-20`)
+- `<symbol_path>` - Symbol path with dots (e.g., `MyClass.my_method`)
+
+**Examples:**
+```
+foo.py@self.<|>
+foo.py:L42@return <|>result
+foo.py:MyClass.my_method@self.<|>
+foo.py:MyClass
+```
+
 ### Locate Fields
 
-| Field       | Type                                   | Default    | Description                                                            |
-| :---------- | :------------------------------------- | :--------- | :--------------------------------------------------------------------- |
-| `file_path` | `string`                               | Required   | Path to search in.                                                     |
-| `scope`     | `LineScope` \| `SymbolScope` \| `null` | `null`     | Optional: narrow search to symbol body or line range.                  |
-| `find`      | `string` \| `null`                     | `null`     | Text pattern with marker for exact position.                           |
-| `marker`    | `string`                               | `"<HERE>"` | Position marker in find pattern. Change if source contains `"<HERE>"`. |
+| Field       | Type                                   | Default  | Description                                           |
+| :---------- | :------------------------------------- | :------- | :---------------------------------------------------- |
+| `file_path` | `string`                               | Required | Path to search in.                                    |
+| `scope`     | `LineScope` \| `SymbolScope` \| `null` | `null`   | Optional: narrow search to symbol body or line range. |
+| `find`      | `string` \| `null`                     | `null`   | Text pattern with auto-detected marker.               |
 
 ### LineScope
 
@@ -94,27 +120,43 @@ For selecting a range of text instead of a point.
 }
 ```
 
+Or using string syntax:
+```
+"foo.py:MyClass"
+```
+
 ### Scenario 2: Completion trigger point (with marker)
 
 ```json
 {
   "locate": {
     "file_path": "foo.py",
-    "find": "self.<HERE>"
+    "find": "self.<|>"
   }
 }
 ```
 
-### Scenario 3: Using custom marker (when source contains "<HERE>")
+Or using string syntax:
+```
+"foo.py@self.<|>"
+```
+
+### Scenario 3: Nested marker when <|> exists in source
 
 ```json
 {
   "locate": {
     "file_path": "foo.py",
-    "find": "x = <|>value",
-    "marker": "<|>"
+    "find": "x = <|> + y <<|>> z"
   }
 }
+```
+
+The system automatically detects `<<|>>` as the unique position marker.
+
+Or using string syntax:
+```
+"foo.py@x = <|> + y <<|>> z"
 ```
 
 ### Scenario 4: Finding a location within a specific symbol
@@ -126,9 +168,14 @@ For selecting a range of text instead of a point.
     "scope": {
       "symbol_path": ["process"]
     },
-    "find": "return <HERE>result"
+    "find": "return <|>result"
   }
 }
+```
+
+Or using string syntax:
+```
+"foo.py:process@return <|>result"
 ```
 
 #### Markdown Rendered for LLM

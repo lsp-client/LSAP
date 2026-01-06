@@ -54,38 +54,73 @@ Narrows the search area from the entire file to a specific region:
 Precise location within the Scope using a text pattern:
 
 ```python
-find = "self.<HERE>value = value"
-#           ^^^^^^ <HERE> marks the exact position
+find = "self.<|>value = value"
+#           ^^^ <|> marks the exact position
 ```
 
-**`<HERE>` Marker Rules:**
+**Automatic Marker Detection Rules:**
 
-- With `<HERE>`: Locates at the marker position.
-- Without `<HERE>`: Locates at the start of the matched text.
-- `find` is `None`: Uses the "natural position" of the Scope.
-- Custom marker: Use `marker` field when source contains literal `<HERE>`.
+- Markers use nested bracket notation: `<|>`, `<<|>>`, `<<<|>>>`, etc.
+- The system automatically detects the marker with the deepest nesting level that appears exactly once
+- With marker: Locates at the marker position
+- Without marker: Locates at the start of the matched text
+- `find` is `None`: Uses the "natural position" of the Scope
 
 ```python
-# Default marker
-Locate(file_path="foo.py", find="self.<HERE>value")
+# Basic marker
+Locate(file_path="foo.py", find="self.<|>value")
 
-# Custom marker when source contains "<HERE>"
-Locate(file_path="foo.py", find="x = <|>value", marker="<|>")
+# When <|> appears multiple times, use deeper nesting
+Locate(file_path="foo.py", find="x = <|> + y <<|>> z")
+# Will automatically use <<|>> as the position marker
+
+# String syntax for concise location specification
+locate_str = "foo.py:MyClass.my_method@self.<|>"
+locate = parse_locate_string(locate_str)
+```
+
+## String Syntax
+
+A concise string syntax is provided for easy location specification:
+
+**Format:** `<file_path>:<scope>@<find>`
+
+**Scope formats:**
+- `L<line>` - Single line (e.g., `L42`)
+- `L<start>-<end>` - Line range (e.g., `L10-20`)
+- `<symbol_path>` - Symbol path with dots (e.g., `MyClass.my_method`)
+
+**Examples:**
+```python
+# File with find pattern only
+"foo.py@self.<|>"
+
+# Line scope with find
+"foo.py:L42@return <|>result"
+
+# Symbol scope with find
+"foo.py:MyClass.my_method@self.<|>"
+
+# Symbol scope only (for declaration position)
+"foo.py:MyClass"
+
+# Line range scope
+"foo.py:L10-20@if <|>condition"
 ```
 
 ## Position Resolution Rules
 
-| Scope         | Find             | Resolution Result                            |
-| ------------- | ---------------- | -------------------------------------------- |
-| `SymbolScope` | `None`           | Position of the symbol's declared name       |
-| `SymbolScope` | With `<HERE>`    | Marked position within the symbol body       |
-| `SymbolScope` | Without `<HERE>` | Start of matched text within the symbol body |
-| `LineScope`   | `None`           | First non-whitespace character of the line   |
-| `LineScope`   | With `<HERE>`    | Marked position within the line              |
-| `LineScope`   | Without `<HERE>` | Start of matched text within the line        |
-| `None`        | With `<HERE>`    | Global search, marked position               |
-| `None`        | Without `<HERE>` | Global search, start of matched text         |
-| `None`        | `None`           | ❌ Invalid, validation should failure        |
+| Scope         | Find          | Resolution Result                            |
+| ------------- | ------------- | -------------------------------------------- |
+| `SymbolScope` | `None`        | Position of the symbol's declared name       |
+| `SymbolScope` | With marker   | Marked position within the symbol body       |
+| `SymbolScope` | Without marker| Start of matched text within the symbol body |
+| `LineScope`   | `None`        | First non-whitespace character of the line   |
+| `LineScope`   | With marker   | Marked position within the line              |
+| `LineScope`   | Without marker| Start of matched text within the line        |
+| `None`        | With marker   | Global search, marked position               |
+| `None`        | Without marker| Global search, start of matched text         |
+| `None`        | `None`        | ❌ Invalid, validation should failure        |
 
 ## Whitespace Handling
 
@@ -129,14 +164,14 @@ Token boundaries align with programming language semantics. It preserves identif
 
 ### Capabilities Requiring Position
 
-| LSP Capability               | Positioning Need            | Locate Usage                               |
-| ---------------------------- | --------------------------- | ------------------------------------------ |
-| `textDocument/definition`    | Identifier position         | `SymbolScope` or `find="<HERE>identifier"` |
-| `textDocument/references`    | Symbol declaration position | `SymbolScope(symbol_path=[...])`           |
-| `textDocument/rename`        | Symbol declaration position | `SymbolScope(symbol_path=[...])`           |
-| `textDocument/hover`         | Any identifier              | `find="<HERE>target"`                      |
-| `textDocument/completion`    | Trigger point               | `find="obj.<HERE>"`                        |
-| `textDocument/signatureHelp` | Inside parentheses          | `find="func(<HERE>"`                       |
+| LSP Capability               | Positioning Need            | Locate Usage                        |
+| ---------------------------- | --------------------------- | ----------------------------------- |
+| `textDocument/definition`    | Identifier position         | `find="<|>identifier"`              |
+| `textDocument/references`    | Symbol declaration position | `SymbolScope(symbol_path=[...])`    |
+| `textDocument/rename`        | Symbol declaration position | `SymbolScope(symbol_path=[...])`    |
+| `textDocument/hover`         | Any identifier              | `find="<|>target"`                  |
+| `textDocument/completion`    | Trigger point               | `find="obj.<|>"`                    |
+| `textDocument/signatureHelp` | Inside parentheses          | `find="func(<|>"`                   |
 
 ### Capabilities Requiring Range
 
@@ -166,8 +201,11 @@ The resolver treats `SymbolScope` as the declaration position of the class name 
 Locate(
     file_path="utils.py",
     scope=SymbolScope(symbol_path=["process"]),
-    find="return <HERE>result"
+    find="return <|>result"
 )
+
+# Or using string syntax:
+parse_locate_string("utils.py:process@return <|>result")
 ```
 
 First narrows down to the `process` function body, then searches for `return result` within it, positioning at the start of `result`.
@@ -178,8 +216,11 @@ First narrows down to the `process` function body, then searches for `return res
 # Locate the position after 'self.'
 Locate(
     file_path="service.py",
-    find="self.<HERE>"
+    find="self.<|>"
 )
+
+# Or using string syntax:
+parse_locate_string("service.py@self.<|>")
 ```
 
 Global search for `self.`, positioning right after the dot to trigger member completion.
@@ -192,6 +233,9 @@ LocateRange(
     file_path="handlers.py",
     scope=SymbolScope(symbol_path=["handle_request"])
 )
+
+# Or using string syntax for SymbolScope:
+parse_locate_string("handlers.py:handle_request")
 
 # Or select a specific code snippet
 LocateRange(
@@ -211,7 +255,7 @@ In some cases, the Agent knows the text pattern to search for but isn't sure whi
 Locate(file_path="main.py", find="TODO: <HERE>fix this")
 ```
 
-### Q2: Why is `<HERE>` optional?
+### Q2: Why is the marker optional?
 
 Often, locating at the start of the matched text is sufficient:
 
@@ -220,7 +264,7 @@ Often, locating at the start of the matched text is sufficient:
 Locate(file_path="old.py", find="deprecated_func(")
 ```
 
-Forcing `<HERE>` everywhere would increase the cognitive load on the Agent.
+Forcing a marker everywhere would increase the cognitive load on the Agent.
 
 ### Q3: Why does SymbolScope without Find locate the declaration?
 
@@ -242,18 +286,55 @@ Locate(file_path="mod.py", scope=SymbolScope(symbol_path=["MyClass"]))
 
 While a `Range` can be constructed from two `Position`s, they represent different semantic operations. Modeling them separately is clearer.
 
-### Q6: What if source code contains literal `<HERE>`?
+### Q5: Why automatic marker detection with nested brackets?
 
-The `marker` field allows customization:
+The automatic marker detection using nested brackets (`<|>`, `<<|>>`, etc.) provides:
+
+1. **No configuration needed**: Agents don't need to specify a custom marker field
+2. **Conflict resolution**: If the code contains `<|>`, agents can simply use `<<|>>`
+3. **Clear hierarchy**: The nesting levels make it obvious which marker is intended
+4. **Simple rule**: "Use the deepest unique marker" is easy to understand
 
 ```python
-# Source contains "<HERE>" as actual code
-Locate(file_path="parser.py", find="token = <|>HERE", marker="<|>")
+# When <|> appears in the source code
+Locate(file_path="parser.py", find="token = <|> HERE <<|>> value")
+# Automatically uses <<|>> as the position marker
 ```
 
-This keeps the marker-based positioning intuitive without requiring the Agent to calculate offsets.
+### Q6: Why add string syntax?
 
-### Q7: Text matching rules in Find?
+The string syntax `<file_path>:<scope>@<find>` provides a concise format that:
+
+1. **Reduces verbosity**: Agents can generate shorter location strings
+2. **Human-readable**: Easy to read and understand at a glance
+3. **Copy-paste friendly**: Can be easily shared in logs or documentation
+4. **Optional but convenient**: The full object API is still available
+
+```python
+# Compact string format
+"foo.py:MyClass.method@return <|>result"
+
+# Equivalent to:
+Locate(
+    file_path="foo.py",
+    scope=SymbolScope(symbol_path=["MyClass", "method"]),
+    find="return <|>result"
+)
+```
+
+### Q7: What if I need multiple markers in the same text?
+
+The automatic marker detection supports up to 10 nesting levels. If you need to specify a position in text that contains multiple markers, use a deeper nesting level:
+
+```python
+# If your code contains both <|> and <<|>>
+Locate(file_path="parser.py", find="a <|> b <<|>> c <<<|>>> d")
+# Use <<<|>>> as the position marker
+```
+
+Only one marker should appear exactly once in the find text to be used as the position marker.
+
+### Q8: Text matching rules in Find?
 
 - Matching is **literal** (not regex), but with intelligent whitespace handling (see [Whitespace Handling](#whitespace-handling)).
 - Returns the **first match** within the Scope.
