@@ -109,7 +109,7 @@ class LocateCapability(Capability[LocateClient, LocateRequest, LocateResponse]):
         if locate.find:
             # Auto-detect marker in the find text
             marker_info = detect_marker(locate.find)
-            
+
             if marker_info:
                 marker, _, _ = marker_info
                 before, _, after = locate.find.partition(marker)

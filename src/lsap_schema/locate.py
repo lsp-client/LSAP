@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from pydantic import BaseModel, ConfigDict, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from .abc import Request, Response
 from .models import Position, Range
@@ -15,24 +15,24 @@ HERE = "<HERE>"
 def detect_marker(text: str) -> tuple[str, int, int] | None:
     """
     Detect the marker in the text using nested bracket notation.
-    
+
     Returns tuple of (marker, start_pos, end_pos) or None if no marker found.
-    
+
     The marker detection uses the following priority:
     1. <|> (single level)
     2. <<|>> (double level)
     3. <<<|>>> (triple level)
     ... and so on
-    
+
     The function selects the marker with the most nesting levels that appears
     exactly once in the text.
     """
     max_level = 10  # reasonable maximum nesting level
-    
+
     for level in range(1, max_level + 1):
         marker = "<" * level + "|" + ">" * level
         count = text.count(marker)
-        
+
         if count == 1:
             # Found a unique marker at this level
             pos = text.find(marker)
@@ -43,25 +43,25 @@ def detect_marker(text: str) -> tuple[str, int, int] | None:
         else:
             # Multiple occurrences, try higher nesting level
             continue
-    
+
     return None
 
 
 def parse_locate_string(locate_str: str) -> "Locate":
     """
     Parse a locate string in the format: <file_path>:<scope>@<find>
-    
+
     Format:
         - <file_path>:<scope>@<find> - Full format with scope and find
         - <file_path>:<scope> - Only file and scope
         - <file_path>@<find> - Only file and find
         - <file_path> - Only file (invalid, will raise error)
-    
+
     Scope formats:
         - L<line> - Single line (e.g., "L42")
         - L<start>-<end> - Line range (e.g., "L10-20")
         - <symbol_path> - Symbol path with dots (e.g., "MyClass.my_method")
-    
+
     Examples:
         - "foo.py:L42@return <|>result" - Line 42, find pattern
         - "foo.py:MyClass.my_method@self.<|>" - Symbol scope, find pattern
@@ -76,14 +76,14 @@ def parse_locate_string(locate_str: str) -> "Locate":
     else:
         path_scope = locate_str
         find = None
-    
+
     # Split by : to separate file_path from scope
     if ":" in path_scope:
         file_path_str, scope_str = path_scope.split(":", 1)
     else:
         file_path_str = path_scope
         scope_str = None
-    
+
     # Parse scope
     scope = None
     if scope_str:
@@ -99,12 +99,8 @@ def parse_locate_string(locate_str: str) -> "Locate":
             # Treat as symbol path
             symbol_path = scope_str.split(".")
             scope = SymbolScope(symbol_path=symbol_path)
-    
-    return Locate(
-        file_path=Path(file_path_str),
-        scope=scope,
-        find=find
-    )
+
+    return Locate(file_path=Path(file_path_str), scope=scope, find=find)
 
 
 class LineScope(BaseModel):
@@ -137,7 +133,7 @@ class Locate(BaseModel):
         - <<|>> (double level) if <|> appears more than once
         - <<<|>>> (triple level) if <<|>> appears more than once
         ... and so on
-        
+
         The marker with the deepest nesting level that appears exactly once
         is chosen as the position marker.
 

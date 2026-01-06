@@ -73,40 +73,28 @@ class TestLocateValidation:
 
     def test_valid_locate_with_marker(self):
         """Test valid Locate with a marker."""
-        locate = Locate(
-            file_path=Path("foo.py"),
-            find="self.<|>value"
-        )
+        locate = Locate(file_path=Path("foo.py"), find="self.<|>value")
         assert locate.file_path == Path("foo.py")
         assert locate.find == "self.<|>value"
 
     def test_valid_locate_without_marker(self):
         """Test valid Locate without a marker."""
-        locate = Locate(
-            file_path=Path("foo.py"),
-            find="def process"
-        )
+        locate = Locate(file_path=Path("foo.py"), find="def process")
         assert locate.file_path == Path("foo.py")
         assert locate.find == "def process"
 
     def test_invalid_multiple_markers_same_level(self):
         """Test that multiple markers of the same level are treated as no marker."""
-        # When <|> appears multiple times and no higher level exists, 
+        # When <|> appears multiple times and no higher level exists,
         # detect_marker returns None, so it's treated as a find without marker
-        locate = Locate(
-            file_path=Path("foo.py"),
-            find="x <|> y <|> z"
-        )
+        locate = Locate(file_path=Path("foo.py"), find="x <|> y <|> z")
         # This is valid - will position at the start of the matched text
         assert locate.file_path == Path("foo.py")
         assert locate.find == "x <|> y <|> z"
 
     def test_valid_multiple_different_levels(self):
         """Test valid Locate with markers at different nesting levels."""
-        locate = Locate(
-            file_path=Path("foo.py"),
-            find="x = <|> + y <<|>> z"
-        )
+        locate = Locate(file_path=Path("foo.py"), find="x = <|> + y <<|>> z")
         # Should use <<|>> as it's the unique marker
         assert locate.file_path == Path("foo.py")
 
