@@ -13,6 +13,10 @@
 - Imports & Formatting: use ruff
 - Async: Use async/await, `asyncer.TaskGroup` for concurrency
 
+## Implementation Guidelines
+
+- Path Handling: `client.from_uri()` returns relative paths by default. Use `relative=False` explicitly when absolute paths are required (e.g., for path comparisons in exclusion sets).
+
 ## Testing
 
 - Run `uv sync --upgrade` before testing and fixing type errors
