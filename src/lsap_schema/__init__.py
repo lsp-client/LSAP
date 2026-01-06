@@ -82,10 +82,14 @@ from .draft.diagnostics import (
     WorkspaceDiagnosticsResponse,
 )
 
-# Draft - Rename
-from .draft.rename import (
+# Rename
+from .rename import (
     RenameDiff,
+    RenameExecuteRequest,
+    RenameExecuteResponse,
     RenameFileChange,
+    RenamePreviewRequest,
+    RenamePreviewResponse,
     RenameRequest,
     RenameResponse,
 )
@@ -162,9 +166,13 @@ __all__ = [
     "WorkspaceDiagnosticItem",
     "WorkspaceDiagnosticsRequest",
     "WorkspaceDiagnosticsResponse",
-    # Draft - Rename
+    # Rename
     "RenameDiff",
+    "RenameExecuteRequest",
+    "RenameExecuteResponse",
     "RenameFileChange",
+    "RenamePreviewRequest",
+    "RenamePreviewResponse",
     "RenameRequest",
     "RenameResponse",
     # Draft - Inlay Hints

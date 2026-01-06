@@ -3,12 +3,17 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from lsap_schema import Locate, RenameRequest, SymbolScope
+from lsap_schema import (
+    Locate,
+    RenamePreviewRequest,
+    RenameExecuteRequest,
+    SymbolScope,
+)
 
 
-def test_rename_request_defaults():
-    """Test that RenameRequest has correct default values"""
-    req = RenameRequest(
+def test_rename_preview_request_defaults():
+    """Test that RenamePreviewRequest has correct default values"""
+    req = RenamePreviewRequest(
         locate=Locate(
             file_path=Path("test.py"),
             scope=SymbolScope(symbol_path=["MyClass", "my_method"]),
@@ -16,64 +21,78 @@ def test_rename_request_defaults():
         new_name="new_method",
     )
 
-    assert req.show_diffs is False
-    assert req.max_items == 100
+    assert req.mode == "preview"
+    assert req.new_name == "new_method"
 
 
-def test_rename_request_with_diffs():
-    """Test RenameRequest with show_diffs enabled"""
-    req = RenameRequest(
+def test_rename_execute_request_defaults():
+    """Test that RenameExecuteRequest has correct default values"""
+    req = RenameExecuteRequest(
         locate=Locate(
             file_path=Path("test.py"),
             scope=SymbolScope(symbol_path=["MyClass", "my_method"]),
         ),
         new_name="new_method",
-        show_diffs=True,
+        rename_id="test_id_123",
     )
 
-    assert req.show_diffs is True
+    assert req.mode == "execute"
+    assert req.new_name == "new_method"
+    assert req.rename_id == "test_id_123"
+    assert req.exclude_files == []
 
 
-def test_rename_request_with_max_items():
-    """Test RenameRequest with max_items"""
-    req = RenameRequest(
+def test_rename_execute_request_with_exclusions():
+    """Test RenameExecuteRequest with excluded files"""
+    req = RenameExecuteRequest(
         locate=Locate(
             file_path=Path("test.py"),
             scope=SymbolScope(symbol_path=["MyClass", "my_method"]),
         ),
         new_name="new_method",
-        max_items=10,
+        rename_id="test_id_123",
+        exclude_files=[Path("tests/test_utils.py"), Path("docs/example.py")],
     )
 
-    assert req.max_items == 10
+    assert len(req.exclude_files) == 2
+    assert Path("tests/test_utils.py") in req.exclude_files
 
 
-def test_rename_request_max_items_validation():
-    """Test that max_items must be >= 1"""
+def test_rename_execute_requires_rename_id():
+    """Test that execute mode requires rename_id"""
     with pytest.raises(ValidationError):
-        RenameRequest(
+        RenameExecuteRequest(
             locate=Locate(
                 file_path=Path("test.py"),
                 scope=SymbolScope(symbol_path=["MyClass", "my_method"]),
             ),
             new_name="new_method",
-            max_items=0,
         )
 
 
-def test_rename_request_full_configuration():
-    """Test RenameRequest with all options"""
-    req = RenameRequest(
-        locate=Locate(
-            file_path=Path("test.py"),
-            scope=SymbolScope(symbol_path=["MyClass", "my_method"]),
-        ),
-        new_name="new_method",
-        show_diffs=True,
-        max_items=5,
-        start_index=10,
-    )
+def test_path_traversal_validation_absolute():
+    """Test that absolute paths are rejected"""
+    with pytest.raises(ValidationError, match="must be relative"):
+        RenameExecuteRequest(
+            locate=Locate(
+                file_path=Path("test.py"),
+                scope=SymbolScope(symbol_path=["MyClass"]),
+            ),
+            new_name="new_method",
+            rename_id="test_id",
+            exclude_files=[Path("/etc/passwd")],
+        )
 
-    assert req.show_diffs is True
-    assert req.max_items == 5
-    assert req.start_index == 10
+
+def test_path_traversal_validation_dotdot():
+    """Test that paths with .. are rejected"""
+    with pytest.raises(ValidationError, match="must be relative"):
+        RenameExecuteRequest(
+            locate=Locate(
+                file_path=Path("test.py"),
+                scope=SymbolScope(symbol_path=["MyClass"]),
+            ),
+            new_name="new_method",
+            rename_id="test_id",
+            exclude_files=[Path("../../../etc/passwd")],
+        )

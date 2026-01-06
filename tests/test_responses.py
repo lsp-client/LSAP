@@ -12,15 +12,20 @@ from lsap_schema import (
     HierarchyItem,
     HierarchyNode,
     HierarchyResponse,
+    Locate,
     LocateResponse,
     Location,
     Position,
     Range,
     ReferenceResponse,
     RenameDiff,
+    RenameExecuteRequest,
+    RenameExecuteResponse,
     RenameFileChange,
-    RenameResponse,
+    RenamePreviewRequest,
+    RenamePreviewResponse,
     SymbolResponse,
+    SymbolScope,
     OutlineResponse,
     SymbolCodeInfo,
     SymbolDetailInfo,
@@ -223,17 +228,23 @@ def test_outline_response_format():
 
 
 def test_rename_response_format():
-    resp = RenameResponse(
+    resp = RenamePreviewResponse(
+        request=RenamePreviewRequest(
+            locate=Locate(
+                file_path=Path("test.py"),
+                scope=SymbolScope(symbol_path=["old"]),
+            ),
+            new_name="new",
+        ),
+        rename_id="test_id_123",
         old_name="old",
         new_name="new",
-        total=1,
-        start_index=0,
+        total_files=1,
         total_occurrences=1,
         changes=[
             RenameFileChange(
                 file_path=Path("test.py"),
-                occurrences=1,
-                diffs=[RenameDiff(line=0, original="old", modified="new")],
+                diffs=[RenameDiff(line=1, original="old", modified="new")],
             )
         ],
     )
@@ -245,21 +256,26 @@ def test_rename_response_format():
 
 
 def test_rename_response_compact_format():
-    resp = RenameResponse(
+    resp = RenamePreviewResponse(
+        request=RenamePreviewRequest(
+            locate=Locate(
+                file_path=Path("src/client.py"),
+                scope=SymbolScope(symbol_path=["fetch_data"]),
+            ),
+            new_name="get_resource",
+        ),
+        rename_id="test_id_456",
         old_name="fetch_data",
         new_name="get_resource",
-        total=2,
-        start_index=0,
+        total_files=2,
         total_occurrences=5,
         changes=[
             RenameFileChange(
                 file_path=Path("src/client.py"),
-                occurrences=2,
                 diffs=[],
             ),
             RenameFileChange(
                 file_path=Path("src/main.py"),
-                occurrences=3,
                 diffs=[],
             ),
         ],
@@ -269,20 +285,25 @@ def test_rename_response_compact_format():
     assert "get_resource" in rendered
     assert "2" in rendered  # total files
     assert "5" in rendered  # total occurrences
-    assert "editor" in rendered.lower() or "IDE" in rendered
 
 
 def test_rename_response_with_diffs():
-    resp = RenameResponse(
+    resp = RenameExecuteResponse(
+        request=RenameExecuteRequest(
+            locate=Locate(
+                file_path=Path("utils.py"),
+                scope=SymbolScope(symbol_path=["temp"]),
+            ),
+            new_name="buffer",
+            rename_id="prev_test_id",
+        ),
         old_name="temp",
         new_name="buffer",
-        total=1,
-        start_index=0,
+        total_files=1,
         total_occurrences=3,
         changes=[
             RenameFileChange(
                 file_path=Path("utils.py"),
-                occurrences=3,
                 diffs=[
                     RenameDiff(line=10, original="temp = []", modified="buffer = []"),
                     RenameDiff(
@@ -304,16 +325,21 @@ def test_rename_response_with_diffs():
 
 
 def test_rename_response_truncated():
-    resp = RenameResponse(
+    resp = RenamePreviewResponse(
+        request=RenamePreviewRequest(
+            locate=Locate(
+                file_path=Path("models.py"),
+                scope=SymbolScope(symbol_path=["User"]),
+            ),
+            new_name="Account",
+        ),
+        rename_id="big_rename_id",
         old_name="User",
         new_name="Account",
-        total=10,
-        start_index=0,
+        total_files=10,
         total_occurrences=50,
-        has_more=True,
         changes=[
-            RenameFileChange(file_path=Path(f"file{i}.py"), occurrences=i + 1, diffs=[])
-            for i in range(3)
+            RenameFileChange(file_path=Path(f"file{i}.py"), diffs=[]) for i in range(3)
         ],
     )
     rendered = resp.format()
@@ -321,7 +347,6 @@ def test_rename_response_truncated():
     assert "Account" in rendered
     assert "10" in rendered  # total files
     assert "50" in rendered  # total occurrences
-    assert "showing 3/10" in rendered.lower() or "3/10" in rendered
 
 
 def test_decorated_content_response_format():
