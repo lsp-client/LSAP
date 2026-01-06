@@ -116,7 +116,7 @@ class TestParseLocateString:
 
     def test_parse_file_line_scope_and_find(self):
         """Test parsing with line scope and find pattern."""
-        locate = parse_locate_string("foo.py:L42@return <|>result")
+        locate = parse_locate_string("foo.py:42@return <|>result")
         assert locate.file_path == Path("foo.py")
         assert isinstance(locate.scope, LineScope)
         assert locate.scope.line == 42
@@ -124,7 +124,7 @@ class TestParseLocateString:
 
     def test_parse_file_line_range_and_find(self):
         """Test parsing with line range scope and find pattern."""
-        locate = parse_locate_string("foo.py:L10-20@if <|>condition")
+        locate = parse_locate_string("foo.py:10-20@if <|>condition")
         assert locate.file_path == Path("foo.py")
         assert isinstance(locate.scope, LineScope)
         assert locate.scope.line == (10, 20)
@@ -148,7 +148,7 @@ class TestParseLocateString:
 
     def test_parse_file_and_line_scope_only(self):
         """Test parsing with only file and line scope."""
-        locate = parse_locate_string("foo.py:L42")
+        locate = parse_locate_string("foo.py:42")
         assert locate.file_path == Path("foo.py")
         assert isinstance(locate.scope, LineScope)
         assert locate.scope.line == 42

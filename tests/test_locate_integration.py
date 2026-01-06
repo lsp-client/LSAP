@@ -34,7 +34,7 @@ class TestIntegration:
 
     def test_string_syntax_with_line_scope(self):
         """Test string syntax with line scope."""
-        locate = parse_locate_string("example.py:L42@return <|>value")
+        locate = parse_locate_string("example.py:42@return <|>value")
         assert locate.file_path == Path("example.py")
         assert locate.scope is not None
         assert locate.find == "return <|>value"
@@ -91,7 +91,7 @@ class TestIntegration:
 
     def test_line_range_scope(self):
         """Test line range scope."""
-        locate = parse_locate_string("test.py:L10-20@if <|>condition")
+        locate = parse_locate_string("test.py:10-20@if <|>condition")
         assert locate.file_path == Path("test.py")
         assert locate.scope is not None
         assert locate.find == "if <|>condition"

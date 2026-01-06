@@ -61,8 +61,6 @@ def parse_locate_string(locate_str: str) -> "Locate":
         - <line> - Single line number (e.g., "42")
         - <start>,<end> - Line range with comma (e.g., "10,20")
         - <start>-<end> - Line range with dash (e.g., "10-20")
-        - L<line> - Single line with L prefix (e.g., "L42")
-        - L<start>-<end> - Line range with L prefix (e.g., "L10-20")
         - <symbol_path> - Symbol path with dots (e.g., "MyClass.my_method")
 
     Examples:
@@ -71,7 +69,7 @@ def parse_locate_string(locate_str: str) -> "Locate":
         - "foo.py:MyClass.my_method@self.<|>" - Symbol scope, find pattern
         - "foo.py@self.<|>" - Whole file, find pattern
         - "foo.py:MyClass" - Symbol scope only
-        - "foo.py:L10-20" - Line range scope (L prefix)
+        - "foo.py:10-20" - Line range scope
     """
     # Split by @ first to separate find from file_path:scope
     if "@" in locate_str:
@@ -91,16 +89,8 @@ def parse_locate_string(locate_str: str) -> "Locate":
     # Parse scope
     scope = None
     if scope_str:
-        # Check if it's a line scope (starts with L or is numeric)
-        if scope_str.startswith("L"):
-            # L prefix format
-            line_part = scope_str[1:]
-            if "-" in line_part:
-                start, end = line_part.split("-", 1)
-                scope = LineScope(line=(int(start), int(end)))
-            else:
-                scope = LineScope(line=int(line_part))
-        elif "," in scope_str:
+        # Check if it's a line scope (numeric formats)
+        if "," in scope_str:
             # Comma-separated line range: "10,20"
             start, end = scope_str.split(",", 1)
             scope = LineScope(line=(int(start), int(end)))
