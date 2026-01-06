@@ -10,6 +10,7 @@ from lsap_schema.locate import (
     LocateRequest,
     LocateResponse,
     SymbolScope,
+    detect_marker,
 )
 from lsap_schema.models import Position, Range
 from lsp_client.capability.request import WithRequestDocumentSymbol
@@ -106,8 +107,12 @@ class LocateCapability(Capability[LocateClient, LocateRequest, LocateResponse]):
         pos: LSPPosition | None = None
 
         if locate.find:
-            if locate.marker in locate.find:
-                before, _, after = locate.find.partition(locate.marker)
+            # Auto-detect marker in the find text
+            marker_info = detect_marker(locate.find)
+            
+            if marker_info:
+                marker, _, _ = marker_info
+                before, _, after = locate.find.partition(marker)
                 re_before, re_after = _to_regex(before), _to_regex(after)
 
                 if not re_before and not re_after:
