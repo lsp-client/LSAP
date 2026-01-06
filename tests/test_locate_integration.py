@@ -3,7 +3,10 @@
 from pathlib import Path
 
 import pytest
-from lsap_schema.locate import Locate, LocateRequest, parse_locate_string
+from lsap_schema.locate import Locate, LocateRequest
+
+# Import from the utils module
+from lsap.utils.locate import parse_locate_string
 
 
 class TestIntegration:

@@ -7,9 +7,10 @@ from lsap_schema.locate import (
     LineScope,
     Locate,
     SymbolScope,
-    detect_marker,
-    parse_locate_string,
 )
+
+# Import from the utils module
+from lsap.utils.locate import detect_marker, parse_locate_string
 
 
 class TestMarkerDetection:

@@ -10,7 +10,6 @@ from lsap_schema.locate import (
     LocateRequest,
     LocateResponse,
     SymbolScope,
-    detect_marker,
 )
 from lsap_schema.models import Position, Range
 from lsp_client.capability.request import WithRequestDocumentSymbol
@@ -20,6 +19,7 @@ from lsprotocol.types import Range as LSPRange
 
 from lsap.exception import NotFoundError
 from lsap.utils.document import DocumentReader
+from lsap.utils.locate import detect_marker
 from lsap.utils.symbol import iter_symbols
 
 from .abc import Capability
