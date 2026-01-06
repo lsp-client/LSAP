@@ -174,4 +174,3 @@ class TestParseLocateString:
         locate = parse_locate_string("foo.py@x = <|> + y <<|>> z")
         assert locate.file_path == Path("foo.py")
         assert locate.find == "x = <|> + y <<|>> z"
-        # The marker detection should identify <<|>> as the position marker
