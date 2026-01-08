@@ -53,11 +53,14 @@ LSAP's interaction design strictly follows the **Markdown-First** principle: inp
 The Agent only needs to issue a high-level command without worrying about underlying row/column calculations or file reading:
 
 ```jsonc
-// Intent: Find all usages of 'format_date' to refactor it
+// Intent: Find all usages of 'DateUtil.format_date' to refactor it
 {
   "locate": {
     "file_path": "src/utils.py",
-    "find": "def format_date<|>", // Semantic Anchor
+    // we can find the def ...
+    "find": "def format_date<|>", // use `<|>` to identify the exact position
+    // ... or we can use locate
+    "locate": "DateUtil.format_date", // use hierarchical path to identify symbol
   },
   "mode": "references",
   "max_items": 10,
@@ -113,9 +116,17 @@ LSAP **centralizes** complexity. Instead of every Agent reimplementing LSP orche
 
 ## Alternatives
 
-- Claude Code have native LSP supports now.
+### Claude Code
+
+Claude Code have native LSP supports now - Well [they don't](https://www.reddit.com/r/ClaudeAI/comments/1q6q9my/claudecode_v210_just_dropped/)
+
+### Serena
+
+[serena](https://github.com/oraios/serena) is a powerful coding agent toolkit providing semantic retrieval and editing capabilities.
+
+### Other Projects
+
 - [claude-code-lsps](https://github.com/Piebald-AI/claude-code-lsps)
-- [serena](https://github.com/oraios/serena)
 - [cclsp](https://github.com/ktnyt/cclsp)
 - [mcpls](https://github.com/bug-ops/mcpls)
 
