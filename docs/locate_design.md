@@ -189,14 +189,23 @@ Token boundaries align with programming language semantics. It preserves identif
 ### 1. Find All References of a Symbol
 
 ```python
-# Locate the declaration of class MyClass
+# Option 1: Using SymbolScope
 Locate(
     file_path="models.py",
     scope=SymbolScope(symbol_path=["MyClass"])
 )
+
+# Option 2: Using find pattern
+Locate(
+    file_path="models.py",
+    find="class <|>MyClass"
+)
+
+# Or using string syntax:
+parse_locate_string("models.py@class <|>MyClass")
 ```
 
-The resolver treats `SymbolScope` as the declaration position of the class name `MyClass` in the source code, suitable for `references`, `rename`, etc.
+The resolver treats `SymbolScope` as the declaration position of the class name `MyClass` in the source code. Alternatively, using `find` with a pattern like `"class <|>MyClass"` locates the same position through text matching. Both approaches are suitable for `references`, `rename`, etc.
 
 ### 2. Get Hover Information for a Variable
 

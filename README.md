@@ -45,19 +45,48 @@ sequenceDiagram
     LSAP-->>Agent: 2. Structured Markdown (Callers + Code Context)
 ```
 
+## Protocol Specification
+
+LSAP is a formally defined protocol with complete **JSON Schema** specifications for all interaction models. The [`schema/`](schema/) directory contains:
+
+- **Request/Response Schemas**: Each capability (e.g., `definition`, `outline`, `rename`, etc.) has dedicated request and response schemas.
+- **Field Definitions**: Precise specifications of input parameters, output fields, and data types.
+- **Rendering Templates**: Standardized Markdown templates for formatting responses, ensuring consistent agent-facing outputs.
+
+This formal specification ensures:
+
+- **Type Safety**: Strong contracts between agents and LSAP implementations.
+- **Interoperability**: Different LSAP implementations can be swapped without breaking agent workflows.
+- **Extensibility**: New capabilities can be added following the established schema patterns.
+
+Example schema files: `definition.request.json`, `definition.response.json`, `reference.request.json`, `reference.response.json`, etc.
+
 ## Interaction Examples
 
 LSAP's interaction design strictly follows the **Markdown-First** principle: input expresses intent, and output provides refined knowledge.
 
 ### 1. Find References
 
-**Request:**
+**Request (using symbol path):**
 
 ```json
 {
   "locate": {
     "file_path": "src/models.py",
     "locate": "User.validate"
+  },
+  "mode": "references",
+  "max_items": 2
+}
+```
+
+**Alternative: Request (using find pattern):**
+
+```json
+{
+  "locate": {
+    "file_path": "src/models.py",
+    "find": "def validate<|>("
   },
   "mode": "references",
   "max_items": 2
@@ -76,8 +105,9 @@ Total references: 12 | Showing: 2
 In `LoginHandler.authenticate` (`method`)
 
 ```python
-if not User.validate(credentials):
-    raise AuthError()
+44 | def authenticate(credentials):
+45 |     if not User.validate(credentials):
+46 |         raise AuthError()
 ```
 
 ### src/api/register.py:28
@@ -85,7 +115,9 @@ if not User.validate(credentials):
 In `register_user` (`function`)
 
 ```python
-User.validate(new_user_data)
+27 | def register_user(new_user_data):
+28 |     User.validate(new_user_data)
+29 |     db.save(new_user_data)
 ```
 ````
 
@@ -208,127 +240,11 @@ Summary: Modified 3 files with 8 occurrences.
 > You must manually rename the symbol in the excluded files to maintain consistency.
 ```
 
-### 2. File Outline
-
-**Request:**
-
-```json
-{
-  "file_path": "src/lsap/capability/rename.py",
-  "mode": "outline"
-}
-```
-
-**Response:**
-
-````markdown
-# Outline for `src/lsap/capability/rename.py`
-
-## CachedRename (`class`)
-
-## \_get_old_name (`function`)
-
-```python
-def _get_old_name(
-    reader: DocumentReader,
-    pos: Position,
-    res: PrepareRenameResult
-) -> str
-```
-
-## \_matches_exclude_patterns (`function`)
-
-```python
-def _matches_exclude_patterns(
-    path: Path,
-    patterns: Sequence[str],
-    workspace_root: Path
-) -> bool
-```
-
----
-
-Check if path matches any of the exclude patterns.
-````
-
-### 3. Safe Rename (Two-Step Workflow)
-
-**Request (Preview):**
-
-```json
-{
-  "locate": {
-    "file_path": "src/lsap/schema/rename.py",
-    "locate": "RenameDiff"
-  },
-  "new_name": "LineChange",
-  "mode": "rename_preview"
-}
-```
-
-**Response:**
-
-````markdown
-# Rename Preview: `RenameDiff` → `LineChange`
-
-ID: `045d72`
-Summary: Affects 2 files and 7 occurrences.
-
-## `src/lsap/schema/rename.py`
-
-Line 10:
-
-```diff
-- class RenameDiff(BaseModel):
-+ class LineChange(BaseModel):
-```
-
-Line 22:
-
-```diff
--     diffs: list[RenameDiff]
-+     diffs: list[LineChange]
-```
-
----
-
-> [!TIP]
-> To apply this rename, use `rename_execute` with `rename_id="045d72"`.
-````
-
-**Request (Execute):**
-
-```json
-{
-  "rename_id": "045d72",
-  "exclude_files": ["tests/**/*.py"],
-  "mode": "rename_execute"
-}
-```
-
-**Response:**
-
-```markdown
-# Rename Applied: `RenameDiff` → `LineChange`
-
-Summary: Modified 2 files with 7 occurrences.
-
-- `src/lsap/schema/rename.py`: 2 occurrences
-- `src/lsap/capability/rename.py`: 5 occurrences
-
----
-
-> [!NOTE]
-> Rename completed successfully. Excluded files: `tests/**/*.py`.
-> [!IMPORTANT]
-> You must manually rename the symbol in the excluded files to maintain consistency.
-```
-
 ## I'm Not Convinced...
 
 ### "LSAP Just Replicates LSP—What's Special?"
 
-While LSP provides **atomic operations**, LSAP offers **composed capabilities**.
+While LSP provides **atomic operations**, LSAP offers **composed capabilities** that brings more powerful functionalities.
 
 For instance, the **[Relation API](docs/schemas/draft/relation.md)** (still in draft, but soon will be released) finds call paths between functions in a single request (handling traversal, cycles, and formatting), a task requiring complex orchestration in raw LSP.
 
