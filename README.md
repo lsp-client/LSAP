@@ -45,54 +45,284 @@ sequenceDiagram
     LSAP-->>Agent: 2. Structured Markdown (Callers + Code Context)
 ```
 
-## Interaction Example
+## Interaction Examples
 
 LSAP's interaction design strictly follows the **Markdown-First** principle: input expresses intent, and output provides refined knowledge.
 
-### Request: Semantic Search (Demonstrating Composed Capabilities)
+### 1. Find References
 
-The Agent only needs to issue a high-level command without worrying about underlying row/column calculations or file reading:
+**Request:**
 
-```jsonc
-// Intent: Find all usages of 'DateUtil.format_date' to refactor it
+```json
 {
   "locate": {
-    "file_path": "src/utils.py",
-    // we can find the def ...
-    "find": "def format_date<|>", // use `<|>` to identify the exact position
-    // ... or we can use locate
-    "locate": "DateUtil.format_date", // use hierarchical path to identify symbol
+    "file_path": "src/models.py",
+    "locate": "User.validate"
   },
   "mode": "references",
-  "max_items": 10,
+  "max_items": 2
 }
 ```
 
-### Response: Structured Knowledge
-
-LSAP aggregates the results of `references` (locations), `documentSymbol` (caller context), and `read` (code snippets):
+**Response:**
 
 ````markdown
 # References Found
 
-Total references: 45 | Showing: 2
+Total references: 12 | Showing: 2
 
-### `src/ui/header.py`:28
+### src/auth/login.py:45
 
-In `Header.render` (`Method`)
+In `LoginHandler.authenticate` (`method`)
 
 ```python
-formatted = format_date(user.last_login)
+if not User.validate(credentials):
+    raise AuthError()
 ```
 
-### `src/api/views.py`:42
+### src/api/register.py:28
 
-In `UserDetail.get` (`Method`)
+In `register_user` (`function`)
 
 ```python
-return {"date": format_date(obj.created_at)}
+User.validate(new_user_data)
 ```
 ````
+
+### 2. File Outline
+
+**Request:**
+
+```json
+{
+  "file_path": "src/models.py",
+  "mode": "outline"
+}
+```
+
+**Response:**
+
+````markdown
+# Outline for `src/models.py`
+
+## User (`class`)
+
+### User.validate (`method`)
+
+```python
+def validate(data: dict) -> bool
+```
+
+---
+
+Validate user data before saving.
+
+### User.save (`method`)
+
+```python
+async def save(self) -> None
+```
+
+## Post (`class`)
+
+### Post.publish (`method`)
+
+```python
+async def publish(self) -> PublishResult
+```
+````
+
+### 3. Safe Rename (Two-Step Workflow)
+
+**Request (Preview):**
+
+```json
+{
+  "locate": {
+    "file_path": "src/models.py",
+    "locate": "User.validate"
+  },
+  "new_name": "validate_data",
+  "mode": "rename_preview"
+}
+```
+
+**Response:**
+
+````markdown
+# Rename Preview: `validate` → `validate_data`
+
+ID: `abc123`
+Summary: Affects 3 files and 8 occurrences.
+
+## `src/models.py`
+
+Line 15:
+
+```diff
+- def validate(data: dict) -> bool:
++ def validate_data(data: dict) -> bool:
+```
+
+## `src/auth/login.py`
+
+Line 45:
+
+```diff
+- if not User.validate(credentials):
++ if not User.validate_data(credentials):
+```
+
+---
+
+> [!TIP]
+> To apply this rename, use `rename_execute` with `rename_id="abc123"`.
+````
+
+**Request (Execute):**
+
+```json
+{
+  "rename_id": "abc123",
+  "exclude_files": ["tests/**"],
+  "mode": "rename_execute"
+}
+```
+
+**Response:**
+
+```markdown
+# Rename Applied: `validate` → `validate_data`
+
+Summary: Modified 3 files with 8 occurrences.
+
+- `src/models.py`: 1 occurrence
+- `src/auth/login.py`: 4 occurrences
+- `src/api/register.py`: 3 occurrences
+
+---
+
+> [!NOTE]
+> Rename completed successfully. Excluded files: `tests/**`.
+> [!IMPORTANT]
+> You must manually rename the symbol in the excluded files to maintain consistency.
+```
+
+### 2. File Outline
+
+**Request:**
+
+```json
+{
+  "file_path": "src/lsap/capability/rename.py",
+  "mode": "outline"
+}
+```
+
+**Response:**
+
+````markdown
+# Outline for `src/lsap/capability/rename.py`
+
+## CachedRename (`class`)
+
+## \_get_old_name (`function`)
+
+```python
+def _get_old_name(
+    reader: DocumentReader,
+    pos: Position,
+    res: PrepareRenameResult
+) -> str
+```
+
+## \_matches_exclude_patterns (`function`)
+
+```python
+def _matches_exclude_patterns(
+    path: Path,
+    patterns: Sequence[str],
+    workspace_root: Path
+) -> bool
+```
+
+---
+
+Check if path matches any of the exclude patterns.
+````
+
+### 3. Safe Rename (Two-Step Workflow)
+
+**Request (Preview):**
+
+```json
+{
+  "locate": {
+    "file_path": "src/lsap/schema/rename.py",
+    "locate": "RenameDiff"
+  },
+  "new_name": "LineChange",
+  "mode": "rename_preview"
+}
+```
+
+**Response:**
+
+````markdown
+# Rename Preview: `RenameDiff` → `LineChange`
+
+ID: `045d72`
+Summary: Affects 2 files and 7 occurrences.
+
+## `src/lsap/schema/rename.py`
+
+Line 10:
+
+```diff
+- class RenameDiff(BaseModel):
++ class LineChange(BaseModel):
+```
+
+Line 22:
+
+```diff
+-     diffs: list[RenameDiff]
++     diffs: list[LineChange]
+```
+
+---
+
+> [!TIP]
+> To apply this rename, use `rename_execute` with `rename_id="045d72"`.
+````
+
+**Request (Execute):**
+
+```json
+{
+  "rename_id": "045d72",
+  "exclude_files": ["tests/**/*.py"],
+  "mode": "rename_execute"
+}
+```
+
+**Response:**
+
+```markdown
+# Rename Applied: `RenameDiff` → `LineChange`
+
+Summary: Modified 2 files with 7 occurrences.
+
+- `src/lsap/schema/rename.py`: 2 occurrences
+- `src/lsap/capability/rename.py`: 5 occurrences
+
+---
+
+> [!NOTE]
+> Rename completed successfully. Excluded files: `tests/**/*.py`.
+> [!IMPORTANT]
+> You must manually rename the symbol in the excluded files to maintain consistency.
+```
 
 ## I'm Not Convinced...
 
@@ -100,7 +330,7 @@ return {"date": format_date(obj.created_at)}
 
 While LSP provides **atomic operations**, LSAP offers **composed capabilities**.
 
-For instance, the **[Relation API](docs/schemas/draft/relation.md)** finds call paths between functions in a single request (handling traversal, cycles, and formatting), a task requiring complex orchestration in raw LSP. Similarly, the **[Unified Hierarchy API](docs/schemas/draft/hierarchy.md)** delivers unified graph representations optimized for agents.
+For instance, the **[Relation API](docs/schemas/draft/relation.md)** (still in draft, but soon will be released) finds call paths between functions in a single request (handling traversal, cycles, and formatting), a task requiring complex orchestration in raw LSP.
 
 LSAP centralizes these patterns, preventing agents from wasting tokens on orchestration and enabling advanced capabilities like architectural and impact analysis.
 
@@ -119,7 +349,7 @@ LSAP **centralizes** complexity. Instead of every Agent reimplementing LSP orche
 
 ### Claude Code
 
-Claude Code have native LSP supports now - Well [they don't](https://www.reddit.com/r/ClaudeAI/comments/1q6q9my/claudecode_v210_just_dropped/)
+Claude Code have native LSP supports now - Well [they don't](https://www.reddit.com/r/ClaudeAI/comments/1q6q9my/claudecode_v210_just_dropped/).
 
 ### Serena
 
