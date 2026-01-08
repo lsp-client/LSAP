@@ -1,0 +1,15 @@
+{
+  "description": "Retrieves a hierarchical outline of symbols within a file.\n\nUse this to understand the structure of a file (classes, methods, functions)\nand quickly navigate its contents.",
+  "properties": {
+    "file_path": {
+      "format": "path",
+      "title": "File Path",
+      "type": "string"
+    }
+  },
+  "required": [
+    "file_path"
+  ],
+  "title": "OutlineRequest",
+  "type": "object"
+}

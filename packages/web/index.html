@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LSAP - Language Server Agent Protocol</title>
+    <script>
+      // Prevent FOUC by applying theme before page renders
+      (function() {
+        try {
+          const theme = localStorage.getItem('theme') || 'system';
+          const isDark = theme === 'dark' || 
+            (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          document.documentElement.classList.add(isDark ? 'dark' : 'light');
+        } catch (e) {
+          // If localStorage fails, apply system preference or default to light
+          const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.classList.add(isDark ? 'dark' : 'light');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Crimson+Pro:wght@300;400;500&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

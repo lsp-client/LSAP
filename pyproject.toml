@@ -1,0 +1,36 @@
+[project]
+name = "lsap"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "anyio>=4.12.0",
+    "asyncer>=0.0.11",
+    "attrs>=25.4.0",
+    "cattrs>=25.3.0",
+    "lsp-client",
+    "lsprotocol>=2025.0.0",
+    "pydantic>=2.12.5",
+    "python-liquid>=2.1.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.9.9,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv.workspace]
+members = ["lsap-schema"]
+
+[tool.uv.sources]
+lsp-client = { git = "https://github.com/lsp-client/lsp-client.git", branch = "release/v0.3" }
+
+[tool.pytest.ini_options]
+norecursedirs = ["references"]
+testpaths = ["tests"]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-asyncio>=1.3.0",
+]

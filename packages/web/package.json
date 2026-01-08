@@ -1,0 +1,41 @@
+{
+  "name": "web",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "predev": "mkdir -p public/docs && cp -r ../docs/* public/docs/",
+    "prebuild": "mkdir -p public/docs && cp -r ../docs/* public/docs/",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4",
+    "@types/bun": "latest",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.2",
+    "autoprefixer": "^10.4.23",
+    "postcss": "^8.5.6",
+    "tailwindcss": "3",
+    "vite": "^7.3.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.2.4",
+    "@types/react-syntax-highlighter": "^15.5.13",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.562.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.11.0",
+    "react-syntax-highlighter": "^16.1.0",
+    "remark-gfm": "^4.0.1",
+    "tailwind-merge": "^3.4.0"
+  }
+}

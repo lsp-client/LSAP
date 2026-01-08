@@ -1,0 +1,15 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.10
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+  - repo: local
+    hooks:
+      - id: export-schemas
+        name: Export LSAP Capability Schemas
+        entry: bash -c "uv run python -m lsap.schema schema/ && git add schema/"
+        language: system
+        files: ^src/lsap/schema/.*\.py$
+        pass_filenames: false
