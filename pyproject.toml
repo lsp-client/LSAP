@@ -1,9 +1,16 @@
 [project]
 name = "lsap-sdk"
 version = "0.1.0"
-description = "Add your description here"
+description = "Language Server Agent Protocol (LSAP) SDK - Transforms low-level LSP into high-level cognitive tools for agents"
 readme = "README.md"
+authors = [{ name = "observerw", email = "wozluohd@gmail.com" }]
 requires-python = ">=3.12"
+keywords = ["Language Server Protocol", "LSP", "LSAP", "Agent", "AI SDK"]
+classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+]
 dependencies = [
     "anyio>=4.12.0",
     "asyncer>=0.0.11",
