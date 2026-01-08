@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/project/lsap/
+      url: https://pypi.org/project/lsap-sdk/
     steps:
       - uses: actions/checkout@v6
       
