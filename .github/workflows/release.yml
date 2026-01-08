@@ -3,11 +3,11 @@ name: Release
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to release'
+        description: "Tag to release"
         required: true
 
 permissions:
@@ -71,7 +71,7 @@ jobs:
       url: https://pypi.org/project/lsap-sdk/
     steps:
       - uses: actions/checkout@v6
-      
+
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
