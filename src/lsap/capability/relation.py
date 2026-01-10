@@ -108,13 +108,13 @@ class RelationCapability(Capability[RelationRequest, RelationResponse]):
             current_item, path, depth = queue.popleft()
             current_key = self._item_key(current_item)
 
-            # Skip if we've exceeded max depth
-            if depth >= max_depth:
-                continue
-
             # Check if we've reached the target
             if current_key == target_key:
                 found_chains.append(path)
+                continue
+
+            # Skip if we've exceeded max depth
+            if depth >= max_depth:
                 continue
 
             # Skip if already visited (cycle detection)
