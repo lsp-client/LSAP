@@ -1,195 +1,241 @@
-# Unified Hierarchy API
+# Hierarchy APIs
 
-The Unified Hierarchy API provides a single, consistent interface for tracing hierarchical relationships in code. It traces two types of hierarchies:
+Two separate APIs for tracing hierarchical relationships in code.
 
-- **Call Hierarchy**: Function/method call relationships (who calls whom)
-- **Type Hierarchy**: Class/interface inheritance relationships (parent-child)
+---
 
-Both hierarchies are modeled as **directed graph traversal** with generic "incoming"/"outgoing" direction terminology.
+## Call Hierarchy API
 
-## HierarchyRequest
+The Call Hierarchy API traces function/method call relationships.
 
-Traces hierarchical relationships starting from a symbol.
+### CallHierarchyRequest
 
-| Field              | Type                                     | Default  | Description                                     |
-| :----------------- | :--------------------------------------- | :------- | :---------------------------------------------- |
-| `locate`           | [`Locate`](../locate.md)                 | Required | The symbol to start tracing from.               |
-| `hierarchy_type`   | `"call"` \| `"type"`                     | Required | Type of hierarchy to trace.                     |
-| `direction`        | `"incoming"` \| `"outgoing"` \| `"both"` | `"both"` | Graph traversal direction.                      |
-| `depth`            | `number`                                 | `2`      | Maximum traversal depth (number of hops).       |
-| `include_external` | `boolean`                                | `false`  | Whether to include external library references. |
+| Field              | Type                                     | Default  | Description                        |
+| :----------------- | :--------------------------------------- | :------- | :--------------------------------- |
+| `locate`           | [`Locate`](../locate.md)                 | Required | The function/method to trace from. |
+| `direction`        | `"incoming"` \| `"outgoing"` \| `"both"` | `"both"` | Traversal direction.               |
+| `depth`            | `number`                                 | `2`      | Maximum traversal depth.           |
+| `include_external` | `boolean`                                | `false`  | Include external library calls.    |
 
-### Direction Parameter
+### CallHierarchyResponse
 
-Direction uses **generic graph terminology**, not hierarchy-specific terms:
+| Field            | Type                               | Description                 |
+| :--------------- | :--------------------------------- | :-------------------------- |
+| `root`           | `HierarchyNode`                    | The starting symbol.        |
+| `nodes`          | `Map<string, HierarchyNode>`       | All nodes in the graph.     |
+| `edges_incoming` | `Map<string, CallHierarchyEdge[]>` | Caller edges.               |
+| `edges_outgoing` | `Map<string, CallHierarchyEdge[]>` | Callee edges.               |
+| `items_incoming` | `HierarchyItem[]`                  | Flattened caller tree.      |
+| `items_outgoing` | `HierarchyItem[]`                  | Flattened callee tree.      |
+| `direction`      | `string`                           | The direction used.         |
+| `depth`          | `number`                           | The depth used.             |
 
-- `"incoming"`: Trace predecessors in the graph
-  - For call hierarchy: find **callers** (who calls this function?)
-  - For type hierarchy: find **parent classes/interfaces** (what does this inherit from?)
+### Example Usage
 
-- `"outgoing"`: Trace successors in the graph
-  - For call hierarchy: find **callees** (what does this function call?)
-  - For type hierarchy: find **child classes** (what inherits from this?)
+#### Request
 
-- `"both"`: Trace both directions
-
-### Usage Examples
-
-**Example 1: Find who calls a function**
-
-```python
-HierarchyRequest(
-    hierarchy_type="call",
-    locate=Locate(
-        file_path="src/main.py",
-        scope=LineScope(line=10),
-        find="process_data"
-    ),
-    direction="incoming",  # Find callers
-    depth=2
-)
+```json
+{
+  "locate": {
+    "file_path": "src/utils.py",
+    "scope": { "symbol_path": ["process_data"] }
+  },
+  "direction": "both",
+  "depth": 2
+}
 ```
 
-**Example 2: Find what a function calls**
+#### Markdown Rendered for LLM
 
-```python
-HierarchyRequest(
-    hierarchy_type="call",
-    locate=Locate(
-        file_path="src/main.py",
-        scope=LineScope(line=10),
-        find="process_data"
-    ),
-    direction="outgoing",  # Find callees
-    depth=2
-)
+````markdown
+# Call Hierarchy: `process_data`
+
+Root: `process_data` (`Function`) at `src/utils.py`
+Detail: Process and transform input data
+
+## Callers (incoming)
+
+### `main`
+main -> process_data
+- Kind: `Function`
+- File: `src/main.py`
+- Detail: Application entry point
+
+#### `cli_handler`
+cli_handler -> main -> process_data
+- Kind: `Function`
+- File: `src/cli.py`
+- Detail: CLI argument handler
+
+### `batch_runner`
+batch_runner -> process_data
+- Kind: `Function`
+- File: `src/batch.py`
+- Detail: Batch processing entry
+
+## Callees (outgoing)
+
+### `validate`
+process_data -> validate
+- Kind: `Function`
+- File: `src/validation.py`
+- Detail: Validate input format
+
+#### `check_schema`
+process_data -> validate -> check_schema
+- Kind: `Function`
+- File: `src/validation.py`
+- Detail: Check JSON schema
+
+### `transform`
+process_data -> transform
+- Kind: `Function`
+- File: `src/transform.py`
+- Detail: Transform data format
+````
+
+---
+
+## Type Hierarchy API
+
+The Type Hierarchy API traces class/interface inheritance relationships.
+
+### TypeHierarchyRequest
+
+| Field       | Type                                       | Default  | Description                        |
+| :---------- | :----------------------------------------- | :------- | :--------------------------------- |
+| `locate`    | [`Locate`](../locate.md)                   | Required | The class/interface to trace from. |
+| `direction` | `"supertypes"` \| `"subtypes"` \| `"both"` | `"both"` | Traversal direction.               |
+| `depth`     | `number`                                   | `2`      | Maximum traversal depth.           |
+
+### TypeHierarchyResponse
+
+| Field              | Type                               | Description                 |
+| :----------------- | :--------------------------------- | :-------------------------- |
+| `root`             | `HierarchyNode`                    | The starting symbol.        |
+| `nodes`            | `Map<string, HierarchyNode>`       | All nodes in the graph.     |
+| `edges_supertypes` | `Map<string, TypeHierarchyEdge[]>` | Parent edges.               |
+| `edges_subtypes`   | `Map<string, TypeHierarchyEdge[]>` | Child edges.                |
+| `items_supertypes` | `HierarchyItem[]`                  | Flattened supertype tree.   |
+| `items_subtypes`   | `HierarchyItem[]`                  | Flattened subtype tree.     |
+| `direction`        | `string`                           | The direction used.         |
+| `depth`            | `number`                           | The depth used.             |
+
+### Example Usage
+
+#### Request
+
+```json
+{
+  "locate": {
+    "file_path": "src/models.py",
+    "scope": { "symbol_path": ["UserModel"] }
+  },
+  "direction": "both",
+  "depth": 2
+}
 ```
 
-**Example 3: Find parent classes**
+#### Markdown Rendered for LLM
 
-```python
-HierarchyRequest(
-    hierarchy_type="type",
-    locate=Locate(
-        file_path="src/models.py",
-        scope=LineScope(line=5),
-        find="UserModel"
-    ),
-    direction="incoming",  # Find parents
-    depth=2
-)
-```
+````markdown
+# Type Hierarchy: `UserModel`
 
-**Example 4: Find child classes**
+Root: `UserModel` (`Class`) at `src/models.py`
+Detail: User data model with validation
 
-```python
-HierarchyRequest(
-    hierarchy_type="type",
-    locate=Locate(
-        file_path="src/models.py",
-        scope=LineScope(line=5),
-        find="BaseModel"
-    ),
-    direction="outgoing",  # Find children
-    depth=2
-)
-```
+## Supertypes (parents)
 
-## HierarchyResponse
+### `BaseModel`
+UserModel <- BaseModel
+- Kind: `Class`
+- File: `src/base.py`
+- Detail: Base model with serialization
 
-Contains the hierarchy graph and flattened tree for rendering.
+#### `object`
+UserModel <- BaseModel <- object
+- Kind: `Class`
+- File: `builtins`
 
-| Field            | Type                           | Description                                                  |
-| :--------------- | :----------------------------- | :----------------------------------------------------------- |
-| `hierarchy_type` | `"call"` \| `"type"`           | Type of hierarchy returned.                                  |
-| `root`           | `HierarchyNode`                | The starting node.                                           |
-| `nodes`          | `Map<string, HierarchyNode>`   | All nodes in the hierarchy graph.                            |
-| `edges_incoming` | `Map<string, HierarchyEdge[]>` | Incoming edges for each node (predecessors).                 |
-| `edges_outgoing` | `Map<string, HierarchyEdge[]>` | Outgoing edges for each node (successors).                   |
-| `items_incoming` | `HierarchyItem[]`              | Flattened list of incoming relationships for tree rendering. |
-| `items_outgoing` | `HierarchyItem[]`              | Flattened list of outgoing relationships for tree rendering. |
-| `direction`      | `string`                       | The direction that was used.                                 |
-| `depth`          | `number`                       | The depth that was used.                                     |
+### `Serializable`
+UserModel <- Serializable
+- Kind: `Interface`
+- File: `src/interfaces.py`
+- Detail: JSON serialization interface
+
+## Subtypes (children)
+
+### `AdminUser`
+UserModel -> AdminUser
+- Kind: `Class`
+- File: `src/admin.py`
+- Detail: Admin user with elevated permissions
+
+### `GuestUser`
+UserModel -> GuestUser
+- Kind: `Class`
+- File: `src/guest.py`
+- Detail: Guest user with limited access
+
+#### `AnonymousUser`
+UserModel -> GuestUser -> AnonymousUser
+- Kind: `Class`
+- File: `src/guest.py`
+- Detail: Unauthenticated user
+````
+
+---
+
+## Shared Models
 
 ### HierarchyNode
 
-Represents a symbol in the hierarchy graph.
-
-| Field         | Type             | Description                              |
-| :------------ | :--------------- | :--------------------------------------- |
-| `id`          | `string`         | Unique identifier for the node.          |
-| `name`        | `string`         | Name of the symbol.                      |
-| `kind`        | `string`         | Symbol kind (e.g., `Function`, `Class`). |
-| `file_path`   | `string`         | Path to the file.                        |
-| `range_start` | `Position`       | Start position of the symbol definition. |
-| `detail`      | `string \| null` | Optional detail about the symbol.        |
+| Field         | Type             | Description      |
+| :------------ | :--------------- | :--------------- |
+| `id`          | `string`         | Unique ID.       |
+| `name`        | `string`         | Symbol name.     |
+| `kind`        | `string`         | Symbol kind.     |
+| `file_path`   | `string`         | File path.       |
+| `range_start` | `Position`       | Start position.  |
+| `detail`      | `string \| null` | Optional detail. |
 
 ### HierarchyItem
 
-Represents an item in the flattened hierarchy tree for rendering.
+| Field       | Type             | Description                                       |
+| :---------- | :--------------- | :------------------------------------------------ |
+| `name`      | `string`         | Symbol name.                                      |
+| `kind`      | `string`         | Symbol kind.                                      |
+| `file_path` | `string`         | File path.                                        |
+| `level`     | `number`         | Depth level (1 = direct child of root).           |
+| `chain`     | `string[]`       | Full path from this node to root.                 |
+| `detail`    | `string \| null` | Optional detail.                                  |
+| `is_cycle`  | `boolean`        | Whether this node creates a cycle.                |
 
-| Field       | Type             | Description                           |
-| :---------- | :--------------- | :------------------------------------ |
-| `name`      | `string`         | Name of the symbol.                   |
-| `kind`      | `string`         | Symbol kind.                          |
-| `file_path` | `string`         | Path to the file.                     |
-| `level`     | `number`         | Nesting level in the tree (0 = root). |
-| `detail`    | `string \| null` | Optional detail.                      |
-| `is_cycle`  | `boolean`        | Whether this represents a cycle.      |
+### CallHierarchyEdge
 
-### HierarchyEdge
+| Field          | Type         | Description                      |
+| :------------- | :----------- | :------------------------------- |
+| `from_node_id` | `string`     | ID of the caller.                |
+| `to_node_id`   | `string`     | ID of the callee.                |
+| `call_sites`   | `CallSite[]` | Positions where the call occurs. |
 
-Represents a directed edge in the hierarchy graph.
+### CallSite
 
-The `metadata` field contains hierarchy-specific information:
+| Field      | Type             | Description           |
+| :--------- | :--------------- | :-------------------- |
+| `position` | `Position`       | Position of the call. |
+| `snippet`  | `string \| null` | Optional code snippet.|
 
-| Field          | Type                                           | Description                       |
-| :------------- | :--------------------------------------------- | :-------------------------------- |
-| `from_node_id` | `string`                                       | ID of the source node.            |
-| `to_node_id`   | `string`                                       | ID of the target node.            |
-| `metadata`     | `CallEdgeMetadata \| TypeEdgeMetadata \| null` | Hierarchy-specific edge metadata. |
+### TypeHierarchyEdge
 
-**CallEdgeMetadata** (for call hierarchy):
+| Field          | Type           | Description                        |
+| :------------- | :------------- | :--------------------------------- |
+| `from_node_id` | `string`       | ID of the child class.             |
+| `to_node_id`   | `string`       | ID of the parent class.            |
+| `relation`     | `TypeRelation` | The inheritance relationship type. |
 
-- `call_sites`: `Position[]` - Exact positions where the call occurs
+### TypeRelation
 
-**TypeEdgeMetadata** (for type hierarchy):
-
-- `relationship`: `"extends" \| "implements"` - Type of inheritance relationship
-
-## Output Format
-
-The response includes a markdown template that adapts to the hierarchy type:
-
-```markdown
-# process_data Hierarchy (call, depth: 2)
-
-## Incoming
-
-### main
-
-- Kind: `Function`
-- File: `src/main.py`
-
-## Outgoing
-
-### validate_input
-
-- Kind: `Function`
-- File: `src/utils.py`
-```
-
-## Design Principles
-
-The API is designed around these principles:
-
-1. **Graph abstraction**: Both hierarchies are directed graphs with generic "incoming"/"outgoing" terminology
-2. **Polymorphic metadata**: Edge metadata uses Union types, not conditional null fields
-3. **Consistent naming**: Same field names for both hierarchy types (`edges_incoming`/`edges_outgoing`, `items_incoming`/`items_outgoing`)
-4. **Semantic control**: `hierarchy_type` parameter controls interpretation, not structure
-
-## Related APIs
-
-- [`Locate`](../locate.md) - For specifying symbol location
-- [`Reference`](../reference.md) - For finding all references to a symbol
-- [`Symbol`](../symbol.md) - For inspecting symbol details
+| Field  | Type                          | Description           |
+| :----- | :---------------------------- | :-------------------- |
+| `kind` | `"extends"` \| `"implements"` | Extends or implements.|
