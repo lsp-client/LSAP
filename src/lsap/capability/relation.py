@@ -112,15 +112,15 @@ class RelationCapability(Capability[RelationRequest, RelationResponse]):
             if depth >= max_depth:
                 continue
 
-            # Skip if already visited (cycle detection)
-            if current_key in visited:
-                continue
-            visited.add(current_key)
-
             # Check if we've reached the target
             if current_key == target_key:
                 found_chains.append(path)
                 continue
+
+            # Skip if already visited (cycle detection)
+            if current_key in visited:
+                continue
+            visited.add(current_key)
 
             # Get outgoing calls from current item
             outgoing_calls = (
@@ -135,9 +135,12 @@ class RelationCapability(Capability[RelationRequest, RelationResponse]):
             # Add each outgoing call to the queue
             for call in outgoing_calls:
                 next_item = call.to
-                next_node = self._to_chain_node(next_item)
-                next_path = path + [next_node]
-                queue.append((next_item, next_path, depth + 1))
+                next_key = self._item_key(next_item)
+                # Skip if already visited to prevent redundant queue entries
+                if next_key not in visited:
+                    next_node = self._to_chain_node(next_item)
+                    next_path = path + [next_node]
+                    queue.append((next_item, next_path, depth + 1))
 
         return found_chains
 
