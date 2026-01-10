@@ -24,7 +24,8 @@ This is a high-value query for:
 | `source`    | `ChainNode`       | The resolved source symbol.                           |
 | `target`    | `ChainNode`       | The resolved target symbol.                           |
 | `chains`    | `ChainNode[][]`   | All paths found. Each path is a sequence of nodes.    |
-| `max_depth` | `number`          | The maximum depth used for the search.                |
+
+The maximum depth used for the search is available as `request.max_depth`, since the response includes the original `RelationRequest`.
 
 ### ChainNode
 
