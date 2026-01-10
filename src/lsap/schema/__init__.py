@@ -6,6 +6,7 @@ from .hover import HoverRequest, HoverResponse
 from .locate import LocateRequest, LocateResponse
 from .outline import OutlineRequest, OutlineResponse
 from .reference import ReferenceRequest, ReferenceResponse
+from .relation import RelationRequest, RelationResponse
 from .rename import (
     RenameExecuteRequest,
     RenameExecuteResponse,
@@ -41,6 +42,10 @@ capability_schemas: Final = {
     "reference": Schema(
         request=ReferenceRequest,
         response=ReferenceResponse,
+    ),
+    "relation": Schema(
+        request=RelationRequest,
+        response=RelationResponse,
     ),
     "rename_preview": Schema(
         request=RenamePreviewRequest,
