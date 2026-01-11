@@ -1,9 +1,40 @@
+"""
+# Diagnostics API
+
+The Diagnostics API reports syntax errors, type mismatches, and other linting issues
+found in a specific file or across the workspace.
+
+## Example Usage
+
+### Scenario 1: Getting all diagnostics for a file
+
+Request:
+
+```json
+{
+  "file_path": "src/buggy.py",
+  "min_severity": "Hint"
+}
+```
+
+### Scenario 2: Getting workspace-wide diagnostics
+
+Request:
+
+```json
+{
+  "min_severity": "Error",
+  "max_items": 10
+}
+```
+"""
+
 from pathlib import Path
 from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from lsap.schema.abc import PaginatedRequest, PaginatedResponse
+from lsap.schema._abc import PaginatedRequest, PaginatedResponse
 from lsap.schema.models import Range
 
 
@@ -121,3 +152,13 @@ class WorkspaceDiagnosticsResponse(PaginatedResponse):
             "markdown": workspace_markdown_template,
         }
     )
+
+
+__all__ = [
+    "Diagnostic",
+    "FileDiagnosticsRequest",
+    "FileDiagnosticsResponse",
+    "WorkspaceDiagnosticItem",
+    "WorkspaceDiagnosticsRequest",
+    "WorkspaceDiagnosticsResponse",
+]

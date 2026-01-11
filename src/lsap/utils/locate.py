@@ -39,12 +39,11 @@ def detect_marker(text: str) -> MarkerPosition | None:
             return MarkerPosition(
                 marker=marker, start_pos=pos, end_pos=pos + len(marker)
             )
-        elif count == 0:
+        if count == 0:
             # This level doesn't exist, try next
             continue
-        else:
-            # Multiple occurrences, try higher nesting level
-            continue
+        # Multiple occurrences, try higher nesting level
+        continue
 
     return None
 

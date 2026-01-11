@@ -1,10 +1,21 @@
+from contextlib import asynccontextmanager
 from pathlib import Path
 
-from lsp_client.utils.types import AnyPath
-
 import pytest
+from lsp_client.capability.request import (
+    WithRequestDocumentSymbol,
+    WithRequestHover,
+    WithRequestRename,
+)
+from lsp_client.client.document_state import DocumentStateManager
+from lsp_client.protocol import CapabilityClientProtocol
+from lsp_client.protocol.lang import LanguageConfig
+from lsp_client.utils.config import ConfigurationMap
+from lsp_client.utils.types import AnyPath
+from lsp_client.utils.workspace import DEFAULT_WORKSPACE_DIR, Workspace, WorkspaceFolder
 from lsprotocol.types import (
     DocumentSymbol,
+    LanguageKind,
     OptionalVersionedTextDocumentIdentifier,
     PrepareRenameDefaultBehavior,
     PrepareRenamePlaceholder,
@@ -19,17 +30,7 @@ from lsprotocol.types import (
 from lsprotocol.types import (
     Range as LSPRange,
 )
-from lsp_client.capability.request import (
-    WithRequestDocumentSymbol,
-    WithRequestRename,
-    WithRequestHover,
-)
-from lsp_client.protocol.lang import LanguageConfig
-from lsp_client.protocol import CapabilityClientProtocol
-from lsp_client.client.document_state import DocumentStateManager
-from lsp_client.utils.config import ConfigurationMap
-from lsp_client.utils.workspace import Workspace, WorkspaceFolder, DEFAULT_WORKSPACE_DIR
-from lsprotocol.types import LanguageKind
+
 from lsap.capability.rename import RenameExecuteCapability, RenamePreviewCapability
 from lsap.schema.locate import Locate, SymbolScope
 from lsap.schema.rename import (
@@ -40,7 +41,6 @@ from lsap.schema.rename import (
 )
 from lsap.schema.types import Symbol, SymbolPath
 from lsap.utils.document import DocumentReader
-from contextlib import asynccontextmanager
 
 
 class MockRenameClient(

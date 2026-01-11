@@ -1,9 +1,47 @@
+"""
+# Inlay Hints & Inline Values API
+
+LSAP provides the ability to read code with "decorations" that inject static type
+hints, parameter names, and runtime variable values directly into the text as
+comments.
+
+## Example Usage
+
+### Scenario 1: Getting type hints for a function
+
+Request (`InlayHintRequest`):
+
+```json
+{
+  "file_path": "src/api.py",
+  "range": {
+    "start": { "line": 10, "character": 0 },
+    "end": { "line": 15, "character": 0 }
+  }
+}
+```
+
+### Scenario 2: Debugging an error with runtime values
+
+Request (`InlineValueRequest`):
+
+```json
+{
+  "file_path": "src/logic.py",
+  "range": {
+    "start": { "line": 10, "character": 0 },
+    "end": { "line": 20, "character": 0 }
+  }
+}
+```
+"""
+
 from pathlib import Path
 from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from lsap.schema.abc import Request, Response
+from lsap.schema._abc import Request, Response
 from lsap.schema.models import Range
 
 
@@ -72,3 +110,12 @@ class DecoratedContentResponse(Response):
             "markdown": markdown_template,
         }
     )
+
+
+__all__ = [
+    "DecoratedContentResponse",
+    "InlayHintItem",
+    "InlayHintRequest",
+    "InlineValueItem",
+    "InlineValueRequest",
+]

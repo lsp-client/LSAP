@@ -2,7 +2,7 @@ from typing import Protocol
 
 from attrs import frozen
 
-from lsap.schema.abc import PaginatedRequest
+from lsap.schema._abc import PaginatedRequest
 
 from .cache import PaginationCache
 

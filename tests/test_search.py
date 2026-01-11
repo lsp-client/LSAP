@@ -1,8 +1,16 @@
+from collections.abc import Sequence
+from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Sequence
 
 import pytest
+from lsp_client.capability.request import WithRequestWorkspaceSymbol
+from lsp_client.client.document_state import DocumentStateManager
+from lsp_client.protocol import CapabilityClientProtocol
+from lsp_client.protocol.lang import LanguageConfig
+from lsp_client.utils.config import ConfigurationMap
+from lsp_client.utils.workspace import DEFAULT_WORKSPACE_DIR, Workspace, WorkspaceFolder
 from lsprotocol.types import (
+    LanguageKind,
     Location,
     LocationUriOnly,
     WorkspaceSymbol,
@@ -16,17 +24,10 @@ from lsprotocol.types import (
 from lsprotocol.types import (
     SymbolKind as LSPSymbolKind,
 )
-from lsp_client.capability.request import WithRequestWorkspaceSymbol
-from lsp_client.protocol.lang import LanguageConfig
-from lsp_client.protocol import CapabilityClientProtocol
-from lsp_client.client.document_state import DocumentStateManager
-from lsp_client.utils.config import ConfigurationMap
-from lsp_client.utils.workspace import Workspace, WorkspaceFolder, DEFAULT_WORKSPACE_DIR
-from lsprotocol.types import LanguageKind
+
 from lsap.capability.search import SearchCapability
 from lsap.schema.models import SymbolKind
 from lsap.schema.search import SearchRequest
-from contextlib import asynccontextmanager
 
 
 class MockSearchClient(

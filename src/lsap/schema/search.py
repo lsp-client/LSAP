@@ -1,9 +1,54 @@
+"""
+# Search API
+
+The Search API provides fast, fuzzy symbol search across the entire workspace.
+Results are concise for quick discovery—use the Symbol API to get detailed
+information about specific symbols.
+
+## Example Usage
+
+### Scenario 1: Quick class search
+
+Request:
+
+```json
+{
+  "query": "AuthService",
+  "kinds": ["class"],
+  "max_items": 10
+}
+```
+
+### Scenario 2: Fuzzy search for functions
+
+Request:
+
+```json
+{
+  "query": "calc",
+  "kinds": ["function", "method"]
+}
+```
+
+### Scenario 3: Pagination
+
+Request:
+
+```json
+{
+  "query": "test",
+  "max_items": 5,
+  "start_index": 0
+}
+```
+"""
+
 from pathlib import Path
 from typing import Final
 
 from pydantic import BaseModel, ConfigDict
 
-from .abc import PaginatedRequest, PaginatedResponse
+from ._abc import PaginatedRequest, PaginatedResponse
 from .models import SymbolKind
 
 
@@ -67,3 +112,10 @@ class SearchResponse(PaginatedResponse):
             "markdown": markdown_template,
         }
     )
+
+
+__all__ = [
+    "SearchItem",
+    "SearchRequest",
+    "SearchResponse",
+]

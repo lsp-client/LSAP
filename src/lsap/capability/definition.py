@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from functools import cached_property
-from typing import Sequence, override
+from typing import override
 
 import asyncer
 from attrs import define
@@ -74,6 +75,7 @@ class DefinitionCapability(Capability[DefinitionRequest, DefinitionResponse]):
                     loc.range.start,
                 ):
                     return symbol_info
+                return None
 
             infos = [tg.soonify(resolve_item)(loc) for loc in locations]
         items: list[SymbolCodeInfo] = [

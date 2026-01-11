@@ -1,8 +1,21 @@
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import pytest
+from lsp_client.capability.request import (
+    WithRequestDocumentSymbol,
+    WithRequestHover,
+    WithRequestImplementation,
+    WithRequestReferences,
+)
+from lsp_client.client.document_state import DocumentStateManager
+from lsp_client.protocol import CapabilityClientProtocol
+from lsp_client.protocol.lang import LanguageConfig
+from lsp_client.utils.config import ConfigurationMap
+from lsp_client.utils.workspace import DEFAULT_WORKSPACE_DIR, Workspace, WorkspaceFolder
 from lsprotocol.types import (
     DocumentSymbol,
+    LanguageKind,
     Location,
     SymbolKind,
 )
@@ -12,22 +25,10 @@ from lsprotocol.types import (
 from lsprotocol.types import (
     Range as LSPRange,
 )
-from lsp_client.capability.request import (
-    WithRequestReferences,
-    WithRequestDocumentSymbol,
-    WithRequestHover,
-    WithRequestImplementation,
-)
-from lsp_client.protocol.lang import LanguageConfig
-from lsp_client.protocol import CapabilityClientProtocol
-from lsp_client.client.document_state import DocumentStateManager
-from lsp_client.utils.config import ConfigurationMap
-from lsp_client.utils.workspace import Workspace, WorkspaceFolder, DEFAULT_WORKSPACE_DIR
-from lsprotocol.types import LanguageKind
+
 from lsap.capability.reference import ReferenceCapability
 from lsap.schema.locate import LineScope, Locate
 from lsap.schema.reference import ReferenceRequest
-from contextlib import asynccontextmanager
 
 
 class MockReferenceClient(

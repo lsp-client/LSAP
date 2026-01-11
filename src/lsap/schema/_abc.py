@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Any
 
 from liquid import Environment
 from pydantic import BaseModel
@@ -6,8 +7,8 @@ from pydantic import BaseModel
 _env = Environment()
 
 
-@lru_cache()
-def get_template(template_source: str):
+@lru_cache
+def get_template(template_source: str) -> Any:  # noqa: ANN401
     return _env.from_string(template_source)
 
 
@@ -49,3 +50,11 @@ class PaginatedResponse(Response):
     has_more: bool = False
 
     pagination_id: str | None = None
+
+
+__all__ = [
+    "PaginatedRequest",
+    "PaginatedResponse",
+    "Request",
+    "Response",
+]

@@ -1,8 +1,49 @@
+"""
+# Test Relation API
+
+The Test Relation API bridges the gap between production code and test code.
+It helps Agents perform targeted verification and understand test failures.
+
+## Example Usage
+
+### Scenario 1: Finding tests for a modified function
+
+Request:
+
+```json
+{
+  "locate": {
+    "file_path": "src/calculator.py",
+    "scope": {
+      "symbol_path": ["add"]
+    }
+  },
+  "direction": "to_test"
+}
+```
+
+### Scenario 2: Finding source code for a failing test
+
+Request:
+
+```json
+{
+  "locate": {
+    "file_path": "tests/test_auth.py",
+    "scope": {
+      "symbol_path": ["TestLogin", "test_invalid_password"]
+    }
+  },
+  "direction": "to_source"
+}
+```
+"""
+
 from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from lsap.schema.abc import Request, Response
+from lsap.schema._abc import Request, Response
 from lsap.schema.locate import Locate
 from lsap.schema.models import Range, SymbolInfo
 
@@ -75,3 +116,10 @@ class TestRelationResponse(Response):
             "markdown": markdown_template,
         }
     )
+
+
+__all__ = [
+    "TestRelationItem",
+    "TestRelationRequest",
+    "TestRelationResponse",
+]

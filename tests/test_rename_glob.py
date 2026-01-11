@@ -5,17 +5,21 @@ from pathlib import Path
 import pytest
 from lsprotocol.types import (
     OptionalVersionedTextDocumentIdentifier,
-    Position as LSPPosition,
-    Range as LSPRange,
     TextDocumentEdit,
     TextEdit,
     WorkspaceEdit,
 )
+from lsprotocol.types import (
+    Position as LSPPosition,
+)
+from lsprotocol.types import (
+    Range as LSPRange,
+)
+from test_rename_e2e import E2ERenameClient
 
 from lsap.capability.rename import RenameExecuteCapability, RenamePreviewCapability
 from lsap.schema.locate import Locate
 from lsap.schema.rename import RenameExecuteRequest, RenamePreviewRequest
-from test_rename_e2e import E2ERenameClient
 
 
 class GlobPatternRenameClient(E2ERenameClient):

@@ -1,9 +1,52 @@
+"""
+# Unified Hierarchy API
+
+The Unified Hierarchy API provides a single, consistent interface for tracing
+hierarchical relationships in code. It traces two types of hierarchies:
+
+- **Call Hierarchy**: Function/method call relationships (who calls whom)
+- **Type Hierarchy**: Class/interface inheritance relationships (parent-child)
+
+## Direction Parameter
+
+- `"incoming"`: Trace predecessors in the graph
+  - For call hierarchy: find callers (who calls this function?)
+  - For type hierarchy: find parent classes/interfaces (what does this inherit from?)
+- `"outgoing"`: Trace successors in the graph
+  - For call hierarchy: find callees (what does this function call?)
+  - For type hierarchy: find child classes (what inherits from this?)
+
+## Usage Examples
+
+### Example 1: Find who calls a function
+
+```python
+HierarchyRequest(
+    hierarchy_type="call",
+    locate=Locate(file_path="src/main.py", find="process_data"),
+    direction="incoming",
+    depth=2
+)
+```
+
+### Example 2: Find parent classes
+
+```python
+HierarchyRequest(
+    hierarchy_type="type",
+    locate=Locate(file_path="src/models.py", find="UserModel"),
+    direction="incoming",
+    depth=2
+)
+```
+"""
+
 from pathlib import Path
-from typing import Annotated, Final, Literal, Union
+from typing import Annotated, Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from lsap.schema.abc import Response
+from lsap.schema._abc import Response
 from lsap.schema.locate import LocateRequest, Position
 
 
@@ -62,7 +105,7 @@ class HierarchyEdge(BaseModel):
     to_node_id: str
     metadata: (
         Annotated[
-            Union[CallEdgeMetadata, TypeEdgeMetadata],
+            CallEdgeMetadata | TypeEdgeMetadata,
             Field(
                 discriminator="relationship"
                 if hasattr(TypeEdgeMetadata, "relationship")
@@ -199,10 +242,10 @@ class HierarchyResponse(Response):
     edges_outgoing: dict[str, list[HierarchyEdge]]
     """Outgoing edges for each node (successors in the graph)"""
 
-    items_incoming: list[HierarchyItem] = []
+    items_incoming: list[HierarchyItem] = Field(default_factory=list)
     """Flattened list of incoming relationships for tree rendering"""
 
-    items_outgoing: list[HierarchyItem] = []
+    items_outgoing: list[HierarchyItem] = Field(default_factory=list)
     """Flattened list of outgoing relationships for tree rendering"""
 
     direction: str
@@ -216,11 +259,11 @@ class HierarchyResponse(Response):
 
 
 __all__ = [
-    "HierarchyNode",
-    "HierarchyItem",
-    "HierarchyEdge",
     "CallEdgeMetadata",
-    "TypeEdgeMetadata",
+    "HierarchyEdge",
+    "HierarchyItem",
+    "HierarchyNode",
     "HierarchyRequest",
     "HierarchyResponse",
+    "TypeEdgeMetadata",
 ]

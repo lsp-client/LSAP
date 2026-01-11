@@ -1,8 +1,32 @@
+"""
+# Completion API
+
+The Completion API (IntelliSense) provides context-aware code suggestions at a
+specific position. For an Agent, this is primarily an exploration and discovery
+tool to find available methods or properties.
+
+## Example Usage
+
+### Scenario 1: Discovering methods on an object after dot
+
+Request:
+
+```json
+{
+  "locate": {
+    "file_path": "src/main.py",
+    "find": "client."
+  },
+  "max_items": 5
+}
+```
+"""
+
 from typing import Final
 
 from pydantic import BaseModel, ConfigDict
 
-from lsap.schema.abc import PaginatedRequest, PaginatedResponse
+from lsap.schema._abc import PaginatedRequest, PaginatedResponse
 from lsap.schema.locate import LocateRequest
 
 
@@ -84,3 +108,10 @@ class CompletionResponse(PaginatedResponse):
             "markdown": markdown_template,
         }
     )
+
+
+__all__ = [
+    "CompletionItem",
+    "CompletionRequest",
+    "CompletionResponse",
+]

@@ -1,4 +1,5 @@
 import re
+from collections.abc import Iterator
 from pathlib import Path
 from typing import NamedTuple
 
@@ -37,7 +38,7 @@ def _to_regex(text: str) -> str:
     if not tokens:
         return ""
 
-    def parts():
+    def parts() -> Iterator[str]:
         for i, token in enumerate(tokens):
             if token[0].isspace():
                 yield r"\s+"

@@ -46,16 +46,17 @@ class ReferenceCapability(Capability[ReferenceRequest, ReferenceResponse]):
                     self.client, WithRequestReferences
                 ).request_references(file_path, lsp_pos, include_declaration=True):
                     locations.extend(refs)
-            elif req.mode == "implementations":
-                if impls := await ensure_capability(
+            elif req.mode == "implementations" and (
+                impls := await ensure_capability(
                     self.client,
                     WithRequestImplementation,
                     error="To find implementations, you can: "
                     "1) Use 'references' mode to find all usages (often including implementations); "
                     "2) Find the symbol definition and then search for its references; "
                     "3) Use 'search' or 'symbol' capability to find name-matched definitions.",
-                ).request_implementation_locations(file_path, lsp_pos):
-                    locations.extend(impls)
+                ).request_implementation_locations(file_path, lsp_pos)
+            ):
+                locations.extend(impls)
 
             if not locations:
                 return []
@@ -104,29 +105,30 @@ class ReferenceCapability(Capability[ReferenceRequest, ReferenceResponse]):
             return
 
         symbol: SymbolDetailInfo | None = None
-        if symbols := await ensure_capability(
-            self.client, WithRequestDocumentSymbol
-        ).request_document_symbol_list(file_path):
-            if match := symbol_at(symbols, range.start):
-                path, sym = match
-                kind = SymbolKind.from_lsp(sym.kind)
+        if (
+            symbols := await ensure_capability(
+                self.client, WithRequestDocumentSymbol
+            ).request_document_symbol_list(file_path)
+        ) and (match := symbol_at(symbols, range.start)):
+            path, sym = match
+            kind = SymbolKind.from_lsp(sym.kind)
 
-                symbol = SymbolDetailInfo(
-                    file_path=file_path,
-                    name=sym.name,
-                    path=path,
-                    kind=kind,
-                    detail=sym.detail,
-                    range=Range(
-                        start=Position.from_lsp(sym.range.start),
-                        end=Position.from_lsp(sym.range.end),
-                    ),
-                )
+            symbol = SymbolDetailInfo(
+                file_path=file_path,
+                name=sym.name,
+                path=path,
+                kind=kind,
+                detail=sym.detail,
+                range=Range(
+                    start=Position.from_lsp(sym.range.start),
+                    end=Position.from_lsp(sym.range.end),
+                ),
+            )
 
-                if hover := await ensure_capability(
-                    self.client, WithRequestHover
-                ).request_hover(file_path, range.start):
-                    symbol.hover = hover.value
+            if hover := await ensure_capability(
+                self.client, WithRequestHover
+            ).request_hover(file_path, range.start):
+                symbol.hover = hover.value
 
         items.append(
             ReferenceItem(

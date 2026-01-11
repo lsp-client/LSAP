@@ -1,8 +1,40 @@
+"""
+# Relation API
+
+The Relation API allows finding all call chains (paths) that connect two specific symbols.
+This is useful for understanding how one part of the system interacts with another,
+validating architectural dependencies, or impact analysis.
+
+## Example Usage
+
+### Scenario 1: How does `handle_request` reach `db.query`?
+
+Request:
+
+```json
+{
+  "source": {
+    "file_path": "src/controllers.py",
+    "scope": {
+      "symbol_path": ["handle_request"]
+    }
+  },
+  "target": {
+    "file_path": "src/db.py",
+    "scope": {
+      "symbol_path": ["query"]
+    }
+  },
+  "max_depth": 5
+}
+```
+"""
+
 from typing import Final
 
 from pydantic import ConfigDict
 
-from lsap.schema.abc import Request, Response
+from lsap.schema._abc import Request, Response
 from lsap.schema.draft.hierarchy import HierarchyItem
 from lsap.schema.locate import Locate
 
@@ -52,3 +84,9 @@ class RelationResponse(Response):
             "markdown": markdown_template,
         }
     )
+
+
+__all__ = [
+    "RelationRequest",
+    "RelationResponse",
+]

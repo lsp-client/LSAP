@@ -1,16 +1,14 @@
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
+from lsp_client.capability.request import WithRequestDocumentSymbol, WithRequestHover
 from lsprotocol.types import MarkupContent, MarkupKind
 from lsprotocol.types import Position as LSPPosition
 
 from lsap.capability.hover import HoverCapability
 from lsap.schema.hover import HoverRequest
 from lsap.schema.locate import LineScope, Locate
-
-
-from unittest.mock import MagicMock
-from lsp_client.capability.request import WithRequestHover, WithRequestDocumentSymbol
 
 
 class MockHoverClient(MagicMock):

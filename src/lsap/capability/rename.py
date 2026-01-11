@@ -104,7 +104,7 @@ def _filter_edit(
     edit: lsp_type.WorkspaceEdit,
     exclude_patterns: Sequence[str],
 ) -> lsp_type.WorkspaceEdit:
-    workspace_root = client.from_uri(client.as_uri(Path(".")), relative=False)
+    workspace_root = client.from_uri(client.as_uri(Path()), relative=False)
 
     def should_exclude(uri: str) -> bool:
         path = client.from_uri(uri, relative=False)

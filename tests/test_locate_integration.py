@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-
 from lsap.schema.locate import Locate, LocateRequest
 
 # Import from the utils module
