@@ -1,0 +1,92 @@
+{
+  "$defs": {
+    "LineScope": {
+      "description": "Scope by line range",
+      "properties": {
+        "line": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ],
+              "type": "array"
+            }
+          ],
+          "title": "Line"
+        }
+      },
+      "required": [
+        "line"
+      ],
+      "title": "LineScope",
+      "type": "object"
+    },
+    "SymbolScope": {
+      "description": "Scope by symbol, also serves as declaration locator when find is omitted",
+      "properties": {
+        "symbol_path": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Symbol Path",
+          "type": "array"
+        }
+      },
+      "required": [
+        "symbol_path"
+      ],
+      "title": "SymbolScope",
+      "type": "object"
+    }
+  },
+  "description": "Locate a range.\n\nExamples:\n    # Select symbol body\n    LocateRange(file_path=\"foo.py\", scope=SymbolScope(symbol_path=[\"MyClass\"]))\n\n    # Select specific text\n    LocateRange(file_path=\"foo.py\", find=\"if condition: return True\")",
+  "properties": {
+    "file_path": {
+      "format": "path",
+      "title": "File Path",
+      "type": "string"
+    },
+    "scope": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/LineScope"
+        },
+        {
+          "$ref": "#/$defs/SymbolScope"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Scope"
+    },
+    "find": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Find"
+    }
+  },
+  "required": [
+    "file_path"
+  ],
+  "title": "LocateRange",
+  "type": "object"
+}

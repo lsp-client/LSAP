@@ -1,0 +1,81 @@
+# Ruff Configuration - Best Practices for LSAP SDK
+# Target Python version for modern syntax
+target-version = "py312"
+line-length = 88
+
+[lint]
+select = [
+    "E", "W",          # Basic pycodestyle styling (non-disruptive)
+    "F",               # Pyflakes — actual logic errors (must-have)
+    "I",               # isort — consistent import ordering
+    "B",               # flake8-bugbear — common mistakes and gotchas
+
+    # Modern Python & code simplification
+    "UP",              # pyupgrade — modern syntax where possible
+    "SIM",             # flake8-simplify — simpler logic constructs
+    "PIE",             # flake8-pie — code improvements
+    "C4",              # flake8-comprehensions — better comprehensions
+    "RET",             # flake8-return — consistent return statements
+
+    # Exception & error handling
+    "BLE",             # blind except — avoid 'except:' without type
+    "TRY",             # tryceratops — clean exception handling
+    "RSE",             # raise — ensure proper raise statements
+
+    # Typing & annotation
+    "ANN",             # flake8-annotations — enforce type hints
+
+    # Avoid blanket ignore directives
+    "PGH",             # pygrep-hooks — PGH003: no blanket type: ignore
+
+    # Modern path usage
+    "PTH",             # pathlib — prefer pathlib over os.path
+
+    # Performance
+    "PERF",            # perflint — performance anti-patterns
+
+    # Ruff-specific useful rules
+    "RUF",
+]
+
+ignore = [
+    "E501",    # Line length (handled by formatter)
+    "COM812",  # Trailing comma (conflicts with formatter)
+    "ISC001",  # Implicit string concatenation (conflicts with formatter)
+    "PLR0913", # Too many arguments - sometimes necessary
+    "PLR2004", # Magic value comparison - sometimes reasonable
+    "TRY003",  # Long exception message - custom error messages are common
+]
+
+[lint.per-file-ignores]
+"tests/**/*.py" = [
+    # Typing
+    "ANN",         # allow missing type annotations in tests
+
+    # Logic / code quality simplification rules
+    "SIM",         # allow more explicit test logic
+    "PIE",         # allow less opinionated patterns in tests
+    "C4",          # comprehensions suggestions often not worth it
+    "RET",         # return style is not relevant in tests
+
+    # Exception handling rules
+    "BLE",         # allow generic except in tests
+    "TRY",         # allow generic exception testing
+    "RSE",         # less strict raise style
+
+    # Performance
+    "PERF",        # performance does not matter in tests
+    
+    # Testing-specific ignores
+    "PGH003",      # allow blanket type: ignore in tests
+    "B007",        # allow unused loop variables in tests
+    "B017",        # allow assert raises Exception in tests
+    "B026",        # allow star-arg unpacking after keyword arg in tests
+]
+
+[lint.isort]
+known-first-party = ["lsap"]
+
+[format]
+quote-style = "double"
+indent-style = "space"

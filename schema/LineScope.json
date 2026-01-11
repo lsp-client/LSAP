@@ -1,0 +1,31 @@
+{
+  "description": "Scope by line range",
+  "properties": {
+    "line": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "type": "array"
+        }
+      ],
+      "title": "Line"
+    }
+  },
+  "required": [
+    "line"
+  ],
+  "title": "LineScope",
+  "type": "object"
+}
