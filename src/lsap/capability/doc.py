@@ -5,7 +5,7 @@ from functools import cached_property
 from attrs import define
 from lsp_client.capability.request import WithRequestHover
 
-from lsap.schema.hover import HoverRequest, HoverResponse
+from lsap.schema.doc import DocRequest, DocResponse
 from lsap.utils.capability import ensure_capability
 
 from .abc import Capability
@@ -13,12 +13,12 @@ from .locate import LocateCapability
 
 
 @define
-class HoverCapability(Capability[HoverRequest, HoverResponse]):
+class DocCapability(Capability[DocRequest, DocResponse]):
     @cached_property
     def locate(self) -> LocateCapability:
         return LocateCapability(self.client)
 
-    async def __call__(self, req: HoverRequest) -> HoverResponse | None:
+    async def __call__(self, req: DocRequest) -> DocResponse | None:
         if not (loc_resp := await self.locate(req)):
             return None
 
@@ -30,4 +30,4 @@ class HoverCapability(Capability[HoverRequest, HoverResponse]):
         if hover is None:
             return None
 
-        return HoverResponse(content=hover.value)
+        return DocResponse(content=hover.value)

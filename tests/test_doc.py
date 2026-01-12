@@ -6,12 +6,12 @@ from lsp_client.capability.request import WithRequestDocumentSymbol, WithRequest
 from lsprotocol.types import MarkupContent, MarkupKind
 from lsprotocol.types import Position as LSPPosition
 
-from lsap.capability.hover import HoverCapability
-from lsap.schema.hover import HoverRequest
+from lsap.capability.doc import DocCapability
+from lsap.schema.doc import DocRequest
 from lsap.schema.locate import LineScope, Locate
 
 
-class MockHoverClient(MagicMock):
+class MockDocClient(MagicMock):
     def __init__(self, *args, **kwargs):
         class MockProtocols(WithRequestHover, WithRequestDocumentSymbol):
             pass
@@ -39,11 +39,11 @@ class MockHoverClient(MagicMock):
 
 
 @pytest.mark.asyncio
-async def test_hover():
-    client = MockHoverClient()
-    capability = HoverCapability(client=client)  # type: ignore
+async def test_doc():
+    client = MockDocClient()
+    capability = DocCapability(client=client)  # type: ignore
 
-    req = HoverRequest(
+    req = DocRequest(
         locate=Locate(file_path=Path("main.py"), scope=LineScope(line=1), find="foo"),
     )
 
@@ -53,11 +53,11 @@ async def test_hover():
 
 
 @pytest.mark.asyncio
-async def test_hover_not_found():
-    client = MockHoverClient()
-    capability = HoverCapability(client=client)  # type: ignore
+async def test_doc_not_found():
+    client = MockDocClient()
+    capability = DocCapability(client=client)  # type: ignore
 
-    req = HoverRequest(
+    req = DocRequest(
         locate=Locate(file_path=Path("main.py"), scope=LineScope(line=1), find="bar"),
     )
 

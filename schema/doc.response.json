@@ -1,5 +1,5 @@
 {
-  "markdown": "\n# Hover Information\n\n{{ content }}\n",
+  "markdown": "\n# Doc Information\n\n{{ content }}\n",
   "properties": {
     "content": {
       "title": "Content",
@@ -9,6 +9,6 @@
   "required": [
     "content"
   ],
-  "title": "HoverResponse",
+  "title": "DocResponse",
   "type": "object"
 }
