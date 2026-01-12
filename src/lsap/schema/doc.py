@@ -1,7 +1,7 @@
 """
-# Hover API
+# Doc API
 
-The Hover API provides quick access to documentation, type information, or other
+The Doc API provides quick access to documentation, type information, or other
 relevant metadata for a symbol at a specific location. It's useful for getting
 context without navigating to the definition.
 
@@ -33,7 +33,7 @@ Request:
 }
 ```
 
-### Scenario 3: Getting hover for a class method
+### Scenario 3: Getting documentation for a class method
 
 Request:
 
@@ -48,7 +48,7 @@ Request:
 }
 ```
 
-### Scenario 4: Getting hover for an imported module
+### Scenario 4: Getting documentation for an imported module
 
 Request:
 
@@ -70,7 +70,7 @@ from ._abc import Response
 from .locate import LocateRequest
 
 
-class HoverRequest(LocateRequest):
+class DocRequest(LocateRequest):
     """
     Retrieves documentation or type information for a symbol at a specific location.
 
@@ -80,15 +80,15 @@ class HoverRequest(LocateRequest):
 
 
 markdown_template: Final = """
-# Hover Information
+# Doc Information
 
 {{ content }}
 """
 
 
-class HoverResponse(Response):
+class DocResponse(Response):
     content: str
-    """The hover content, usually markdown."""
+    """The documentation content, usually markdown."""
 
     model_config = ConfigDict(
         json_schema_extra={
@@ -98,6 +98,6 @@ class HoverResponse(Response):
 
 
 __all__ = [
-    "HoverRequest",
-    "HoverResponse",
+    "DocRequest",
+    "DocResponse",
 ]

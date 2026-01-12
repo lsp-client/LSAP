@@ -100,6 +100,6 @@
   "required": [
     "locate"
   ],
-  "title": "HoverRequest",
+  "title": "DocRequest",
   "type": "object"
 }

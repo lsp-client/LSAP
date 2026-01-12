@@ -1,6 +1,6 @@
-# Hover API
+# Doc API
 
-The Hover API provides quick access to documentation, type information, or other
+The Doc API provides quick access to documentation, type information, or other
 relevant metadata for a symbol at a specific location. It's useful for getting
 context without navigating to the definition.
 
@@ -32,7 +32,7 @@ Request:
 }
 ```
 
-### Scenario 3: Getting hover for a class method
+### Scenario 3: Getting documentation for a class method
 
 Request:
 
@@ -47,7 +47,7 @@ Request:
 }
 ```
 
-### Scenario 4: Getting hover for an imported module
+### Scenario 4: Getting documentation for an imported module
 
 Request:
 
@@ -62,5 +62,5 @@ Request:
 
 ## References
 
-- [HoverRequest.json](./HoverRequest.json)
-- [HoverResponse.json](./HoverResponse.json)
+- [DocRequest.json](./DocRequest.json)
+- [DocResponse.json](./DocResponse.json)

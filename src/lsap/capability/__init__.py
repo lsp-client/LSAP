@@ -1,7 +1,7 @@
 from typing import TypedDict
 
 from .definition import DefinitionCapability
-from .hover import HoverCapability
+from .doc import DocCapability
 from .locate import LocateCapability
 from .outline import OutlineCapability
 from .reference import ReferenceCapability
@@ -12,7 +12,7 @@ from .symbol import SymbolCapability
 
 class Capabilities(TypedDict):
     definition: DefinitionCapability
-    hover: HoverCapability
+    doc: DocCapability
     locate: LocateCapability
     outline: OutlineCapability
     references: ReferenceCapability
