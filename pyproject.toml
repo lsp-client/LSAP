@@ -1,6 +1,6 @@
 [project]
 name = "lsap-sdk"
-version = "0.1.0"
+version = "0.1.2"
 description = "Language Server Agent Protocol (LSAP) SDK - Transforms low-level LSP into high-level cognitive tools for agents"
 readme = "README.md"
 authors = [{ name = "observerw", email = "wozluohd@gmail.com" }]
@@ -16,7 +16,7 @@ dependencies = [
     "asyncer>=0.0.11",
     "attrs>=25.4.0",
     "cattrs>=25.3.0",
-    "lsp-client >= 0.3.0",
+    "lsp-client >= 0.3.4",
     "lsprotocol>=2025.0.0",
     "pydantic>=2.12.5",
     "python-liquid>=2.1.0",
