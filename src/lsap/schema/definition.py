@@ -86,7 +86,7 @@ markdown_template: Final = """
 No {{ request.mode | replace: "_", " " }} found.
 {%- else -%}
 {%- for item in items -%}
-## `{{ item.file_path }}`: {{ item.path | join: "." }} (`{{ item.kind }}`)
+## `{{ item.file_path }}`: `{{ item.path | join: "." }}` (`{{ item.kind }}`)
 
 {% if item.code != nil -%}
 ### Content

@@ -62,7 +62,7 @@ Found {{ chains | size }} call chain(s):
 {% for chain in chains %}
 ### Chain {{ forloop.index }}
 {% for item in chain %}
-{{ forloop.index }}. **{{ item.name }}** (`{{ item.kind }}`) - `{{ item.file_path }}`
+{{ forloop.index }}. **`{{ item.name }}`** (`{{ item.kind }}`) - `{{ item.file_path }}`
 {% endfor %}
 {% endfor %}
 {% else %}

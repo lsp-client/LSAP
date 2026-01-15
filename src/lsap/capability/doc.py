@@ -7,6 +7,7 @@ from lsp_client.capability.request import WithRequestHover
 
 from lsap.schema.doc import DocRequest, DocResponse
 from lsap.utils.capability import ensure_capability
+from lsap.utils.markdown import clean_hover_content
 
 from .abc import Capability
 from .locate import LocateCapability
@@ -30,4 +31,4 @@ class DocCapability(Capability[DocRequest, DocResponse]):
         if hover is None:
             return None
 
-        return DocResponse(content=hover.value)
+        return DocResponse(content=clean_hover_content(hover.value))

@@ -142,13 +142,13 @@ class LocateRangeRequest(Request):
 
 
 markdown_template = (
-    "Located `{{ file_path }}` at {{ position.line }}:{{ position.character }}"
+    "Located `{{ file_path }}` at `{{ position.line }}:{{ position.character }}`"
 )
 
 markdown_range_template = (
     "Located `{{ file_path }}` range "
-    "{{ range.start.line }}:{{ range.start.character }}-"
-    "{{ range.end.line }}:{{ range.end.character }}"
+    "`{{ range.start.line }}:{{ range.start.character }}-"
+    "{{ range.end.line }}:{{ range.end.character }}`"
 )
 
 

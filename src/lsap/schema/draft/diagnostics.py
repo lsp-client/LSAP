@@ -71,7 +71,7 @@ No issues found.
 | Line:Col | Severity | Message |
 | :--- | :--- | :--- |
 {%- for d in diagnostics %}
-| {{ d.range.start.line }}:{{ d.range.start.character }} | {{ d.severity }} | {{ d.message }} |
+| `{{ d.range.start.line }}:{{ d.range.start.character }}` | {{ d.severity }} | {{ d.message }} |
 {%- endfor %}
 
 {% if has_more -%}
@@ -127,7 +127,7 @@ No issues found in the workspace.
 | File | Line:Col | Severity | Message |
 | :--- | :--- | :--- | :--- |
 {%- for item in items %}
-| `{{ item.file_path }}` | {{ item.range.start.line }}:{{ item.range.start.character }} | {{ item.severity }} | {{ item.message }} |
+| `{{ item.file_path }}` | `{{ item.range.start.line }}:{{ item.range.start.character }}` | {{ item.severity }} | {{ item.message }} |
 {%- endfor %}
 
 {% if has_more -%}

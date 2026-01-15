@@ -73,7 +73,7 @@ No completion suggestions found.
 {%- for item in items %}
 ### {{ forloop.index }}. `{{ item.label }}` ({{ item.kind }})
 {%- if item.detail %}
-- Detail: {{ item.detail }}
+- Detail: `{{ item.detail }}`
 {%- endif %}
 {%- if item.insert_text and item.insert_text != item.label %}
 - Insert: `{{ item.insert_text }}`

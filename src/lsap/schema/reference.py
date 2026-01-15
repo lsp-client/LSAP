@@ -99,7 +99,7 @@ Total {{ request.mode }}: {{ total }} | Showing: {{ items.size }}{% if max_items
 No {{ request.mode }} found.
 {%- else -%}
 {%- for item in items -%}
-### {{ item.location.file_path }}:{{ item.location.range.start.line }}
+### `{{ item.location.file_path }}:{{ item.location.range.start.line }}`
 {%- if item.symbol != nil %}
 In `{{ item.symbol.path | join: "." }}` (`{{ item.symbol.kind }}`)
 {%- endif %}
