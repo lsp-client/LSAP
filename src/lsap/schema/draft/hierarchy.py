@@ -178,13 +178,13 @@ class HierarchyRequest(LocateRequest):
 
 
 markdown_template: Final = """
-# {{ root.name }} Hierarchy ({{ hierarchy_type }}, depth: {{ depth }})
+# `{{ root.name }}` Hierarchy (`{{ hierarchy_type }}`, depth: `{{ depth }}`)
 
 {% if direction == "incoming" or direction == "both" %}
 ## Incoming
 
 {% for item in items_incoming %}
-{% for i in (1..item.level) %}#{% endfor %}## {{ item.name }}
+{% for i in (1..item.level) %}#{% endfor %}## `{{ item.name }}`
 - Kind: `{{ item.kind }}`
 - File: `{{ item.file_path }}`
 {%- if item.detail != nil %}
@@ -201,7 +201,7 @@ markdown_template: Final = """
 ## Outgoing
 
 {% for item in items_outgoing %}
-{% for i in (1..item.level) %}#{% endfor %}## {{ item.name }}
+{% for i in (1..item.level) %}#{% endfor %}## `{{ item.name }}`
 - Kind: `{{ item.kind }}`
 - File: `{{ item.file_path }}`
 {%- if item.detail != nil %}

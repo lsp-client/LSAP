@@ -154,7 +154,7 @@ No changes to preview.
 {%- for file in changes %}
 ## `{{ file.file_path }}`
 {% for diff in file.diffs %}
-Line {{ diff.line }}:
+Line `{{ diff.line }}`:
 ```diff
 - {{ diff.original }}
 + {{ diff.modified }}

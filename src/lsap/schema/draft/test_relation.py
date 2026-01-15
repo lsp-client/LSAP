@@ -81,15 +81,15 @@ class TestRelationRequest(Request):
 
 
 markdown_template: Final = """
-# Test Relation for `{{ symbol.name }}` ({{ direction }})
+# Test Relation for `{{ symbol.name }}` (`{{ direction }}`)
 
 {% if related_items.size > 0 %}
 Found {{ related_items | size }} related item(s):
 
 {% for item in related_items %}
-- **{{ item.name }}** (`{{ item.kind }}`)
+- **`{{ item.name }}`** (`{{ item.kind }}`)
   - File: `{{ item.file_path }}`
-  - Line: {{ item.range.start.line }}
+  - Line: `{{ item.range.start.line }}`
   - Strategy: `{{ item.strategy }}`
 {% endfor %}
 {% else %}

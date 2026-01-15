@@ -14,6 +14,7 @@ from lsap.schema.models import Position, Range, SymbolDetailInfo, SymbolKind
 from lsap.schema.outline import OutlineRequest, OutlineResponse
 from lsap.schema.types import SymbolPath
 from lsap.utils.capability import ensure_capability
+from lsap.utils.markdown import clean_hover_content
 from lsap.utils.symbol import iter_symbols
 
 from .abc import Capability
@@ -72,4 +73,4 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
         if hover := await ensure_capability(
             self.client, WithRequestHover
         ).request_hover(item.file_path, pos):
-            item.hover = hover.value
+            item.hover = clean_hover_content(hover.value)

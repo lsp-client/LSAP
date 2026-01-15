@@ -18,6 +18,7 @@ from lsap.schema.reference import ReferenceItem, ReferenceRequest, ReferenceResp
 from lsap.utils.cache import PaginationCache
 from lsap.utils.capability import ensure_capability
 from lsap.utils.document import DocumentReader
+from lsap.utils.markdown import clean_hover_content
 from lsap.utils.pagination import paginate
 from lsap.utils.symbol import symbol_at
 
@@ -128,7 +129,7 @@ class ReferenceCapability(Capability[ReferenceRequest, ReferenceResponse]):
             if hover := await ensure_capability(
                 self.client, WithRequestHover
             ).request_hover(file_path, range.start):
-                symbol.hover = hover.value
+                symbol.hover = clean_hover_content(hover.value)
 
         items.append(
             ReferenceItem(
