@@ -111,3 +111,37 @@ def test_read_dedent():
     assert result is not None
     assert result.exact_content == "pass"
     assert result.content == "2| pass"
+
+
+def test_read_trim_empty():
+    content = "\n\n  \nline one\nline two\n\n\n"
+    reader = DocumentReader(document=content)
+
+    # Read the whole thing but trim empty lines
+    read_range = Range(
+        start=Position(line=0, character=0), end=Position(line=7, character=0)
+    )
+
+    # Without trim
+    result_no_trim = reader.read(read_range, trim_empty=False)
+    assert result_no_trim is not None
+    assert result_no_trim.content.count("\n") == 7
+
+    # With trim
+    result_trim = reader.read(read_range, trim_empty=True)
+    assert result_trim is not None
+    # Lines 4 and 5 (1-based index) are "line one" and "line two"
+    assert result_trim.content == "4| line one\n5| line two\n"
+    assert result_trim.range.start.line == 3
+    assert result_trim.range.end.line == 5
+
+
+def test_read_trim_empty_only_whitespace():
+    content = "\n  \n\t\n"
+    reader = DocumentReader(document=content)
+    read_range = Range(
+        start=Position(line=0, character=0), end=Position(line=3, character=0)
+    )
+
+    result = reader.read(read_range, trim_empty=True)
+    assert result is None

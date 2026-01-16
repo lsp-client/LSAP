@@ -7,6 +7,19 @@ from lsap.exception import UnsupportedCapabilityError
 def ensure_capability[C: CapabilityProtocol](
     client: Client, capability: type[C], *, error: str | None = None
 ) -> C:
+    """Ensure that the client supports the specified capability.
+
+    Args:
+        client: The LSP client instance.
+        capability: The capability protocol class to check against.
+        error: Optional custom error message suffix.
+
+    Returns:
+        The client instance cast to the specified capability type.
+
+    Raises:
+        UnsupportedCapabilityError: If the client does not support the capability.
+    """
     if not error:
         error = "This operation cannot be performed."
 

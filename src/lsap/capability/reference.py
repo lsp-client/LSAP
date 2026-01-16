@@ -97,12 +97,13 @@ class ReferenceCapability(Capability[ReferenceRequest, ReferenceResponse]):
         reader = DocumentReader(content)
 
         range = loc.range
-        line = range.start.line
         context_range = LSPRange(
-            start=LSPPosition(line=max(0, line - context_lines), character=0),
-            end=LSPPosition(line=line + context_lines + 1, character=0),
+            start=LSPPosition(
+                line=max(0, range.start.line - context_lines), character=0
+            ),
+            end=LSPPosition(line=range.end.line + context_lines + 1, character=0),
         )
-        if not (snippet := reader.read(context_range)):
+        if not (snippet := reader.read(context_range, trim_empty=True)):
             return
 
         symbol: SymbolDetailInfo | None = None
