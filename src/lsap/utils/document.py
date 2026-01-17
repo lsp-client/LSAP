@@ -123,23 +123,38 @@ class DocumentReader:
 
         return self.document[start_offset:end_offset]
 
-    def read(self, read_range: LSPRange) -> Snippet | None:
+    def read(self, read_range: LSPRange, *, trim_empty: bool = False) -> Snippet | None:
         if not self._lines:
             return None
 
-        if read_range.start.line >= len(self._lines):
+        start_line = read_range.start.line
+        if start_line >= len(self._lines):
             return None
+
+        end_line = read_range.end.line
+        end_char = read_range.end.character
+        last_line_idx = end_line if end_char > 0 else max(start_line, end_line - 1)
+        last_line_idx = min(last_line_idx, len(self._lines) - 1)
+
+        if trim_empty:
+            while start_line <= last_line_idx and not self._lines[start_line].strip():
+                start_line += 1
+            while (
+                last_line_idx >= start_line and not self._lines[last_line_idx].strip()
+            ):
+                last_line_idx -= 1
+
+            if start_line > last_line_idx:
+                return None
+
+            read_range = LSPRange(
+                start=LSPPosition(line=start_line, character=0),
+                end=LSPPosition(line=last_line_idx + 1, character=0),
+            )
 
         exact_content = self.get_text(read_range)
 
-        start_line = read_range.start.line
-        end_char = read_range.end.character
-        last_line_idx = (
-            read_range.end.line
-            if end_char > 0
-            else max(start_line, read_range.end.line - 1)
-        )
-        raw_lines = self._lines[start_line : min(last_line_idx + 1, len(self._lines))]
+        raw_lines = self._lines[start_line : last_line_idx + 1]
         dedented_lines = textwrap.dedent("".join(raw_lines)).splitlines(keepends=True)
 
         numbered_lines = [
