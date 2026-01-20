@@ -43,9 +43,17 @@ class OutlineRequest(Request):
 
     Use this to understand the structure of a file (classes, methods, functions)
     and quickly navigate its contents.
+
+    Note: By default (top=False), this API returns structural symbols only
+    (classes, methods, top-level functions/variables), excluding symbols
+    defined inside functions or methods (like local variables or nested
+    functions) to reduce noise. When top=True, only first-level symbols
+    are returned.
     """
 
     file_path: Path
+    top: bool = False
+    """If true, return only top-level symbols (expanding Module containers to show their direct children, and excluding nested members of classes and functions)."""
 
 
 markdown_template: Final = """
