@@ -1,7 +1,8 @@
 from functools import cached_property
 
+import anyio
 import asyncer
-from attrs import Factory, define
+from attrs import Factory, define, field
 from lsp_client.capability.request import (
     WithRequestDocumentSymbol,
     WithRequestHover,
@@ -29,6 +30,7 @@ from .locate import LocateCapability
 @define
 class ReferenceCapability(Capability[ReferenceRequest, ReferenceResponse]):
     _cache: PaginationCache[ReferenceItem] = Factory(PaginationCache)
+    process_sem: anyio.Semaphore = field(default=anyio.Semaphore(32))
 
     @cached_property
     def locate(self) -> LocateCapability:
@@ -92,7 +94,8 @@ class ReferenceCapability(Capability[ReferenceRequest, ReferenceResponse]):
         context_lines: int,
         items: list[ReferenceItem],
     ) -> None:
-        file_path = self.client.from_uri(loc.uri)
+        async with self.process_sem:
+            file_path = self.client.from_uri(loc.uri)
         content = await self.client.read_file(file_path)
         reader = DocumentReader(content)
 

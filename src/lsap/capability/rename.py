@@ -6,8 +6,9 @@ from functools import cached_property
 from pathlib import Path
 from typing import override
 
+import anyio
 import asyncer
-from attrs import define
+from attrs import define, field
 from lsp_client.capability.request import WithRequestRename
 from lsp_client.protocol import CapabilityClientProtocol
 from lsp_client.utils.types import lsp_type
@@ -141,6 +142,8 @@ def _filter_edit(
 
 @define
 class RenamePreviewCapability(Capability[RenamePreviewRequest, RenamePreviewResponse]):
+    file_sem: anyio.Semaphore = field(default=anyio.Semaphore(32))
+
     @cached_property
     def locate(self) -> LocateCapability:
         return LocateCapability(self.client)
@@ -208,11 +211,12 @@ class RenamePreviewCapability(Capability[RenamePreviewRequest, RenamePreviewResp
         *,
         reader: DocumentReader | None = None,
     ) -> RenameFileChange | None:
-        if reader is None:
-            content = await self.client.read_file(
-                self.client.from_uri(uri, relative=False)
-            )
-            reader = DocumentReader(content)
+        async with self.file_sem:
+            if reader is None:
+                content = await self.client.read_file(
+                    self.client.from_uri(uri, relative=False)
+                )
+                reader = DocumentReader(content)
 
         diffs: list[RenameDiff] = []
         for edit in edits:
@@ -246,6 +250,8 @@ class RenamePreviewCapability(Capability[RenamePreviewRequest, RenamePreviewResp
 
 @define
 class RenameExecuteCapability(Capability[RenameExecuteRequest, RenameExecuteResponse]):
+    file_sem: anyio.Semaphore = field(default=anyio.Semaphore(32))
+
     @override
     async def __call__(self, req: RenameExecuteRequest) -> RenameExecuteResponse | None:
         cached = _preview_cache.get(req.rename_id)
@@ -301,11 +307,12 @@ class RenameExecuteCapability(Capability[RenameExecuteRequest, RenameExecuteResp
         *,
         reader: DocumentReader | None = None,
     ) -> RenameFileChange | None:
-        if reader is None:
-            content = await self.client.read_file(
-                self.client.from_uri(uri, relative=False)
-            )
-            reader = DocumentReader(content)
+        async with self.file_sem:
+            if reader is None:
+                content = await self.client.read_file(
+                    self.client.from_uri(uri, relative=False)
+                )
+                reader = DocumentReader(content)
 
         diffs: list[RenameDiff] = []
         for edit in edits:

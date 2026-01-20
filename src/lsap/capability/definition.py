@@ -4,8 +4,9 @@ from collections.abc import Sequence
 from functools import cached_property
 from typing import override
 
+import anyio
 import asyncer
-from attrs import define
+from attrs import define, field
 from lsp_client.capability.request import (
     WithRequestDeclaration,
     WithRequestDefinition,
@@ -24,6 +25,8 @@ from .symbol import SymbolCapability
 
 @define
 class DefinitionCapability(Capability[DefinitionRequest, DefinitionResponse]):
+    resolve_sem: anyio.Semaphore = field(default=anyio.Semaphore(32))
+
     @cached_property
     def locate(self) -> LocateCapability:
         return LocateCapability(self.client)
@@ -69,7 +72,8 @@ class DefinitionCapability(Capability[DefinitionRequest, DefinitionResponse]):
         async with asyncer.create_task_group() as tg:
 
             async def resolve_item(loc: Location) -> SymbolCodeInfo | None:
-                target_file_path = self.client.from_uri(loc.uri)
+                async with self.resolve_sem:
+                    target_file_path = self.client.from_uri(loc.uri)
                 if symbol_info := await self.symbol.resolve(
                     target_file_path,
                     loc.range.start,
