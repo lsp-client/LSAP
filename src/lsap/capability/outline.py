@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator, Sequence
 from pathlib import Path
 from typing import override
 
@@ -9,13 +9,13 @@ from attrs import define
 from lsp_client.capability.request import WithRequestDocumentSymbol, WithRequestHover
 from lsprotocol.types import DocumentSymbol
 from lsprotocol.types import Position as LSPPosition
+from lsprotocol.types import SymbolKind as LSPSymbolKind
 
 from lsap.schema.models import Position, Range, SymbolDetailInfo, SymbolKind
 from lsap.schema.outline import OutlineRequest, OutlineResponse
 from lsap.schema.types import SymbolPath
 from lsap.utils.capability import ensure_capability
 from lsap.utils.markdown import clean_hover_content
-from lsap.utils.symbol import iter_symbols
 
 from .abc import Capability
 
@@ -30,12 +30,59 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
         if symbols is None:
             return None
 
-        items = await self.resolve_symbols(
-            req.file_path,
-            iter_symbols(symbols),
-        )
+        if req.top:
+            symbols_iter = self._iter_top_symbols(symbols)
+        else:
+            # Filter symbols: exclude implementation details inside functions/methods
+            symbols_iter = self._iter_filtered_symbols(symbols)
+
+        items = await self.resolve_symbols(req.file_path, symbols_iter)
 
         return OutlineResponse(file_path=req.file_path, items=items)
+
+    def _iter_top_symbols(
+        self,
+        nodes: Sequence[DocumentSymbol],
+        symbol_path: SymbolPath | None = None,
+    ) -> Iterator[tuple[SymbolPath, DocumentSymbol]]:
+        """Iterate only top-level symbols, expanding Modules."""
+        if symbol_path is None:
+            symbol_path = []
+        for node in nodes:
+            current_path = [*symbol_path, node.name]
+            if node.kind == LSPSymbolKind.Module:
+                if node.children:
+                    yield from self._iter_top_symbols(node.children, current_path)
+            else:
+                yield current_path, node
+
+    def _iter_filtered_symbols(
+        self,
+        nodes: Sequence[DocumentSymbol],
+        parent_kind: LSPSymbolKind | None = None,
+        symbol_path: SymbolPath | None = None,
+    ) -> Iterator[tuple[SymbolPath, DocumentSymbol]]:
+        """DFS iterate hierarchy of DocumentSymbol with filtering."""
+        if symbol_path is None:
+            symbol_path = []
+
+        # If parent is a function/method, we don't yield any of its children
+        if parent_kind in (
+            LSPSymbolKind.Function,
+            LSPSymbolKind.Method,
+            LSPSymbolKind.Constructor,
+            LSPSymbolKind.Operator,
+        ):
+            return
+
+        for node in nodes:
+            current_path = [*symbol_path, node.name]
+            yield current_path, node
+
+            if node.children:
+                yield from self._iter_filtered_symbols(
+                    node.children, node.kind, current_path
+                )
 
     async def resolve_symbols(
         self,
