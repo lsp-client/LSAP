@@ -147,7 +147,11 @@ async def test_reference():
     capability = ReferenceCapability(client=client)  # type: ignore
 
     req = ReferenceRequest(
-        locate=Locate(file_path=Path("test.py"), scope=LineScope(line=2), find="foo")
+        locate=Locate(
+            file_path=Path("test.py"),
+            scope=LineScope(start_line=2, end_line=3),
+            find="foo",
+        )
     )
 
     resp = await capability(req)
@@ -166,7 +170,11 @@ async def test_reference_pagination():
 
     # First page
     req1 = ReferenceRequest(
-        locate=Locate(file_path=Path("test.py"), scope=LineScope(line=2), find="foo"),
+        locate=Locate(
+            file_path=Path("test.py"),
+            scope=LineScope(start_line=2, end_line=3),
+            find="foo",
+        ),
         max_items=1,
     )
     resp1 = await capability(req1)
@@ -177,7 +185,11 @@ async def test_reference_pagination():
 
     # Second page
     req2 = ReferenceRequest(
-        locate=Locate(file_path=Path("test.py"), scope=LineScope(line=2), find="foo"),
+        locate=Locate(
+            file_path=Path("test.py"),
+            scope=LineScope(start_line=2, end_line=3),
+            find="foo",
+        ),
         pagination_id=resp1.pagination_id,
         start_index=1,
         max_items=1,
@@ -199,7 +211,11 @@ async def test_unsupported_implementation():
     # when a capability is not supported, but the mock now supports everything.
     # This test passes by design - the capability is supported.
     req = ReferenceRequest(
-        locate=Locate(file_path=Path("test.py"), scope=LineScope(line=2), find="foo"),
+        locate=Locate(
+            file_path=Path("test.py"),
+            scope=LineScope(start_line=2, end_line=3),
+            find="foo",
+        ),
         mode="implementations",
     )
 

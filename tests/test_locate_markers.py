@@ -121,15 +121,17 @@ class TestParseLocateString:
         locate = parse_locate_string("foo.py:42@return <|>result")
         assert locate.file_path == Path("foo.py")
         assert isinstance(locate.scope, LineScope)
-        assert locate.scope.line == 42
+        assert locate.scope.start_line == 42
+        assert locate.scope.end_line == 43
         assert locate.find == "return <|>result"
 
     def test_parse_file_line_range_and_find(self):
         """Test parsing with line range scope and find pattern."""
-        locate = parse_locate_string("foo.py:10-20@if <|>condition")
+        locate = parse_locate_string("foo.py:10,20@if <|>condition")
         assert locate.file_path == Path("foo.py")
         assert isinstance(locate.scope, LineScope)
-        assert locate.scope.line == (10, 20)
+        assert locate.scope.start_line == 10
+        assert locate.scope.end_line == 21
         assert locate.find == "if <|>condition"
 
     def test_parse_file_symbol_scope_and_find(self):
@@ -153,7 +155,8 @@ class TestParseLocateString:
         locate = parse_locate_string("foo.py:42")
         assert locate.file_path == Path("foo.py")
         assert isinstance(locate.scope, LineScope)
-        assert locate.scope.line == 42
+        assert locate.scope.start_line == 42
+        assert locate.scope.end_line == 43
         assert locate.find is None
 
     def test_parse_nested_path(self):
@@ -182,7 +185,8 @@ class TestParseLocateString:
         locate = parse_locate_string("foo.py:42@return <|>result")
         assert locate.file_path == Path("foo.py")
         assert isinstance(locate.scope, LineScope)
-        assert locate.scope.line == 42
+        assert locate.scope.start_line == 42
+        assert locate.scope.end_line == 43
         assert locate.find == "return <|>result"
 
     def test_parse_line_range_with_comma(self):
@@ -190,23 +194,17 @@ class TestParseLocateString:
         locate = parse_locate_string("foo.py:10,20@if <|>condition")
         assert locate.file_path == Path("foo.py")
         assert isinstance(locate.scope, LineScope)
-        assert locate.scope.line == (10, 20)
+        assert locate.scope.start_line == 10
+        assert locate.scope.end_line == 21
         assert locate.find == "if <|>condition"
-
-    def test_parse_line_range_with_dash_no_prefix(self):
-        """Test parsing with line range using dash without L prefix."""
-        locate = parse_locate_string("foo.py:10-20@while <|>loop")
-        assert locate.file_path == Path("foo.py")
-        assert isinstance(locate.scope, LineScope)
-        assert locate.scope.line == (10, 20)
-        assert locate.find == "while <|>loop"
 
     def test_parse_line_number_only_no_find(self):
         """Test parsing with line number only, no find pattern."""
         locate = parse_locate_string("foo.py:123")
         assert locate.file_path == Path("foo.py")
         assert isinstance(locate.scope, LineScope)
-        assert locate.scope.line == 123
+        assert locate.scope.start_line == 123
+        assert locate.scope.end_line == 124
         assert locate.find is None
 
     def test_parse_line_range_comma_no_find(self):
@@ -214,5 +212,15 @@ class TestParseLocateString:
         locate = parse_locate_string("foo.py:12,14")
         assert locate.file_path == Path("foo.py")
         assert isinstance(locate.scope, LineScope)
-        assert locate.scope.line == (12, 14)
+        assert locate.scope.start_line == 12
+        assert locate.scope.end_line == 15
+        assert locate.find is None
+
+    def test_parse_line_range_till_eof(self):
+        """Test parsing with line range till EOF (end_line=0)."""
+        locate = parse_locate_string("foo.py:10,0")
+        assert locate.file_path == Path("foo.py")
+        assert isinstance(locate.scope, LineScope)
+        assert locate.scope.start_line == 10
+        assert locate.scope.end_line == 0
         assert locate.find is None

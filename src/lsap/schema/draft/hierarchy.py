@@ -129,7 +129,7 @@ class HierarchyRequest(LocateRequest):
     1. Find who calls a function (incoming calls):
        HierarchyRequest(
            hierarchy_type="call",
-           locate=Locate(file_path="src/main.py", scope=LineScope(line=10), find="process_data"),
+           locate=Locate(file_path="src/main.py", scope=LineScope(start_line=10, end_line=11), find="process_data"),
            direction="incoming",
            depth=2
        )
@@ -137,7 +137,7 @@ class HierarchyRequest(LocateRequest):
     2. Find what a function calls (outgoing calls):
        HierarchyRequest(
            hierarchy_type="call",
-           locate=Locate(file_path="src/main.py", scope=LineScope(line=10), find="process_data"),
+           locate=Locate(file_path="src/main.py", scope=LineScope(start_line=10, end_line=11), find="process_data"),
            direction="outgoing",
            depth=2
        )
@@ -145,7 +145,7 @@ class HierarchyRequest(LocateRequest):
     3. Find parent classes (incoming in type hierarchy):
        HierarchyRequest(
            hierarchy_type="type",
-           locate=Locate(file_path="src/models.py", scope=LineScope(line=5), find="UserModel"),
+           locate=Locate(file_path="src/models.py", scope=LineScope(start_line=5, end_line=6), find="UserModel"),
            direction="incoming",
            depth=2
        )
@@ -153,7 +153,7 @@ class HierarchyRequest(LocateRequest):
     4. Find child classes (outgoing in type hierarchy):
        HierarchyRequest(
            hierarchy_type="type",
-           locate=Locate(file_path="src/models.py", scope=LineScope(line=5), find="BaseModel"),
+           locate=Locate(file_path="src/models.py", scope=LineScope(start_line=5, end_line=6), find="BaseModel"),
            direction="outgoing",
            depth=2
        )

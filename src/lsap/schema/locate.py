@@ -12,8 +12,7 @@ A concise string syntax is available: `<file_path>:<scope>@<find>`
 ### Scope formats
 
 - `<line>`: Single line number (e.g., `"42"`)
-- `<start>,<end>`: Line range with comma (e.g., `"10,20"`)
-- `<start>-<end>`: Line range with dash (e.g., `"10-20"`)
+- `<start>,<end>`: Line range with comma (e.g., `"10,20"`). Use `0` for `<end>` to mean till EOF (e.g., `"10,0"`)
 - `<symbol_path>`: Symbol path with dots (e.g., `"MyClass.my_method"`)
 
 ### Examples
@@ -28,7 +27,7 @@ A concise string syntax is available: `<file_path>:<scope>@<find>`
 from pathlib import Path
 from typing import Self
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from ._abc import Request, Response
 from .models import Position, Range
@@ -38,8 +37,10 @@ from .types import SymbolPath
 class LineScope(BaseModel):
     """Scope by line range"""
 
-    line: int | tuple[int, int]
-    """Line number or (start, end) range (1-based)"""
+    start_line: int = Field(ge=1, description="Start line number (1-based, inclusive)")
+    end_line: int = Field(
+        description="End line number (1-based, exclusive). When set to 0, means till EOF."
+    )
 
 
 class SymbolScope(BaseModel):

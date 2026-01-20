@@ -132,7 +132,11 @@ async def test_definition():
     capability = DefinitionCapability(client=client)  # type: ignore
 
     req = DefinitionRequest(
-        locate=Locate(file_path=Path("main.py"), scope=LineScope(line=2), find="foo"),
+        locate=Locate(
+            file_path=Path("main.py"),
+            scope=LineScope(start_line=2, end_line=3),
+            find="foo",
+        ),
         mode="definition",
     )
 
@@ -156,7 +160,11 @@ async def test_unsupported_declaration():
     # when a capability is not supported, but the mock now supports everything.
     # This test passes by design - the capability is supported.
     req = DefinitionRequest(
-        locate=Locate(file_path=Path("main.py"), scope=LineScope(line=2), find="foo"),
+        locate=Locate(
+            file_path=Path("main.py"),
+            scope=LineScope(start_line=2, end_line=3),
+            find="foo",
+        ),
         mode="declaration",
     )
 

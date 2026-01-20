@@ -44,7 +44,11 @@ async def test_doc():
     capability = DocCapability(client=client)  # type: ignore
 
     req = DocRequest(
-        locate=Locate(file_path=Path("main.py"), scope=LineScope(line=1), find="foo"),
+        locate=Locate(
+            file_path=Path("main.py"),
+            scope=LineScope(start_line=1, end_line=2),
+            find="foo",
+        ),
     )
 
     resp = await capability(req)
@@ -58,7 +62,11 @@ async def test_doc_not_found():
     capability = DocCapability(client=client)  # type: ignore
 
     req = DocRequest(
-        locate=Locate(file_path=Path("main.py"), scope=LineScope(line=1), find="bar"),
+        locate=Locate(
+            file_path=Path("main.py"),
+            scope=LineScope(start_line=1, end_line=2),
+            find="bar",
+        ),
     )
 
     resp = await capability(req)

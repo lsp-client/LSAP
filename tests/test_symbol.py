@@ -135,7 +135,7 @@ async def test_symbol_from_text():
     req = SymbolRequest(
         locate=Locate(
             file_path=Path("test.py"),
-            scope=LineScope(line=2),
+            scope=LineScope(start_line=2, end_line=3),
             find="foo",
         )
     )
