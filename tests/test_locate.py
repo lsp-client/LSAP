@@ -20,7 +20,7 @@ async def test_locate_text_ambiguous():
     req = LocateRequest(
         locate=Locate(
             file_path=Path("test.py"),
-            scope=LineScope(line=(1, 2)),
+            scope=LineScope(start_line=1, end_line=3),
             find="abc",
         )
     )
@@ -39,7 +39,7 @@ async def test_locate_text_single_match():
     req = LocateRequest(
         locate=Locate(
             file_path=Path("test.py"),
-            scope=LineScope(line=(1, 2)),
+            scope=LineScope(start_line=1, end_line=3),
             find="def",
         )
     )

@@ -65,20 +65,15 @@ async def _get_scope_info(
         case None:
             return ScopeInfo(reader.full_range, None)
 
-        case LineScope(line=line):
-            match line:
-                case int():
-                    start, end = line - 1, line - 1
-                case (s, e):
-                    start, end = s - 1, e - 1
-
-            return ScopeInfo(
-                LSPRange(
-                    start=LSPPosition(line=start, character=0),
-                    end=LSPPosition(line=end + 1, character=0),
-                ),
-                None,
+        case LineScope(start_line=start_line, end_line=end_line):
+            start = LSPPosition(line=start_line - 1, character=0)
+            end = (
+                reader.full_range.end
+                if end_line == 0
+                else LSPPosition(line=end_line - 1, character=0)
             )
+
+            return ScopeInfo(LSPRange(start=start, end=end), None)
         case SymbolScope(symbol_path=path):
             symbols = await ensure_capability(
                 client, WithRequestDocumentSymbol

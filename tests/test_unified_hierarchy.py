@@ -98,7 +98,7 @@ def test_unified_hierarchy_request_call():
         hierarchy_type="call",
         locate=Locate(
             file_path=Path("test.py"),
-            scope=LineScope(line=10),
+            scope=LineScope(start_line=10, end_line=11),
             find="my_function",
         ),
         direction="both",
@@ -119,7 +119,7 @@ def test_unified_hierarchy_request_type():
         hierarchy_type="type",
         locate=Locate(
             file_path=Path("test.py"),
-            scope=LineScope(line=5),
+            scope=LineScope(start_line=5, end_line=6),
             find="MyClass",
         ),
         direction="outgoing",
