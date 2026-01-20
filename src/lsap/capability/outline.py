@@ -4,8 +4,9 @@ from collections.abc import Iterable, Iterator, Sequence
 from pathlib import Path
 from typing import override
 
+import anyio
 import asyncer
-from attrs import define
+from attrs import define, field
 from lsp_client.capability.request import WithRequestDocumentSymbol, WithRequestHover
 from lsprotocol.types import DocumentSymbol
 from lsprotocol.types import Position as LSPPosition
@@ -22,6 +23,8 @@ from .abc import Capability
 
 @define
 class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
+    hover_sem: anyio.Semaphore = field(default=anyio.Semaphore(32))
+
     @override
     async def __call__(self, req: OutlineRequest) -> OutlineResponse | None:
         symbols = await ensure_capability(
@@ -117,7 +120,8 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
         )
 
     async def _fill_hover(self, item: SymbolDetailInfo, pos: LSPPosition) -> None:
-        if hover := await ensure_capability(
-            self.client, WithRequestHover
-        ).request_hover(item.file_path, pos):
-            item.hover = clean_hover_content(hover.value)
+        async with self.hover_sem:
+            if hover := await ensure_capability(
+                self.client, WithRequestHover
+            ).request_hover(item.file_path, pos):
+                item.hover = clean_hover_content(hover.value)
