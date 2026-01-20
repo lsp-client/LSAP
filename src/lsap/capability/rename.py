@@ -218,34 +218,38 @@ class RenamePreviewCapability(Capability[RenamePreviewRequest, RenamePreviewResp
                 )
                 reader = DocumentReader(content)
 
-        diffs: list[RenameDiff] = []
-        for edit in edits:
-            start, end = edit.range.start, edit.range.end
-            line_raw = reader.get_line(start.line, keepends=True)
-            if line_raw is None:
-                continue
+            diffs: list[RenameDiff] = []
+            for edit in edits:
+                start, end = edit.range.start, edit.range.end
+                line_raw = reader.get_line(start.line, keepends=True)
+                if line_raw is None:
+                    continue
 
-            original_line = line_raw.rstrip("\r\n")
-            new_text = get_edit_text(edit)
+                original_line = line_raw.rstrip("\r\n")
+                new_text = get_edit_text(edit)
 
-            if start.line == end.line:
-                modified_line = (
-                    line_raw[: start.character] + new_text + line_raw[end.character :]
-                ).rstrip("\r\n")
-            else:
-                modified_line = new_text
+                if start.line == end.line:
+                    modified_line = (
+                        line_raw[: start.character]
+                        + new_text
+                        + line_raw[end.character :]
+                    ).rstrip("\r\n")
+                else:
+                    modified_line = new_text
 
-            diffs.append(
-                RenameDiff(
-                    line=start.line + 1,
-                    original=original_line,
-                    modified=modified_line,
+                diffs.append(
+                    RenameDiff(
+                        line=start.line + 1,
+                        original=original_line,
+                        modified=modified_line,
+                    )
                 )
-            )
 
-        if diffs:
-            return RenameFileChange(file_path=self.client.from_uri(uri), diffs=diffs)
-        return None
+            if diffs:
+                return RenameFileChange(
+                    file_path=self.client.from_uri(uri), diffs=diffs
+                )
+            return None
 
 
 @define
@@ -314,31 +318,35 @@ class RenameExecuteCapability(Capability[RenameExecuteRequest, RenameExecuteResp
                 )
                 reader = DocumentReader(content)
 
-        diffs: list[RenameDiff] = []
-        for edit in edits:
-            start, end = edit.range.start, edit.range.end
-            line_raw = reader.get_line(start.line, keepends=True)
-            if line_raw is None:
-                continue
+            diffs: list[RenameDiff] = []
+            for edit in edits:
+                start, end = edit.range.start, edit.range.end
+                line_raw = reader.get_line(start.line, keepends=True)
+                if line_raw is None:
+                    continue
 
-            original_line = line_raw.rstrip("\r\n")
-            new_text = get_edit_text(edit)
+                original_line = line_raw.rstrip("\r\n")
+                new_text = get_edit_text(edit)
 
-            if start.line == end.line:
-                modified_line = (
-                    line_raw[: start.character] + new_text + line_raw[end.character :]
-                ).rstrip("\r\n")
-            else:
-                modified_line = new_text
+                if start.line == end.line:
+                    modified_line = (
+                        line_raw[: start.character]
+                        + new_text
+                        + line_raw[end.character :]
+                    ).rstrip("\r\n")
+                else:
+                    modified_line = new_text
 
-            diffs.append(
-                RenameDiff(
-                    line=start.line + 1,
-                    original=original_line,
-                    modified=modified_line,
+                diffs.append(
+                    RenameDiff(
+                        line=start.line + 1,
+                        original=original_line,
+                        modified=modified_line,
+                    )
                 )
-            )
 
-        if diffs:
-            return RenameFileChange(file_path=self.client.from_uri(uri), diffs=diffs)
-        return None
+            if diffs:
+                return RenameFileChange(
+                    file_path=self.client.from_uri(uri), diffs=diffs
+                )
+            return None

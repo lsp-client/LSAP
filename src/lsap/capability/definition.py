@@ -74,11 +74,11 @@ class DefinitionCapability(Capability[DefinitionRequest, DefinitionResponse]):
             async def resolve_item(loc: Location) -> SymbolCodeInfo | None:
                 async with self.resolve_sem:
                     target_file_path = self.client.from_uri(loc.uri)
-                if symbol_info := await self.symbol.resolve(
-                    target_file_path,
-                    loc.range.start,
-                ):
-                    return symbol_info
+                    if symbol_info := await self.symbol.resolve(
+                        target_file_path,
+                        loc.range.start,
+                    ):
+                        return symbol_info
                 return None
 
             infos = [tg.soonify(resolve_item)(loc) for loc in locations]
