@@ -110,6 +110,12 @@ class LocateCapability(Capability[LocateRequest, LocateResponse]):
     def _find_position(
         self, find: str, scope_range: LSPRange, reader: DocumentReader
     ) -> LSPPosition | None:
+        """Find the position of the search string or marker within the scope.
+
+        If a marker is present, the position is at the character immediately
+        following the marker. If there is no character following the marker,
+        the position is at the character immediately preceding the marker.
+        """
         snippet = reader.read(scope_range)
         if not snippet:
             return None
