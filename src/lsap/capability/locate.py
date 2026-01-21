@@ -115,6 +115,8 @@ class LocateCapability(Capability[LocateRequest, LocateResponse]):
         If a marker is present, the position is at the character immediately
         following the marker. If there is no character following the marker,
         the position is at the character immediately preceding the marker.
+        The marker itself is only used to identify the position and does not
+        represent any characters or whitespace in the content.
         """
         snippet = reader.read(scope_range)
         if not snippet:
