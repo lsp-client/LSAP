@@ -95,50 +95,68 @@ class LocateCapability(Capability[LocateRequest, LocateResponse]):
             self.client, locate.file_path, locate.scope, reader
         )
 
-        snippet = reader.read(info.range)
-        if not snippet:
-            return None
-
-        pos: LSPPosition | None = None
-
-        if locate.find:
-            if marker_info := detect_marker(locate.find):
-                marker, _, _ = marker_info
-                before, _, after = locate.find.partition(marker)
-                re_before, re_after = _to_regex(before), _to_regex(after)
-
-                if not re_before and not re_after:
-                    offset = 0
-                elif m := re.search(
-                    f"({re_before})\\s*({re_after})", snippet.exact_content
-                ):
-                    offset = m.end(1)
-                else:
-                    return None
-            elif m := re.search(_to_regex(locate.find), snippet.exact_content):
-                offset = m.start()
-            else:
-                return None
-
-            pos = reader.offset_to_position(snippet.range.start, offset)
-        else:
-            match locate.scope:
-                case SymbolScope():
-                    pos = info.selection_start
-                case LineScope():
-                    m = re.search(r"\S", snippet.exact_content)
-                    pos = reader.offset_to_position(
-                        snippet.range.start, m.start() if m else 0
-                    )
-                case _:
-                    pos = info.range.start
-
-        if pos:
+        if pos := (
+            self._find_position(locate.find, info.range, reader)
+            if locate.find
+            else self._default_position(locate.scope, info, reader)
+        ):
             return LocateResponse(
                 file_path=locate.file_path,
                 position=Position.from_lsp(pos),
             )
+
         return None
+
+    def _find_position(
+        self, find: str, scope_range: LSPRange, reader: DocumentReader
+    ) -> LSPPosition | None:
+        snippet = reader.read(scope_range)
+        if not snippet:
+            return None
+
+        if marker_info := detect_marker(find):
+            before, _, after = find.partition(marker_info.marker)
+            match (before, after):
+                case ("", ""):
+                    offset = 0
+                case (before, ""):
+                    pattern = re.compile(re.escape(before))
+                    if m := pattern.search(snippet.exact_content):
+                        offset = m.end()
+                    else:
+                        return None
+                case (before, after):
+                    pattern = re.compile(re.escape(before) + re.escape(after))
+                    if m := pattern.search(snippet.exact_content):
+                        offset = m.start() + len(before)
+                    else:
+                        return None
+        elif m := re.search(_to_regex(find), snippet.exact_content):
+            offset = m.start()
+        else:
+            return None
+
+        return reader.offset_to_position(snippet.range.start, offset)
+
+    def _default_position(
+        self,
+        scope: LineScope | SymbolScope | None,
+        info: ScopeInfo,
+        reader: DocumentReader,
+    ) -> LSPPosition | None:
+        match scope:
+            case SymbolScope():
+                return info.selection_start
+            case LineScope():
+                snippet = reader.read(info.range)
+                if not snippet:
+                    return info.range.start
+                m = re.search(r"\S", snippet.exact_content)
+                return reader.offset_to_position(
+                    snippet.range.start, m.start() if m else 0
+                )
+            case _:
+                return info.range.start
 
 
 @define
