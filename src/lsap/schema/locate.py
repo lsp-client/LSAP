@@ -91,7 +91,7 @@ class Locate(BaseModel):
     file_path: Path
 
     scope: LineScope | SymbolScope | None = None
-    """Optional: narrow search to symbol body or line range"""
+    """Narrow search to symbol body or line range"""
 
     find: str | None = None
     """Text pattern with marker for exact position; if no marker, positions at match start."""
