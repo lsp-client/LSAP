@@ -61,6 +61,9 @@ class CompletionRequest(LocateRequest, PaginatedRequest):
 
 markdown_template: Final = """
 # Code Completion
+{% if total != nil -%}
+Total suggestions: {{ total }} | Showing: {{ items.size }}{% if max_items != nil %} (Offset: {{ start_index }}, Limit: {{ max_items }}){% endif %}
+{%- endif %}
 
 {% if items.size == 0 -%}
 No completion suggestions found.
@@ -86,12 +89,14 @@ No completion suggestions found.
 {% if has_more -%}
 ---
 > [!TIP]
+> More suggestions available.
 {%- if pagination_id != nil %}
-> Use `pagination_id="{{ pagination_id }}"` to fetch more suggestions.
+> Use `pagination_id="{{ pagination_id }}"` to fetch the next page.
 {%- else %}
-> More results available. Use `start_index` to fetch more.
+> To see more, specify a `max_items` and use: `start_index={% assign step = max_items | default: items.size %}{{ start_index | plus: step }}`
 {%- endif %}
 {%- endif %}
+
 
 ---
 > [!TIP]
