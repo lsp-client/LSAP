@@ -25,7 +25,7 @@ from .symbol import SymbolCapability
 
 @define
 class DefinitionCapability(Capability[DefinitionRequest, DefinitionResponse]):
-    resolve_sem: anyio.Semaphore = field(default=anyio.Semaphore(32))
+    resolve_sem: anyio.Semaphore = field(default=anyio.Semaphore(32), init=False)
 
     @cached_property
     def locate(self) -> LocateCapability:

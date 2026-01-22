@@ -142,7 +142,7 @@ def _filter_edit(
 
 @define
 class RenamePreviewCapability(Capability[RenamePreviewRequest, RenamePreviewResponse]):
-    file_sem: anyio.Semaphore = field(default=anyio.Semaphore(32))
+    file_sem: anyio.Semaphore = field(default=anyio.Semaphore(32), init=False)
 
     @cached_property
     def locate(self) -> LocateCapability:
@@ -254,7 +254,7 @@ class RenamePreviewCapability(Capability[RenamePreviewRequest, RenamePreviewResp
 
 @define
 class RenameExecuteCapability(Capability[RenameExecuteRequest, RenameExecuteResponse]):
-    file_sem: anyio.Semaphore = field(default=anyio.Semaphore(32))
+    file_sem: anyio.Semaphore = field(default=anyio.Semaphore(32), init=False)
 
     @override
     async def __call__(self, req: RenameExecuteRequest) -> RenameExecuteResponse | None:

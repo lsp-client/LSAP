@@ -23,7 +23,7 @@ from .abc import Capability
 
 @define
 class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
-    hover_sem: anyio.Semaphore = field(default=anyio.Semaphore(32))
+    hover_sem: anyio.Semaphore = field(default=anyio.Semaphore(32), init=False)
 
     @override
     async def __call__(self, req: OutlineRequest) -> OutlineResponse | None:

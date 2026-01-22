@@ -30,7 +30,7 @@ from .locate import LocateCapability
 @define
 class ReferenceCapability(Capability[ReferenceRequest, ReferenceResponse]):
     _cache: PaginationCache[ReferenceItem] = Factory(PaginationCache)
-    process_sem: anyio.Semaphore = field(default=anyio.Semaphore(32))
+    process_sem: anyio.Semaphore = field(default=anyio.Semaphore(32), init=False)
 
     @cached_property
     def locate(self) -> LocateCapability:
