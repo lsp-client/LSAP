@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Protocol, override, runtime_checkable
+from typing import override
 
 from attrs import Factory, define
 from lsp_client.capability.request import WithRequestWorkspaceSymbol
+from lsp_client.capability.request.workspace_symbol import (
+    WithRequestWorkspaceSymbolResolve,
+)
 from lsprotocol.types import Location, WorkspaceSymbol
 
 from lsap.schema.models import SymbolKind
@@ -14,13 +17,6 @@ from lsap.utils.capability import ensure_capability
 from lsap.utils.pagination import paginate
 
 from .abc import Capability
-
-
-@runtime_checkable
-class CanResolveWorkspaceSymbol(Protocol):
-    async def resolve_workspace_symbols(
-        self, symbols: Sequence[WorkspaceSymbol]
-    ) -> Sequence[WorkspaceSymbol]: ...
 
 
 @define
@@ -48,7 +44,7 @@ class SearchCapability(Capability[SearchRequest, SearchResponse]):
 
         # Resolve items in the current page
         symbols = result.items
-        if isinstance(self.client, CanResolveWorkspaceSymbol):
+        if isinstance(self.client, WithRequestWorkspaceSymbolResolve):
             symbols = await self.client.resolve_workspace_symbols(symbols)
 
         items = self._to_search_items(symbols)

@@ -86,7 +86,7 @@ class SearchRequest(PaginatedRequest):
 markdown_template: Final = """
 # Search: `{{ request.query }}`
 {% if total != nil -%}
-Found {{ total }} results{% if max_items != nil %} (showing {{ items.size }}){% endif %}
+Found {{ total }} results | Showing: {{ items.size }}{% if max_items != nil %} (Offset: {{ start_index }}, Limit: {{ max_items }}){% endif %}
 {%- endif %}
 
 {% if items.size == 0 -%}
@@ -97,7 +97,14 @@ No matches found.
 {%- endfor %}
 
 {% if has_more -%}
-> More results available. Use `start_index={{ start_index | plus: items.size }}` for next page.
+---
+> [!TIP]
+> More results available.
+{%- if pagination_id != nil %}
+> Use `pagination_id="{{ pagination_id }}"` to fetch the next page.
+{%- else %}
+> To see more, specify a `max_items` and use: `start_index={% assign step = max_items | default: items.size %}{{ start_index | plus: step }}`
+{%- endif %}
 {%- endif %}
 {%- endif %}
 """
