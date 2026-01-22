@@ -11,8 +11,7 @@ A concise string syntax is available: `<file_path>:<scope>@<find>`
 ### Scope formats
 
 - `<line>`: Single line number (e.g., `"42"`)
-- `<start>,<end>`: Line range with comma (e.g., `"10,20"`)
-- `<start>-<end>`: Line range with dash (e.g., `"10-20"`)
+- `<start>,<end>`: Line range with comma (e.g., `"10,20"`). Use `0` for `<end>` to mean till EOF (e.g., `"10,0"`)
 - `<symbol_path>`: Symbol path with dots (e.g., `"MyClass.my_method"`)
 
 ### Examples

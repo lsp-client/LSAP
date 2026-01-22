@@ -198,7 +198,7 @@ async def test_reference_pagination():
     assert resp2 is not None
     assert len(resp2.items) == 1
     assert resp2.has_more is False
-    assert resp2.pagination_id is None
+    assert resp2.pagination_id == resp1.pagination_id
 
 
 @pytest.mark.asyncio

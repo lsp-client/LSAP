@@ -3,30 +3,21 @@
     "LineScope": {
       "description": "Scope by line range",
       "properties": {
-        "line": {
-          "anyOf": [
-            {
-              "type": "integer"
-            },
-            {
-              "maxItems": 2,
-              "minItems": 2,
-              "prefixItems": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "integer"
-                }
-              ],
-              "type": "array"
-            }
-          ],
-          "title": "Line"
+        "start_line": {
+          "description": "Start line number (1-based, inclusive)",
+          "minimum": 1,
+          "title": "Start Line",
+          "type": "integer"
+        },
+        "end_line": {
+          "description": "End line number (1-based, exclusive). When set to 0, means till EOF.",
+          "title": "End Line",
+          "type": "integer"
         }
       },
       "required": [
-        "line"
+        "start_line",
+        "end_line"
       ],
       "title": "LineScope",
       "type": "object"
@@ -63,12 +54,12 @@
               "type": "null"
             }
           ],
+          "default": null,
           "title": "Find"
         }
       },
       "required": [
-        "file_path",
-        "find"
+        "file_path"
       ],
       "title": "Locate",
       "type": "object"
@@ -161,7 +152,7 @@
       "type": "object"
     }
   },
-  "markdown": "\n# Rename Preview: `{{ old_name }}` \u2192 `{{ new_name }}`\n\nID: `{{ rename_id }}`\nSummary: Affects {{ total_files }} files and {{ total_occurrences }} occurrences.\n\n{% assign num_changes = changes | size -%}\n{% if num_changes == 0 -%}\nNo changes to preview.\n{%- else -%}\n{%- for file in changes %}\n## `{{ file.file_path }}`\n{% for diff in file.diffs %}\nLine {{ diff.line }}:\n```diff\n- {{ diff.original }}\n+ {{ diff.modified }}\n```\n{% endfor %}\n{% endfor -%}\n---\n> [!TIP]\n> To apply this rename, use `rename_execute` with `rename_id=\"{{ rename_id }}\"`.\n> To exclude files, add `exclude_files=[\"path/to/exclude.py\"]` or use glob patterns like `exclude_files=[\"tests/**/*.py\", \"**/*_test.py\"]`.\n{%- endif %}\n",
+  "markdown": "\n# Rename Preview: `{{ old_name }}` \u2192 `{{ new_name }}`\n\nID: `{{ rename_id }}`\nSummary: Affects {{ total_files }} files and {{ total_occurrences }} occurrences.\n\n{% assign num_changes = changes | size -%}\n{% if num_changes == 0 -%}\nNo changes to preview.\n{%- else -%}\n{%- for file in changes %}\n## `{{ file.file_path }}`\n{% for diff in file.diffs %}\nLine `{{ diff.line }}`:\n```diff\n- {{ diff.original }}\n+ {{ diff.modified }}\n```\n{% endfor %}\n{% endfor -%}\n---\n> [!TIP]\n> To apply this rename, use `rename_execute` with `rename_id=\"{{ rename_id }}\"`.\n> To exclude files, add `exclude_files=[\"path/to/exclude.py\"]` or use glob patterns like `exclude_files=[\"tests/**/*.py\", \"**/*_test.py\"]`.\n{%- endif %}\n",
   "properties": {
     "request": {
       "$ref": "#/$defs/RenamePreviewRequest"

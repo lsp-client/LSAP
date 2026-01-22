@@ -26,30 +26,21 @@
     "LineScope": {
       "description": "Scope by line range",
       "properties": {
-        "line": {
-          "anyOf": [
-            {
-              "type": "integer"
-            },
-            {
-              "maxItems": 2,
-              "minItems": 2,
-              "prefixItems": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "integer"
-                }
-              ],
-              "type": "array"
-            }
-          ],
-          "title": "Line"
+        "start_line": {
+          "description": "Start line number (1-based, inclusive)",
+          "minimum": 1,
+          "title": "Start Line",
+          "type": "integer"
+        },
+        "end_line": {
+          "description": "End line number (1-based, exclusive). When set to 0, means till EOF.",
+          "title": "End Line",
+          "type": "integer"
         }
       },
       "required": [
-        "line"
+        "start_line",
+        "end_line"
       ],
       "title": "LineScope",
       "type": "object"
@@ -86,12 +77,12 @@
               "type": "null"
             }
           ],
+          "default": null,
           "title": "Find"
         }
       },
       "required": [
-        "file_path",
-        "find"
+        "file_path"
       ],
       "title": "Locate",
       "type": "object"
@@ -237,7 +228,7 @@
       "type": "object"
     }
   },
-  "markdown": "\n# {{ request.mode | replace: \"_\", \" \" | capitalize }} Result\n\n{% if items.size == 0 -%}\nNo {{ request.mode | replace: \"_\", \" \" }} found.\n{%- else -%}\n{%- for item in items -%}\n## `{{ item.file_path }}`: {{ item.path | join: \".\" }} (`{{ item.kind }}`)\n\n{% if item.code != nil -%}\n### Content\n```{{ item.file_path.suffix | remove_first: \".\" }}\n{{ item.code }}\n```\n{%- endif %}\n\n{% endfor -%}\n{%- endif %}\n",
+  "markdown": "\n# {{ request.mode | replace: \"_\", \" \" | capitalize }} Result\n\n{% if items.size == 0 -%}\nNo {{ request.mode | replace: \"_\", \" \" }} found.\n{%- else -%}\n{%- for item in items -%}\n## `{{ item.file_path }}`: `{{ item.path | join: \".\" }}` (`{{ item.kind }}`)\n\n{% if item.code != nil -%}\n### Content\n```{{ item.file_path.suffix | remove_first: \".\" }}\n{{ item.code }}\n```\n{%- endif %}\n\n{% endfor -%}\n{%- endif %}\n",
   "properties": {
     "request": {
       "$ref": "#/$defs/DefinitionRequest"

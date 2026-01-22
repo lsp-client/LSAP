@@ -3,30 +3,21 @@
     "LineScope": {
       "description": "Scope by line range",
       "properties": {
-        "line": {
-          "anyOf": [
-            {
-              "type": "integer"
-            },
-            {
-              "maxItems": 2,
-              "minItems": 2,
-              "prefixItems": [
-                {
-                  "type": "integer"
-                },
-                {
-                  "type": "integer"
-                }
-              ],
-              "type": "array"
-            }
-          ],
-          "title": "Line"
+        "start_line": {
+          "description": "Start line number (1-based, inclusive)",
+          "minimum": 1,
+          "title": "Start Line",
+          "type": "integer"
+        },
+        "end_line": {
+          "description": "End line number (1-based, exclusive). When set to 0, means till EOF.",
+          "title": "End Line",
+          "type": "integer"
         }
       },
       "required": [
-        "line"
+        "start_line",
+        "end_line"
       ],
       "title": "LineScope",
       "type": "object"
@@ -80,12 +71,12 @@
           "type": "null"
         }
       ],
+      "default": null,
       "title": "Find"
     }
   },
   "required": [
-    "file_path",
-    "find"
+    "file_path"
   ],
   "title": "Locate",
   "type": "object"

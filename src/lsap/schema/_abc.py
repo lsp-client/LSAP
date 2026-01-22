@@ -45,11 +45,10 @@ class PaginatedRequest(Request):
 
 class PaginatedResponse(Response):
     start_index: int
-    max_items: int | None = None
-    total: int | None = None
-    has_more: bool = False
-
-    pagination_id: str | None = None
+    max_items: int
+    total: int
+    has_more: bool
+    pagination_id: str
 
 
 __all__ = [

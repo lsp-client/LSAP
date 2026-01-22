@@ -2,6 +2,7 @@ from typing import Protocol
 
 from attrs import frozen
 
+from lsap.exception import PaginationError
 from lsap.schema._abc import PaginatedRequest
 
 from .cache import PaginationCache
@@ -15,11 +16,8 @@ class ItemsFetcher[T](Protocol):
 class Page[T]:
     items: list[T]
     total: int
-    pagination_id: str | None
-
-    @property
-    def has_more(self) -> bool:
-        return self.pagination_id is not None
+    pagination_id: str
+    has_more: bool
 
 
 async def paginate[T](
@@ -32,9 +30,17 @@ async def paginate[T](
     """
 
     pagination_id = req.pagination_id
-    if pagination_id and (cached := cache.get(pagination_id)) is not None:
-        items = cached
+    if pagination_id:
+        if (cached := cache.get(pagination_id)) is not None:
+            items = cached
+        else:
+            raise PaginationError(
+                f"Pagination ID '{pagination_id}' not found or expired"
+            )
     else:
+        if req.start_index != 0:
+            raise PaginationError("pagination_id is required for non-zero start_index")
+
         items = await fetcher()
         if items is None:
             return None
@@ -49,5 +55,6 @@ async def paginate[T](
     return Page(
         items=paginated,
         total=total,
-        pagination_id=pagination_id if has_more else None,
+        pagination_id=pagination_id,
+        has_more=has_more,
     )

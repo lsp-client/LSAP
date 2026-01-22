@@ -136,7 +136,7 @@
       "type": "string"
     }
   },
-  "markdown": "\n# Outline for `{{ file_path }}`\n\n{% for item in items -%}\n{% assign level = item.path | size | plus: 1 -%}\n{% for i in (1..level) %}#{% endfor %} {{ item.path | join: \".\" }} (`{{ item.kind }}`)\n{% if item.detail != nil %}{{ item.detail }}{% endif %}\n{% if item.hover != nil %}{{ item.hover | strip }}{% endif %}\n\n{% endfor -%}\n",
+  "markdown": "\n# Outline for `{{ file_path }}`\n\n{% for item in items -%}\n{% assign level = item.path | size | plus: 1 -%}\n{% for i in (1..level) %}#{% endfor %} `{{ item.path | join: \".\" }}` (`{{ item.kind }}`)\n{% if item.detail != nil %}{{ item.detail }}{% endif %}\n{% if item.hover != nil %}{{ item.hover | strip }}{% endif %}\n\n{% endfor -%}\n",
   "properties": {
     "file_path": {
       "format": "path",

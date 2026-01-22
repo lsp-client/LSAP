@@ -22,7 +22,7 @@
       "type": "object"
     }
   },
-  "markdown": "Located `{{ file_path }}` at {{ position.line }}:{{ position.character }}",
+  "markdown": "Located `{{ file_path }}` at `{{ position.line }}:{{ position.character }}`",
   "properties": {
     "file_path": {
       "format": "path",

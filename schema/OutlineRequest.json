@@ -1,10 +1,15 @@
 {
-  "description": "Retrieves a hierarchical outline of symbols within a file.\n\nUse this to understand the structure of a file (classes, methods, functions)\nand quickly navigate its contents.",
+  "description": "Retrieves a hierarchical outline of symbols within a file.\n\nUse this to understand the structure of a file (classes, methods, functions)\nand quickly navigate its contents.\n\nNote: By default (top=False), this API returns structural symbols only\n(classes, methods, top-level functions/variables), excluding symbols\ndefined inside functions or methods (like local variables or nested\nfunctions) to reduce noise. When top=True, only first-level symbols\nare returned.",
   "properties": {
     "file_path": {
       "format": "path",
       "title": "File Path",
       "type": "string"
+    },
+    "top": {
+      "default": false,
+      "title": "Top",
+      "type": "boolean"
     }
   },
   "required": [

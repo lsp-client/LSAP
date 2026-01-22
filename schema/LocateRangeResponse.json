@@ -38,7 +38,7 @@
       "type": "object"
     }
   },
-  "markdown": "Located `{{ file_path }}` range {{ range.start.line }}:{{ range.start.character }}-{{ range.end.line }}:{{ range.end.character }}",
+  "markdown": "Located `{{ file_path }}` range `{{ range.start.line }}:{{ range.start.character }}-{{ range.end.line }}:{{ range.end.character }}`",
   "properties": {
     "file_path": {
       "format": "path",

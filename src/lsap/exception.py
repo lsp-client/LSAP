@@ -15,3 +15,7 @@ class NotFoundError(LSAPError):
 
 class UnsupportedCapabilityError(LSAPError):
     """Raised when a capability is not supported by the client."""
+
+
+class PaginationError(LSAPError):
+    """Raised when pagination logic is violated."""
