@@ -26,6 +26,19 @@ Request:
 }
 ```
 
+### Scenario 3: Getting outline for a specific class
+
+Request:
+
+```json
+{
+  "file_path": "src/models.py",
+  "scope": {
+    "symbol_path": ["MyClass"]
+  }
+}
+```
+
 ## References
 
 - [OutlineRequest.json](./OutlineRequest.json)
