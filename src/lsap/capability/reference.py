@@ -82,7 +82,7 @@ class ReferenceCapability(Capability[ReferenceRequest, ReferenceResponse]):
             request=req,
             items=result.items,
             start_index=req.start_index,
-            max_items=req.max_items or result.total,
+            max_items=req.max_items if req.max_items is not None else len(result.items),
             total=result.total,
             has_more=result.has_more,
             pagination_id=result.pagination_id,

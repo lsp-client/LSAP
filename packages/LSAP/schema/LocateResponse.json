@@ -1,0 +1,42 @@
+{
+  "$defs": {
+    "Position": {
+      "description": "Represents a specific position in a file using line and character numbers.\n\nNote: Line and character are 1-based indices. 0-based indices are used in LSP, so conversion is needed when interfacing with LSP.",
+      "properties": {
+        "line": {
+          "minimum": 1,
+          "title": "Line",
+          "type": "integer"
+        },
+        "character": {
+          "minimum": 1,
+          "title": "Character",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "line",
+        "character"
+      ],
+      "title": "Position",
+      "type": "object"
+    }
+  },
+  "markdown": "Located `{{ file_path }}` at `{{ position.line }}:{{ position.character }}`",
+  "properties": {
+    "file_path": {
+      "format": "path",
+      "title": "File Path",
+      "type": "string"
+    },
+    "position": {
+      "$ref": "#/$defs/Position"
+    }
+  },
+  "required": [
+    "file_path",
+    "position"
+  ],
+  "title": "LocateResponse",
+  "type": "object"
+}

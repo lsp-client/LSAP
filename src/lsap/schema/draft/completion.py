@@ -98,7 +98,6 @@ No completion suggestions found.
 ---
 > [!TIP]
 > Use these symbols to construct your next code edit. You can focus on a specific method to get more details.
-{%- endif %}
 """
 
 

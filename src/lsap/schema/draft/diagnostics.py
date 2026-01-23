@@ -78,7 +78,7 @@ No issues found.
 ---
 > [!TIP]
 > More issues available.
-> To see more, use: `pagination_id="{{ pagination_id }}"`, `start_index={{ start_index | plus: items.size | default: diagnostics.size }}`
+> To see more, use: `pagination_id="{{ pagination_id }}"`, `start_index={{ start_index | plus: diagnostics.size }}`
 {%- endif %}
 {%- endif %}
 """
@@ -130,7 +130,7 @@ No issues found in the workspace.
 ---
 > [!TIP]
 > More issues available.
-> To see more, use: `pagination_id="{{ pagination_id }}"`, `start_index={{ start_index | plus: items.size | default: diagnostics.size }}`
+> To see more, use: `pagination_id="{{ pagination_id }}"`, `start_index={{ start_index | plus: items.size }}`
 {%- endif %}
 {%- endif %}
 """

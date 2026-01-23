@@ -1,0 +1,23 @@
+{
+  "description": "Executes a rename operation, applying changes to the workspace.\n\nMust use a rename_id from a previous preview to ensure\nthe same changes are applied. Supports excluding specific files or glob patterns.",
+  "properties": {
+    "rename_id": {
+      "description": "Required ID from a previous preview to apply",
+      "title": "Rename Id",
+      "type": "string"
+    },
+    "exclude_files": {
+      "description": "List of file paths or glob patterns to exclude from the rename operation",
+      "items": {
+        "type": "string"
+      },
+      "title": "Exclude Files",
+      "type": "array"
+    }
+  },
+  "required": [
+    "rename_id"
+  ],
+  "title": "RenameExecuteRequest",
+  "type": "object"
+}

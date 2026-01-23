@@ -40,20 +40,6 @@
       "type": "object"
     }
   },
-  "anyOf": [
-    {
-      "required": [
-        "file_path",
-        "scope"
-      ]
-    },
-    {
-      "required": [
-        "file_path",
-        "find"
-      ]
-    }
-  ],
   "description": "Locate a range.\n\nExamples:\n    # Select symbol body\n    LocateRange(file_path=\"foo.py\", scope=SymbolScope(symbol_path=[\"MyClass\"]))\n\n    # Select specific text\n    LocateRange(file_path=\"foo.py\", find=\"if condition: return True\")",
   "properties": {
     "file_path": {

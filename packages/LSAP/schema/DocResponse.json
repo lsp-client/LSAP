@@ -1,0 +1,14 @@
+{
+  "markdown": "\n# Doc Information\n\n{{ content }}\n",
+  "properties": {
+    "content": {
+      "title": "Content",
+      "type": "string"
+    }
+  },
+  "required": [
+    "content"
+  ],
+  "title": "DocResponse",
+  "type": "object"
+}

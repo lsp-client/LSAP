@@ -1,0 +1,17 @@
+{
+  "description": "Scope by symbol, also serves as declaration locator when find is omitted",
+  "properties": {
+    "symbol_path": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Symbol Path",
+      "type": "array"
+    }
+  },
+  "required": [
+    "symbol_path"
+  ],
+  "title": "SymbolScope",
+  "type": "object"
+}

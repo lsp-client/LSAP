@@ -23,20 +23,6 @@
       "type": "object"
     },
     "Locate": {
-      "anyOf": [
-        {
-          "required": [
-            "file_path",
-            "scope"
-          ]
-        },
-        {
-          "required": [
-            "file_path",
-            "find"
-          ]
-        }
-      ],
       "description": "Two-stage location: scope \u2192 find.\n\nResolution rules:\n    1. SymbolScope without find: symbol declaration position (for references, rename)\n    2. With find containing marker: marker position\n    3. With find only: start of matched text\n    4. No scope + find: search entire file\n\nMarker Detection:\n    The marker is automatically detected using nested bracket notation:\n    - <|> (single level)\n    - <<|>> (double level) if <|> appears more than once\n    ... and so on\n\n    The marker with the deepest nesting level that appears exactly once\n    is chosen as the position marker.\n\nExamples:\n    # Symbol declaration\n    Locate(file_path=\"foo.py\", scope=SymbolScope(symbol_path=[\"MyClass\"]))\n\n    # Completion trigger point - basic marker\n    Locate(file_path=\"foo.py\", find=\"self.<|>\")\n\n    # When <|> exists in source, use deeper nesting\n    Locate(file_path=\"foo.py\", find=\"x = <|> + y <<|>> z\")\n    # Will use <<|>> as the position marker\n\n    # Specific location in function\n    Locate(\n        file_path=\"foo.py\",\n        scope=SymbolScope(symbol_path=[\"process\"]),\n        find=\"return <|>result\"\n    )",
       "properties": {
         "file_path": {
@@ -96,58 +82,25 @@
       "type": "object"
     }
   },
-  "description": "Finds all references (usages) or concrete implementations of a symbol.\n\nUse this to see where a function, class, or variable is used across the codebase,\nor to find how an interface is implemented in subclasses.",
+  "description": "Finds the definition, declaration, or type definition of a symbol.\n\nUse this to jump to the actual source code where a symbol is defined,\nits declaration site, or the definition of its type/class.",
   "properties": {
     "locate": {
       "$ref": "#/$defs/Locate"
     },
-    "max_items": {
-      "anyOf": [
-        {
-          "type": "integer"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Max Items"
-    },
-    "start_index": {
-      "default": 0,
-      "title": "Start Index",
-      "type": "integer"
-    },
-    "pagination_id": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Pagination Id"
-    },
     "mode": {
-      "default": "references",
+      "default": "definition",
       "enum": [
-        "references",
-        "implementations"
+        "definition",
+        "declaration",
+        "type_definition"
       ],
       "title": "Mode",
       "type": "string"
-    },
-    "context_lines": {
-      "default": 2,
-      "title": "Context Lines",
-      "type": "integer"
     }
   },
   "required": [
     "locate"
   ],
-  "title": "ReferenceRequest",
+  "title": "DefinitionRequest",
   "type": "object"
 }
