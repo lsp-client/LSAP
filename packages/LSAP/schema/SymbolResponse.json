@@ -1,0 +1,126 @@
+{
+  "$defs": {
+    "Position": {
+      "description": "Represents a specific position in a file using line and character numbers.\n\nNote: Line and character are 1-based indices. 0-based indices are used in LSP, so conversion is needed when interfacing with LSP.",
+      "properties": {
+        "line": {
+          "minimum": 1,
+          "title": "Line",
+          "type": "integer"
+        },
+        "character": {
+          "minimum": 1,
+          "title": "Character",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "line",
+        "character"
+      ],
+      "title": "Position",
+      "type": "object"
+    },
+    "Range": {
+      "properties": {
+        "start": {
+          "$ref": "#/$defs/Position"
+        },
+        "end": {
+          "$ref": "#/$defs/Position"
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "title": "Range",
+      "type": "object"
+    },
+    "SymbolKind": {
+      "enum": [
+        "file",
+        "module",
+        "namespace",
+        "package",
+        "class",
+        "method",
+        "property",
+        "field",
+        "constructor",
+        "enum",
+        "interface",
+        "function",
+        "variable",
+        "constant",
+        "string",
+        "number",
+        "boolean",
+        "array",
+        "object",
+        "key",
+        "null",
+        "enumMember",
+        "struct",
+        "event",
+        "operator",
+        "typeParameter"
+      ],
+      "title": "SymbolKind",
+      "type": "string"
+    }
+  },
+  "markdown": "\n# Symbol: `{{ path | join: \".\" }}` (`{{ kind }}`) at `{{ file_path }}`\n\n{% if code != nil -%}\n## Implementation\n```{{ file_path.suffix | remove_first: \".\" }}\n{{ code }}\n```\n{%- endif %}\n",
+  "properties": {
+    "file_path": {
+      "format": "path",
+      "title": "File Path",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "path": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Path",
+      "type": "array"
+    },
+    "kind": {
+      "$ref": "#/$defs/SymbolKind"
+    },
+    "range": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Range"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "code": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Code"
+    }
+  },
+  "required": [
+    "file_path",
+    "name",
+    "path",
+    "kind"
+  ],
+  "title": "SymbolResponse",
+  "type": "object"
+}

@@ -78,11 +78,7 @@ No issues found.
 ---
 > [!TIP]
 > More issues available.
-{%- if pagination_id != nil %}
-> Use `pagination_id="{{ pagination_id }}"` to fetch the next page.
-{%- else %}
-> To see the rest, specify a `max_items` and use: `start_index={% assign step = max_items | default: diagnostics.size %}{{ start_index | plus: step }}`
-{%- endif %}
+> To see more, use: `pagination_id="{{ pagination_id }}"`, `start_index={{ start_index | plus: diagnostics.size }}`
 {%- endif %}
 {%- endif %}
 """
@@ -134,11 +130,7 @@ No issues found in the workspace.
 ---
 > [!TIP]
 > More issues available.
-{%- if pagination_id != nil %}
-> Use `pagination_id="{{ pagination_id }}"` to fetch the next page.
-{%- else %}
-> To see the rest, specify a `max_items` and use: `start_index={% assign step = max_items | default: items.size %}{{ start_index | plus: step }}`
-{%- endif %}
+> To see more, use: `pagination_id="{{ pagination_id }}"`, `start_index={{ start_index | plus: items.size }}`
 {%- endif %}
 {%- endif %}
 """

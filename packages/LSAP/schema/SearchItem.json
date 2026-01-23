@@ -1,0 +1,82 @@
+{
+  "$defs": {
+    "SymbolKind": {
+      "enum": [
+        "file",
+        "module",
+        "namespace",
+        "package",
+        "class",
+        "method",
+        "property",
+        "field",
+        "constructor",
+        "enum",
+        "interface",
+        "function",
+        "variable",
+        "constant",
+        "string",
+        "number",
+        "boolean",
+        "array",
+        "object",
+        "key",
+        "null",
+        "enumMember",
+        "struct",
+        "event",
+        "operator",
+        "typeParameter"
+      ],
+      "title": "SymbolKind",
+      "type": "string"
+    }
+  },
+  "description": "Concise search result for quick discovery.",
+  "properties": {
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/$defs/SymbolKind"
+    },
+    "file_path": {
+      "format": "path",
+      "title": "File Path",
+      "type": "string"
+    },
+    "line": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Line"
+    },
+    "container": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Container"
+    }
+  },
+  "required": [
+    "name",
+    "kind",
+    "file_path"
+  ],
+  "title": "SearchItem",
+  "type": "object"
+}

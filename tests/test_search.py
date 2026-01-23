@@ -219,6 +219,29 @@ async def test_search_pagination():
     assert len(resp2.items) == 2
     assert resp2.items[0].name != resp.items[0].name
     assert resp2.total == 10
+    assert resp2.pagination_id == resp.pagination_id
+
+
+@pytest.mark.asyncio
+async def test_search_pagination_strict():
+    from lsap.exception import PaginationError
+
+    client = MockSearchClient()
+    capability = SearchCapability(client=client)  # type: ignore
+
+    # Request with start_index > 0 but NO pagination_id - Should FAIL
+    req = SearchRequest(query="multi", max_items=2, start_index=2)
+    with pytest.raises(PaginationError) as excinfo:
+        await capability(req)
+    assert "pagination_id is required" in str(excinfo.value)
+
+    # Request with invalid pagination_id - Should FAIL
+    req2 = SearchRequest(
+        query="multi", max_items=2, start_index=2, pagination_id="invalid"
+    )
+    with pytest.raises(PaginationError) as excinfo:
+        await capability(req2)
+    assert "not found or expired" in str(excinfo.value)
 
 
 @pytest.mark.asyncio

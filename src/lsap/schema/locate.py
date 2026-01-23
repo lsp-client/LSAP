@@ -96,6 +96,15 @@ class Locate(BaseModel):
     find: str | None = None
     """Text pattern with marker for exact position; if no marker, positions at match start."""
 
+    model_config = ConfigDict(
+        json_schema_extra={
+            "anyOf": [
+                {"required": ["file_path", "scope"]},
+                {"required": ["file_path", "find"]},
+            ]
+        }
+    )
+
     @model_validator(mode="after")
     def check_valid_locate(self) -> Self:
         if self.scope is None and self.find is None:
@@ -122,6 +131,15 @@ class LocateRange(BaseModel):
 
     find: str | None = None
     """Text to match; matched text becomes the range"""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "anyOf": [
+                {"required": ["file_path", "scope"]},
+                {"required": ["file_path", "find"]},
+            ]
+        }
+    )
 
     @model_validator(mode="after")
     def check_valid_locate(self) -> Self:

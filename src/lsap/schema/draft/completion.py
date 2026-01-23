@@ -90,18 +90,12 @@ No completion suggestions found.
 ---
 > [!TIP]
 > More suggestions available.
-{%- if pagination_id != nil %}
-> Use `pagination_id="{{ pagination_id }}"` to fetch the next page.
-{%- else %}
-> To see more, specify a `max_items` and use: `start_index={% assign step = max_items | default: items.size %}{{ start_index | plus: step }}`
+> To see more, use: `pagination_id="{{ pagination_id }}"`, `start_index={{ start_index | plus: items.size }}`
 {%- endif %}
-{%- endif %}
-
 
 ---
 > [!TIP]
 > Use these symbols to construct your next code edit. You can focus on a specific method to get more details.
-{%- endif %}
 """
 
 
