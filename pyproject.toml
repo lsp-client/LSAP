@@ -1,6 +1,6 @@
 [project]
 name = "lsap-sdk"
-version = "0.1.4"
+version = "0.1.5"
 description = "Language Server Agent Protocol (LSAP) SDK - Transforms low-level LSP into high-level cognitive tools for agents"
 readme = "README.md"
 authors = [{ name = "observerw", email = "wozluohd@gmail.com" }]

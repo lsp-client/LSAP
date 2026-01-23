@@ -102,6 +102,7 @@ No matches found.
 > More results available.
 > To see more, use: `pagination_id="{{ pagination_id }}"`, `start_index={{ start_index | plus: items.size }}`
 {%- endif %}
+{%- endif %}
 """
 
 
