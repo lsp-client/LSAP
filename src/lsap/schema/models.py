@@ -96,6 +96,18 @@ class SymbolCodeInfo(SymbolInfo):
     """Source code of the symbol"""
 
 
+class CallHierarchyItem(BaseModel):
+    file_path: Path
+    name: str
+    kind: SymbolKind
+    range: Range
+
+
+class CallHierarchy(BaseModel):
+    incoming: list[CallHierarchyItem] = Field(default_factory=list)
+    outgoing: list[CallHierarchyItem] = Field(default_factory=list)
+
+
 class SymbolDetailInfo(SymbolInfo):
     detail: str | None = None
     hover: str | None = None
@@ -103,6 +115,8 @@ class SymbolDetailInfo(SymbolInfo):
 
 
 __all__ = [
+    "CallHierarchy",
+    "CallHierarchyItem",
     "Location",
     "Position",
     "Range",
