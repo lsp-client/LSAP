@@ -4,20 +4,10 @@ Functional tests for Relation API.
 Tests the call chain discovery capability that answers "how does A reach B?"
 """
 
-from pathlib import Path
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 import pytest
-from lsprotocol.types import (
-    CallHierarchyIncomingCall,
-    CallHierarchyItem,
-    CallHierarchyOutgoingCall,
-    CallHierarchyOutgoingCallsParams,
-    DocumentSymbol,
-    SymbolKind,
-)
-from lsprotocol.types import Position as LSPPosition
-from lsprotocol.types import Range as LSPRange
 from lsp_client.capability.request import (
     WithRequestCallHierarchy,
     WithRequestDocumentSymbol,
@@ -31,7 +21,16 @@ from lsp_client.utils.workspace import (
     Workspace,
     WorkspaceFolder,
 )
-from lsprotocol.types import LanguageKind
+from lsprotocol.types import (
+    CallHierarchyItem,
+    CallHierarchyOutgoingCall,
+    CallHierarchyOutgoingCallsParams,
+    DocumentSymbol,
+    LanguageKind,
+    SymbolKind,
+)
+from lsprotocol.types import Position as LSPPosition
+from lsprotocol.types import Range as LSPRange
 
 from lsap.capability.relation import RelationCapability
 from lsap.schema.locate import Locate, SymbolScope

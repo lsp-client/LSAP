@@ -3,7 +3,7 @@ from typing import Final
 
 from pydantic import BaseModel, ConfigDict
 
-from lsap.schema.abc import Request, Response
+from lsap.schema._abc import Request, Response
 from lsap.schema.locate import Locate
 
 
