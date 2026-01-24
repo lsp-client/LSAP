@@ -12,7 +12,7 @@ from lsprotocol.types import DocumentSymbol
 from lsprotocol.types import Position as LSPPosition
 from lsprotocol.types import SymbolKind as LSPSymbolKind
 
-from lsap.schema.models import Position, Range, SymbolDetailInfo, SymbolKind
+from lsap.schema.models import Range, SymbolDetailInfo, SymbolKind
 from lsap.schema.outline import OutlineRequest, OutlineResponse
 from lsap.schema.types import SymbolPath
 from lsap.utils.capability import ensure_capability
@@ -113,10 +113,7 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
             path=path,
             kind=SymbolKind.from_lsp(symbol.kind),
             detail=symbol.detail,
-            range=Range(
-                start=Position.from_lsp(symbol.range.start),
-                end=Position.from_lsp(symbol.range.end),
-            ),
+            range=Range.from_lsp(symbol.range),
         )
 
     async def _fill_hover(self, item: SymbolDetailInfo, pos: LSPPosition) -> None:

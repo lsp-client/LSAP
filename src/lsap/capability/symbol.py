@@ -11,7 +11,6 @@ from lsp_client.capability.request import (
 )
 from lsprotocol.types import Position as LSPPosition
 
-from lsap.exception import UnsupportedCapabilityError
 from lsap.schema.models import (
     CallHierarchy,
     CallHierarchyItem,
@@ -21,7 +20,7 @@ from lsap.schema.models import (
     SymbolKind,
 )
 from lsap.schema.symbol import SymbolRequest, SymbolResponse
-from lsap.utils.capability import ensure_capability
+from lsap.utils.capability import ensure_capability, get_capability
 from lsap.utils.document import DocumentReader
 from lsap.utils.symbol import symbol_at
 
@@ -65,47 +64,34 @@ class SymbolCapability(Capability[SymbolRequest, SymbolResponse]):
     async def _get_call_hierarchy(
         self, file_path: Path, pos: LSPPosition
     ) -> CallHierarchy | None:
-        try:
-            cap = ensure_capability(self.client, WithRequestCallHierarchy)
-        except UnsupportedCapabilityError:
+        cap = get_capability(self.client, WithRequestCallHierarchy)
+        if not cap:
             return None
 
         incoming = await cap.request_call_hierarchy_incoming_call(file_path, pos)
         outgoing = await cap.request_call_hierarchy_outgoing_call(file_path, pos)
 
-        res_incoming = []
-        if incoming:
-            for call in incoming:
-                item = call.from_
-                res_incoming.append(
-                    CallHierarchyItem(
-                        file_path=self.client.from_uri(item.uri, relative=False),
-                        name=item.name,
-                        kind=SymbolKind.from_lsp(item.kind),
-                        range=Range(
-                            start=Position.from_lsp(item.range.start),
-                            end=Position.from_lsp(item.range.end),
-                        ),
-                    )
-                )
+        incoming = [
+            CallHierarchyItem(
+                file_path=self.client.from_uri(call.from_.uri, relative=False),
+                name=call.from_.name,
+                kind=SymbolKind.from_lsp(call.from_.kind),
+                range=Range.from_lsp(call.from_.range),
+            )
+            for call in incoming or []
+        ]
 
-        res_outgoing = []
-        if outgoing:
-            for call in outgoing:
-                item = call.to
-                res_outgoing.append(
-                    CallHierarchyItem(
-                        file_path=self.client.from_uri(item.uri, relative=False),
-                        name=item.name,
-                        kind=SymbolKind.from_lsp(item.kind),
-                        range=Range(
-                            start=Position.from_lsp(item.range.start),
-                            end=Position.from_lsp(item.range.end),
-                        ),
-                    )
-                )
+        outgoing = [
+            CallHierarchyItem(
+                file_path=self.client.from_uri(call.to.uri, relative=False),
+                name=call.to.name,
+                kind=SymbolKind.from_lsp(call.to.kind),
+                range=Range.from_lsp(call.to.range),
+            )
+            for call in outgoing or []
+        ]
 
-        return CallHierarchy(incoming=res_incoming, outgoing=res_outgoing)
+        return CallHierarchy(incoming=incoming, outgoing=outgoing)
 
     async def resolve(
         self,

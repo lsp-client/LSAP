@@ -1,3 +1,4 @@
+from loguru import logger
 from lsp_client import Client
 from lsp_client.protocol.capability import CapabilityProtocol
 
@@ -30,3 +31,30 @@ def ensure_capability[C: CapabilityProtocol](
         )
 
     return client
+
+
+def get_capability[C: CapabilityProtocol](
+    client: Client, capability: type[C], *, warning: str | None = None
+) -> C | None:
+    """Check if the client supports the specified capability.
+
+    Args:
+        client: The LSP client instance.
+        capability: The capability protocol class to check against.
+
+    Returns:
+        The client instance cast to the specified capability type, or None if not supported.
+    """
+    if isinstance(client, capability):
+        return client
+
+    warning = warning or "Some features may not be available."
+
+    logger.warning(
+        "Client {} does not support capabilities: {}. {}",
+        type(client).__name__,
+        ", ".join(capability.iter_methods()),
+        warning,
+    )
+
+    return None

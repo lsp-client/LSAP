@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Self
 
 from lsprotocol.types import Position as LSPPosition
+from lsprotocol.types import Range as LSPRange
 from lsprotocol.types import SymbolKind as LSPSymbolKind
 from pydantic import BaseModel, Field
 
@@ -40,6 +41,14 @@ class Position(BaseModel):
 class Range(BaseModel):
     start: Position
     end: Position
+
+    @classmethod
+    def from_lsp(cls, range: LSPRange) -> Self:
+        """Convert from LSP Range to Range"""
+        return cls(
+            start=Position.from_lsp(range.start),
+            end=Position.from_lsp(range.end),
+        )
 
 
 class Location(BaseModel):
