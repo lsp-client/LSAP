@@ -2,7 +2,6 @@
 
 from pathlib import Path
 
-
 from lsap.schema.locate import Locate, LocateRequest
 
 # Import from the utils module
@@ -94,7 +93,7 @@ class TestIntegration:
 
     def test_line_range_scope(self):
         """Test line range scope."""
-        locate = parse_locate_string("test.py:10-20@if <|>condition")
+        locate = parse_locate_string("test.py:10,20@if <|>condition")
         assert locate.file_path == Path("test.py")
         assert locate.scope is not None
         assert locate.find == "if <|>condition"

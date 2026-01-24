@@ -1,7 +1,8 @@
 from functools import cached_property
 
+import anyio
 import asyncer
-from attrs import Factory, define
+from attrs import Factory, define, field
 from lsp_client.capability.request import (
     WithRequestDocumentSymbol,
     WithRequestHover,
@@ -18,6 +19,7 @@ from lsap.schema.reference import ReferenceItem, ReferenceRequest, ReferenceResp
 from lsap.utils.cache import PaginationCache
 from lsap.utils.capability import ensure_capability
 from lsap.utils.document import DocumentReader
+from lsap.utils.markdown import clean_hover_content
 from lsap.utils.pagination import paginate
 from lsap.utils.symbol import symbol_at
 
@@ -28,6 +30,7 @@ from .locate import LocateCapability
 @define
 class ReferenceCapability(Capability[ReferenceRequest, ReferenceResponse]):
     _cache: PaginationCache[ReferenceItem] = Factory(PaginationCache)
+    process_sem: anyio.Semaphore = field(default=anyio.Semaphore(32), init=False)
 
     @cached_property
     def locate(self) -> LocateCapability:
@@ -46,16 +49,17 @@ class ReferenceCapability(Capability[ReferenceRequest, ReferenceResponse]):
                     self.client, WithRequestReferences
                 ).request_references(file_path, lsp_pos, include_declaration=True):
                     locations.extend(refs)
-            elif req.mode == "implementations":
-                if impls := await ensure_capability(
+            elif req.mode == "implementations" and (
+                impls := await ensure_capability(
                     self.client,
                     WithRequestImplementation,
                     error="To find implementations, you can: "
                     "1) Use 'references' mode to find all usages (often including implementations); "
                     "2) Find the symbol definition and then search for its references; "
                     "3) Use 'search' or 'symbol' capability to find name-matched definitions.",
-                ).request_implementation_locations(file_path, lsp_pos):
-                    locations.extend(impls)
+                ).request_implementation_locations(file_path, lsp_pos)
+            ):
+                locations.extend(impls)
 
             if not locations:
                 return []
@@ -78,7 +82,7 @@ class ReferenceCapability(Capability[ReferenceRequest, ReferenceResponse]):
             request=req,
             items=result.items,
             start_index=req.start_index,
-            max_items=req.max_items,
+            max_items=req.max_items if req.max_items is not None else len(result.items),
             total=result.total,
             has_more=result.has_more,
             pagination_id=result.pagination_id,
@@ -90,24 +94,27 @@ class ReferenceCapability(Capability[ReferenceRequest, ReferenceResponse]):
         context_lines: int,
         items: list[ReferenceItem],
     ) -> None:
-        file_path = self.client.from_uri(loc.uri)
-        content = await self.client.read_file(file_path)
-        reader = DocumentReader(content)
+        async with self.process_sem:
+            file_path = self.client.from_uri(loc.uri)
+            content = await self.client.read_file(file_path)
+            reader = DocumentReader(content)
 
-        range = loc.range
-        line = range.start.line
-        context_range = LSPRange(
-            start=LSPPosition(line=max(0, line - context_lines), character=0),
-            end=LSPPosition(line=line + context_lines + 1, character=0),
-        )
-        if not (snippet := reader.read(context_range)):
-            return
+            range = loc.range
+            context_range = LSPRange(
+                start=LSPPosition(
+                    line=max(0, range.start.line - context_lines), character=0
+                ),
+                end=LSPPosition(line=range.end.line + context_lines + 1, character=0),
+            )
+            if not (snippet := reader.read(context_range, trim_empty=True)):
+                return
 
-        symbol: SymbolDetailInfo | None = None
-        if symbols := await ensure_capability(
-            self.client, WithRequestDocumentSymbol
-        ).request_document_symbol_list(file_path):
-            if match := symbol_at(symbols, range.start):
+            symbol: SymbolDetailInfo | None = None
+            if (
+                symbols := await ensure_capability(
+                    self.client, WithRequestDocumentSymbol
+                ).request_document_symbol_list(file_path)
+            ) and (match := symbol_at(symbols, range.start)):
                 path, sym = match
                 kind = SymbolKind.from_lsp(sym.kind)
 
@@ -126,18 +133,18 @@ class ReferenceCapability(Capability[ReferenceRequest, ReferenceResponse]):
                 if hover := await ensure_capability(
                     self.client, WithRequestHover
                 ).request_hover(file_path, range.start):
-                    symbol.hover = hover.value
+                    symbol.hover = clean_hover_content(hover.value)
 
-        items.append(
-            ReferenceItem(
-                location=LSAPLocation(
-                    file_path=file_path,
-                    range=Range(
-                        start=Position.from_lsp(range.start),
-                        end=Position.from_lsp(range.end),
+            items.append(
+                ReferenceItem(
+                    location=LSAPLocation(
+                        file_path=file_path,
+                        range=Range(
+                            start=Position.from_lsp(range.start),
+                            end=Position.from_lsp(range.end),
+                        ),
                     ),
-                ),
-                code=snippet.content,
-                symbol=symbol,
+                    code=snippet.content,
+                    symbol=symbol,
+                )
             )
-        )

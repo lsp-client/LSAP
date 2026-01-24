@@ -39,12 +39,11 @@ def detect_marker(text: str) -> MarkerPosition | None:
             return MarkerPosition(
                 marker=marker, start_pos=pos, end_pos=pos + len(marker)
             )
-        elif count == 0:
+        if count == 0:
             # This level doesn't exist, try next
             continue
-        else:
-            # Multiple occurrences, try higher nesting level
-            continue
+        # Multiple occurrences, try higher nesting level
+        continue
 
     return None
 
@@ -61,17 +60,15 @@ def parse_locate_string(locate_str: str) -> Locate:
 
     Scope formats:
         - <line> - Single line number (e.g., "42")
-        - <start>,<end> - Line range with comma (e.g., "10,20")
-        - <start>-<end> - Line range with dash (e.g., "10-20")
+        - <start>,<end> - Line range with comma (e.g., "10,20"). Use 0 for end to mean till EOF (e.g., "10,0")
         - <symbol_path> - Symbol path with dots (e.g., "MyClass.my_method")
 
     Examples:
         - "foo.py:42@return <|>result" - Line 42, find pattern
-        - "foo.py:10,20@if <|>condition" - Line range 10-20, find pattern
+        - "foo.py:10,20@if <|>condition" - Line range 10,20, find pattern
         - "foo.py:MyClass.my_method@self.<|>" - Symbol scope, find pattern
         - "foo.py@self.<|>" - Whole file, find pattern
         - "foo.py:MyClass" - Symbol scope only
-        - "foo.py:10-20" - Line range scope
     """
     # Split by @ first to separate find from file_path:scope
     if "@" in locate_str:
@@ -95,14 +92,14 @@ def parse_locate_string(locate_str: str) -> Locate:
         if "," in scope_str:
             # Comma-separated line range: "10,20"
             start, end = scope_str.split(",", 1)
-            scope = LineScope(line=(int(start), int(end)))
-        elif "-" in scope_str and scope_str.replace("-", "").isdigit():
-            # Dash-separated line range: "10-20"
-            start, end = scope_str.split("-", 1)
-            scope = LineScope(line=(int(start), int(end)))
+            start_val = int(start)
+            end_val = int(end)
+            # 0 means till EOF, otherwise it's 1-based exclusive
+            actual_end = 0 if end_val == 0 else end_val + 1
+            scope = LineScope(start_line=start_val, end_line=actual_end)
         elif scope_str.isdigit():
             # Single line number: "42"
-            scope = LineScope(line=int(scope_str))
+            scope = LineScope(start_line=int(scope_str), end_line=int(scope_str) + 1)
         else:
             # Treat as symbol path
             symbol_path = scope_str.split(".")

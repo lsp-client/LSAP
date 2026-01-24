@@ -1,27 +1,27 @@
+from collections.abc import Sequence
+from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Sequence
 
 import pytest
-from lsprotocol.types import DocumentSymbol, Location, SymbolKind
-from lsprotocol.types import Position as LSPPosition
-from lsprotocol.types import Range as LSPRange
 from lsp_client.capability.request import (
-    WithRequestDefinition,
     WithRequestDeclaration,
-    WithRequestTypeDefinition,
+    WithRequestDefinition,
     WithRequestDocumentSymbol,
     WithRequestHover,
+    WithRequestTypeDefinition,
 )
-from lsp_client.protocol.lang import LanguageConfig
-from lsp_client.protocol import CapabilityClientProtocol
 from lsp_client.client.document_state import DocumentStateManager
+from lsp_client.protocol import CapabilityClientProtocol
+from lsp_client.protocol.lang import LanguageConfig
 from lsp_client.utils.config import ConfigurationMap
-from lsp_client.utils.workspace import Workspace, WorkspaceFolder, DEFAULT_WORKSPACE_DIR
-from lsprotocol.types import LanguageKind
+from lsp_client.utils.workspace import DEFAULT_WORKSPACE_DIR, Workspace, WorkspaceFolder
+from lsprotocol.types import DocumentSymbol, LanguageKind, Location, SymbolKind
+from lsprotocol.types import Position as LSPPosition
+from lsprotocol.types import Range as LSPRange
+
 from lsap.capability.definition import DefinitionCapability
 from lsap.schema.definition import DefinitionRequest
 from lsap.schema.locate import LineScope, Locate
-from contextlib import asynccontextmanager
 
 
 class MockDefinitionClient(
@@ -132,7 +132,11 @@ async def test_definition():
     capability = DefinitionCapability(client=client)  # type: ignore
 
     req = DefinitionRequest(
-        locate=Locate(file_path=Path("main.py"), scope=LineScope(line=2), find="foo"),
+        locate=Locate(
+            file_path=Path("main.py"),
+            scope=LineScope(start_line=2, end_line=3),
+            find="foo",
+        ),
         mode="definition",
     )
 
@@ -156,7 +160,11 @@ async def test_unsupported_declaration():
     # when a capability is not supported, but the mock now supports everything.
     # This test passes by design - the capability is supported.
     req = DefinitionRequest(
-        locate=Locate(file_path=Path("main.py"), scope=LineScope(line=2), find="foo"),
+        locate=Locate(
+            file_path=Path("main.py"),
+            scope=LineScope(start_line=2, end_line=3),
+            find="foo",
+        ),
         mode="declaration",
     )
 

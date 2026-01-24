@@ -1,9 +1,54 @@
+"""
+# Search API
+
+The Search API provides fast, fuzzy symbol search across the entire workspace.
+Results are concise for quick discovery—use the Symbol API to get detailed
+information about specific symbols.
+
+## Example Usage
+
+### Scenario 1: Quick class search
+
+Request:
+
+```json
+{
+  "query": "AuthService",
+  "kinds": ["class"],
+  "max_items": 10
+}
+```
+
+### Scenario 2: Fuzzy search for functions
+
+Request:
+
+```json
+{
+  "query": "calc",
+  "kinds": ["function", "method"]
+}
+```
+
+### Scenario 3: Pagination
+
+Request:
+
+```json
+{
+  "query": "test",
+  "max_items": 5,
+  "start_index": 0
+}
+```
+"""
+
 from pathlib import Path
 from typing import Final
 
 from pydantic import BaseModel, ConfigDict
 
-from .abc import PaginatedRequest, PaginatedResponse
+from ._abc import PaginatedRequest, PaginatedResponse
 from .models import SymbolKind
 
 
@@ -41,7 +86,7 @@ class SearchRequest(PaginatedRequest):
 markdown_template: Final = """
 # Search: `{{ request.query }}`
 {% if total != nil -%}
-Found {{ total }} results{% if max_items != nil %} (showing {{ items.size }}){% endif %}
+Found {{ total }} results | Showing: {{ items.size }}{% if max_items != nil %} (Offset: {{ start_index }}, Limit: {{ max_items }}){% endif %}
 {%- endif %}
 
 {% if items.size == 0 -%}
@@ -52,7 +97,10 @@ No matches found.
 {%- endfor %}
 
 {% if has_more -%}
-> More results available. Use `start_index={{ start_index | plus: items.size }}` for next page.
+---
+> [!TIP]
+> More results available.
+> To see more, use: `pagination_id="{{ pagination_id }}"`, `start_index={{ start_index | plus: items.size }}`
 {%- endif %}
 {%- endif %}
 """
@@ -67,3 +115,10 @@ class SearchResponse(PaginatedResponse):
             "markdown": markdown_template,
         }
     )
+
+
+__all__ = [
+    "SearchItem",
+    "SearchRequest",
+    "SearchResponse",
+]

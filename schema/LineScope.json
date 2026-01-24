@@ -1,0 +1,22 @@
+{
+  "description": "Scope by line range",
+  "properties": {
+    "start_line": {
+      "description": "Start line number (1-based, inclusive)",
+      "minimum": 1,
+      "title": "Start Line",
+      "type": "integer"
+    },
+    "end_line": {
+      "description": "End line number (1-based, exclusive). When set to 0, means till EOF.",
+      "title": "End Line",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "start_line",
+    "end_line"
+  ],
+  "title": "LineScope",
+  "type": "object"
+}

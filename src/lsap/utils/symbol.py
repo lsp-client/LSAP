@@ -1,5 +1,4 @@
-from collections.abc import Iterator
-from typing import Sequence
+from collections.abc import Iterator, Sequence
 
 from lsprotocol.types import DocumentSymbol
 from lsprotocol.types import Position as LSPPosition
@@ -40,7 +39,8 @@ def symbol_at(
     """Find the most specific DocumentSymbol containing the given position."""
     best_match: tuple[SymbolPath, DocumentSymbol] | None = None
     for path, symbol in iter_symbols(symbols):
-        if contains(symbol.range, position):
-            if best_match is None or is_narrower(symbol.range, best_match[1].range):
-                best_match = (path, symbol)
+        if contains(symbol.range, position) and (
+            best_match is None or is_narrower(symbol.range, best_match[1].range)
+        ):
+            best_match = (path, symbol)
     return best_match

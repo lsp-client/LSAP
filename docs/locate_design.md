@@ -6,7 +6,7 @@ Most LSP (Language Server Protocol) capabilities require a precise code `Positio
 
 ### Problems with Traditional Approaches
 
-**Option A: Direct Line/Column Specification**
+**Option A: Direct Line/Column Specification** (Used by editors)
 
 ```json
 { "line": 42, "character": 15 }
@@ -16,7 +16,7 @@ Most LSP (Language Server Protocol) capabilities require a precise code `Positio
 - Position becomes invalid after minor code changes.
 - Lacks semantic expressiveness.
 
-**Option B: Symbol Path Only**
+**Option B: Symbol Path Only** (Used by most LSP tools like Serena, Claude Code, etc.)
 
 ```json
 { "symbol_path": ["MyClass", "my_method"] }
@@ -55,7 +55,7 @@ Precise location within the Scope using a text pattern:
 
 ```python
 find = "self.<|>value = value"
-#           ^^^ <|> marks the exact position
+#            ^^^ <|> marks the exact position
 ```
 
 **Automatic Marker Detection Rules:**
@@ -114,17 +114,17 @@ A concise string syntax is provided for easy location specification:
 
 ## Position Resolution Rules
 
-| Scope         | Find          | Resolution Result                            |
-| ------------- | ------------- | -------------------------------------------- |
-| `SymbolScope` | `None`        | Position of the symbol's declared name       |
-| `SymbolScope` | With marker   | Marked position within the symbol body       |
-| `SymbolScope` | Without marker| Start of matched text within the symbol body |
-| `LineScope`   | `None`        | First non-whitespace character of the line   |
-| `LineScope`   | With marker   | Marked position within the line              |
-| `LineScope`   | Without marker| Start of matched text within the line        |
-| `None`        | With marker   | Global search, marked position               |
-| `None`        | Without marker| Global search, start of matched text         |
-| `None`        | `None`        | ❌ Invalid, validation should failure        |
+| Scope         | Find           | Resolution Result                            |
+| ------------- | -------------- | -------------------------------------------- |
+| `SymbolScope` | `None`         | Position of the symbol's declared name       |
+| `SymbolScope` | With marker    | Marked position within the symbol body       |
+| `SymbolScope` | Without marker | Start of matched text within the symbol body |
+| `LineScope`   | `None`         | First non-whitespace character of the line   |
+| `LineScope`   | With marker    | Marked position within the line              |
+| `LineScope`   | Without marker | Start of matched text within the line        |
+| `None`        | With marker    | Global search, marked position               |
+| `None`        | Without marker | Global search, start of matched text         |
+| `None`        | `None`         | ❌ Invalid, validation should failure         |
 
 ## Whitespace Handling
 
@@ -140,12 +140,12 @@ The search pattern is first tokenized into identifiers, operators, and explicit 
 
 ### Behavior Examples
 
-| Input       | Matching Logic                             | Matches                   | Rejects   |
-| ----------- | ------------------------------------------ | ------------------------- | --------- |
-| `int a`     | Requires space between tokens              | `int a`, `int  a`         | `inta`    |
-| `a+b`       | Allows flexible spacing around operators   | `a+b`, `a + b`            | `ab`      |
-| `foo.bar`   | Allows flexible spacing around dot         | `foo.bar`, `foo . bar`    | `foobar`  |
-| `foo(x, y)` | Allows flexible spacing; preserves comma   | `foo(x, y)`, `foo( x,y )` | `foo(xy)` |
+| Input       | Matching Logic                           | Matches                   | Rejects   |
+| ----------- | ---------------------------------------- | ------------------------- | --------- |
+| `int a`     | Requires space between tokens            | `int a`, `int  a`         | `inta`    |
+| `a+b`       | Allows flexible spacing around operators | `a+b`, `a + b`            | `ab`      |
+| `foo.bar`   | Allows flexible spacing around dot       | `foo.bar`, `foo . bar`    | `foobar`  |
+| `foo(x, y)` | Allows flexible spacing; preserves comma | `foo(x, y)`, `foo( x,y )` | `foo(xy)` |
 
 ### Empty Find Pattern
 
@@ -168,14 +168,14 @@ Token boundaries align with programming language semantics. It preserves identif
 
 ### Capabilities Requiring Position
 
-| LSP Capability               | Positioning Need            | Locate Usage                        |
-| ---------------------------- | --------------------------- | ----------------------------------- |
-| `textDocument/definition`    | Identifier position         | `find="<|>identifier"`              |
-| `textDocument/references`    | Symbol declaration position | `SymbolScope(symbol_path=[...])`    |
-| `textDocument/rename`        | Symbol declaration position | `SymbolScope(symbol_path=[...])`    |
-| `textDocument/hover`         | Any identifier              | `find="<|>target"`                  |
-| `textDocument/completion`    | Trigger point               | `find="obj.<|>"`                    |
-| `textDocument/signatureHelp` | Inside parentheses          | `find="func(<|>"`                   |
+| LSP Capability               | Positioning Need            | Locate Usage                     |
+| ---------------------------- | --------------------------- | -------------------------------- |
+| `textDocument/definition`    | Identifier position         | `find="<\|>identifier"`          |
+| `textDocument/references`    | Symbol declaration position | `SymbolScope(symbol_path=[...])` |
+| `textDocument/rename`        | Symbol declaration position | `SymbolScope(symbol_path=[...])` |
+| `textDocument/hover`         | Any identifier              | `find="<\| >target"`             |
+| `textDocument/completion`    | Trigger point               | `find="obj.<\| >"`               |
+| `textDocument/signatureHelp` | Inside parentheses          | `find="func(<\| >"`              |
 
 ### Capabilities Requiring Range
 

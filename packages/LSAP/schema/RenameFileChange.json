@@ -1,0 +1,53 @@
+{
+  "$defs": {
+    "RenameDiff": {
+      "description": "Line-level change showing before and after rename.",
+      "properties": {
+        "line": {
+          "description": "1-based line number",
+          "minimum": 1,
+          "title": "Line",
+          "type": "integer"
+        },
+        "original": {
+          "description": "Original line content before rename",
+          "title": "Original",
+          "type": "string"
+        },
+        "modified": {
+          "description": "Modified line content after rename",
+          "title": "Modified",
+          "type": "string"
+        }
+      },
+      "required": [
+        "line",
+        "original",
+        "modified"
+      ],
+      "title": "RenameDiff",
+      "type": "object"
+    }
+  },
+  "description": "Changes within a single file.",
+  "properties": {
+    "file_path": {
+      "format": "path",
+      "title": "File Path",
+      "type": "string"
+    },
+    "diffs": {
+      "items": {
+        "$ref": "#/$defs/RenameDiff"
+      },
+      "title": "Diffs",
+      "type": "array"
+    }
+  },
+  "required": [
+    "file_path",
+    "diffs"
+  ],
+  "title": "RenameFileChange",
+  "type": "object"
+}

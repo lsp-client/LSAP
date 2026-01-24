@@ -1,8 +1,35 @@
+"""
+# Locate API
+
+The Locate API provides a unified way to specify a position or range in the codebase.
+It is used as a base for many other requests like `SymbolRequest`, `ReferenceRequest`,
+and `HierarchyRequest`.
+
+## String Syntax
+
+A concise string syntax is available: `<file_path>:<scope>@<find>`
+
+### Scope formats
+
+- `<line>`: Single line number (e.g., `"42"`)
+- `<start>,<end>`: Line range with comma (e.g., `"10,20"`). Use `0` for `<end>` to mean till EOF (e.g., `"10,0"`)
+- `<symbol_path>`: Symbol path with dots (e.g., `"MyClass.my_method"`)
+
+### Examples
+
+- `"foo.py@self.<|>"`
+- `"foo.py:42@return <|>result"`
+- `"foo.py:10,20@if <|>condition"`
+- `"foo.py:MyClass.my_method@self.<|>"`
+- `"foo.py:MyClass"`
+"""
+
 from pathlib import Path
+from typing import Self
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from .abc import Request, Response
+from ._abc import Request, Response
 from .models import Position, Range
 from .types import SymbolPath
 
@@ -10,8 +37,10 @@ from .types import SymbolPath
 class LineScope(BaseModel):
     """Scope by line range"""
 
-    line: int | tuple[int, int]
-    """Line number or (start, end) range (1-based)"""
+    start_line: int = Field(ge=1, description="Start line number (1-based, inclusive)")
+    end_line: int = Field(
+        description="End line number (1-based, exclusive). When set to 0, means till EOF."
+    )
 
 
 class SymbolScope(BaseModel):
@@ -62,13 +91,22 @@ class Locate(BaseModel):
     file_path: Path
 
     scope: LineScope | SymbolScope | None = None
-    """Optional: narrow search to symbol body or line range"""
+    """Narrow search to symbol body or line range"""
 
     find: str | None = None
     """Text pattern with marker for exact position; if no marker, positions at match start."""
 
+    model_config = ConfigDict(
+        json_schema_extra={
+            "anyOf": [
+                {"required": ["file_path", "scope"]},
+                {"required": ["file_path", "find"]},
+            ]
+        }
+    )
+
     @model_validator(mode="after")
-    def check_valid_locate(self):
+    def check_valid_locate(self) -> Self:
         if self.scope is None and self.find is None:
             raise ValueError("Either scope or find must be provided")
         return self
@@ -94,8 +132,17 @@ class LocateRange(BaseModel):
     find: str | None = None
     """Text to match; matched text becomes the range"""
 
+    model_config = ConfigDict(
+        json_schema_extra={
+            "anyOf": [
+                {"required": ["file_path", "scope"]},
+                {"required": ["file_path", "find"]},
+            ]
+        }
+    )
+
     @model_validator(mode="after")
-    def check_valid_locate(self):
+    def check_valid_locate(self) -> Self:
         if self.scope is None and self.find is None:
             raise ValueError("Either scope or find must be provided")
         return self
@@ -114,13 +161,13 @@ class LocateRangeRequest(Request):
 
 
 markdown_template = (
-    "Located `{{ file_path }}` at {{ position.line }}:{{ position.character }}"
+    "Located `{{ file_path }}` at `{{ position.line }}:{{ position.character }}`"
 )
 
 markdown_range_template = (
     "Located `{{ file_path }}` range "
-    "{{ range.start.line }}:{{ range.start.character }}-"
-    "{{ range.end.line }}:{{ range.end.character }}"
+    "`{{ range.start.line }}:{{ range.start.character }}-"
+    "{{ range.end.line }}:{{ range.end.character }}`"
 )
 
 
@@ -144,3 +191,15 @@ class LocateRangeResponse(Response):
             "markdown": markdown_range_template,
         }
     )
+
+
+__all__ = [
+    "LineScope",
+    "Locate",
+    "LocateRange",
+    "LocateRangeRequest",
+    "LocateRangeResponse",
+    "LocateRequest",
+    "LocateResponse",
+    "SymbolScope",
+]

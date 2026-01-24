@@ -1,0 +1,123 @@
+{
+  "$defs": {
+    "RenameDiff": {
+      "description": "Line-level change showing before and after rename.",
+      "properties": {
+        "line": {
+          "description": "1-based line number",
+          "minimum": 1,
+          "title": "Line",
+          "type": "integer"
+        },
+        "original": {
+          "description": "Original line content before rename",
+          "title": "Original",
+          "type": "string"
+        },
+        "modified": {
+          "description": "Modified line content after rename",
+          "title": "Modified",
+          "type": "string"
+        }
+      },
+      "required": [
+        "line",
+        "original",
+        "modified"
+      ],
+      "title": "RenameDiff",
+      "type": "object"
+    },
+    "RenameExecuteRequest": {
+      "description": "Executes a rename operation, applying changes to the workspace.\n\nMust use a rename_id from a previous preview to ensure\nthe same changes are applied. Supports excluding specific files or glob patterns.",
+      "properties": {
+        "rename_id": {
+          "description": "Required ID from a previous preview to apply",
+          "title": "Rename Id",
+          "type": "string"
+        },
+        "exclude_files": {
+          "description": "List of file paths or glob patterns to exclude from the rename operation",
+          "items": {
+            "type": "string"
+          },
+          "title": "Exclude Files",
+          "type": "array"
+        }
+      },
+      "required": [
+        "rename_id"
+      ],
+      "title": "RenameExecuteRequest",
+      "type": "object"
+    },
+    "RenameFileChange": {
+      "description": "Changes within a single file.",
+      "properties": {
+        "file_path": {
+          "format": "path",
+          "title": "File Path",
+          "type": "string"
+        },
+        "diffs": {
+          "items": {
+            "$ref": "#/$defs/RenameDiff"
+          },
+          "title": "Diffs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "file_path",
+        "diffs"
+      ],
+      "title": "RenameFileChange",
+      "type": "object"
+    }
+  },
+  "markdown": "\n# Rename Applied: `{{ old_name }}` \u2192 `{{ new_name }}`\n\nSummary: Modified {{ total_files }} files with {{ total_occurrences }} occurrences.\n\n{% assign num_changes = changes | size -%}\n{% if num_changes > 0 -%}\n{%- for file in changes %}\n- `{{ file.file_path }}`: {{ file.diffs | size }} occurrences\n{%- endfor %}\n{%- endif %}\n---\n> [!NOTE]\n> Rename completed successfully.{% assign num_excluded = request.exclude_files | size %}{% if num_excluded > 0 %} Excluded files: {% for f in request.exclude_files %}`{{ f }}`{% unless forloop.last %}, {% endunless %}{% endfor %}.\n> [!IMPORTANT]\n> You must manually rename the symbol in the excluded files to maintain consistency.{% endif %}\n",
+  "properties": {
+    "request": {
+      "$ref": "#/$defs/RenameExecuteRequest"
+    },
+    "old_name": {
+      "title": "Old Name",
+      "type": "string"
+    },
+    "new_name": {
+      "title": "New Name",
+      "type": "string"
+    },
+    "total_files": {
+      "title": "Total Files",
+      "type": "integer"
+    },
+    "total_occurrences": {
+      "title": "Total Occurrences",
+      "type": "integer"
+    },
+    "changes": {
+      "items": {
+        "$ref": "#/$defs/RenameFileChange"
+      },
+      "title": "Changes",
+      "type": "array"
+    },
+    "applied": {
+      "const": true,
+      "default": true,
+      "title": "Applied",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "request",
+    "old_name",
+    "new_name",
+    "total_files",
+    "total_occurrences",
+    "changes"
+  ],
+  "title": "RenameExecuteResponse",
+  "type": "object"
+}

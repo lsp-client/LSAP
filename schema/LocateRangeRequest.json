@@ -1,0 +1,110 @@
+{
+  "$defs": {
+    "LineScope": {
+      "description": "Scope by line range",
+      "properties": {
+        "start_line": {
+          "description": "Start line number (1-based, inclusive)",
+          "minimum": 1,
+          "title": "Start Line",
+          "type": "integer"
+        },
+        "end_line": {
+          "description": "End line number (1-based, exclusive). When set to 0, means till EOF.",
+          "title": "End Line",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "start_line",
+        "end_line"
+      ],
+      "title": "LineScope",
+      "type": "object"
+    },
+    "LocateRange": {
+      "anyOf": [
+        {
+          "required": [
+            "file_path",
+            "scope"
+          ]
+        },
+        {
+          "required": [
+            "file_path",
+            "find"
+          ]
+        }
+      ],
+      "description": "Locate a range.\n\nExamples:\n    # Select symbol body\n    LocateRange(file_path=\"foo.py\", scope=SymbolScope(symbol_path=[\"MyClass\"]))\n\n    # Select specific text\n    LocateRange(file_path=\"foo.py\", find=\"if condition: return True\")",
+      "properties": {
+        "file_path": {
+          "format": "path",
+          "title": "File Path",
+          "type": "string"
+        },
+        "scope": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LineScope"
+            },
+            {
+              "$ref": "#/$defs/SymbolScope"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scope"
+        },
+        "find": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Find"
+        }
+      },
+      "required": [
+        "file_path"
+      ],
+      "title": "LocateRange",
+      "type": "object"
+    },
+    "SymbolScope": {
+      "description": "Scope by symbol, also serves as declaration locator when find is omitted",
+      "properties": {
+        "symbol_path": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Symbol Path",
+          "type": "array"
+        }
+      },
+      "required": [
+        "symbol_path"
+      ],
+      "title": "SymbolScope",
+      "type": "object"
+    }
+  },
+  "description": "Request to locate a code range.",
+  "properties": {
+    "locate": {
+      "$ref": "#/$defs/LocateRange"
+    }
+  },
+  "required": [
+    "locate"
+  ],
+  "title": "LocateRangeRequest",
+  "type": "object"
+}

@@ -1,9 +1,40 @@
+"""
+# Diagnostics API
+
+The Diagnostics API reports syntax errors, type mismatches, and other linting issues
+found in a specific file or across the workspace.
+
+## Example Usage
+
+### Scenario 1: Getting all diagnostics for a file
+
+Request:
+
+```json
+{
+  "file_path": "src/buggy.py",
+  "min_severity": "Hint"
+}
+```
+
+### Scenario 2: Getting workspace-wide diagnostics
+
+Request:
+
+```json
+{
+  "min_severity": "Error",
+  "max_items": 10
+}
+```
+"""
+
 from pathlib import Path
 from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from lsap.schema.abc import PaginatedRequest, PaginatedResponse
+from lsap.schema._abc import PaginatedRequest, PaginatedResponse
 from lsap.schema.models import Range
 
 
@@ -40,18 +71,14 @@ No issues found.
 | Line:Col | Severity | Message |
 | :--- | :--- | :--- |
 {%- for d in diagnostics %}
-| {{ d.range.start.line }}:{{ d.range.start.character }} | {{ d.severity }} | {{ d.message }} |
+| `{{ d.range.start.line }}:{{ d.range.start.character }}` | {{ d.severity }} | {{ d.message }} |
 {%- endfor %}
 
 {% if has_more -%}
 ---
 > [!TIP]
 > More issues available.
-{%- if pagination_id != nil %}
-> Use `pagination_id="{{ pagination_id }}"` to fetch the next page.
-{%- else %}
-> To see the rest, specify a `max_items` and use: `start_index={% assign step = max_items | default: diagnostics.size %}{{ start_index | plus: step }}`
-{%- endif %}
+> To see more, use: `pagination_id="{{ pagination_id }}"`, `start_index={{ start_index | plus: diagnostics.size }}`
 {%- endif %}
 {%- endif %}
 """
@@ -96,18 +123,14 @@ No issues found in the workspace.
 | File | Line:Col | Severity | Message |
 | :--- | :--- | :--- | :--- |
 {%- for item in items %}
-| `{{ item.file_path }}` | {{ item.range.start.line }}:{{ item.range.start.character }} | {{ item.severity }} | {{ item.message }} |
+| `{{ item.file_path }}` | `{{ item.range.start.line }}:{{ item.range.start.character }}` | {{ item.severity }} | {{ item.message }} |
 {%- endfor %}
 
 {% if has_more -%}
 ---
 > [!TIP]
 > More issues available.
-{%- if pagination_id != nil %}
-> Use `pagination_id="{{ pagination_id }}"` to fetch the next page.
-{%- else %}
-> To see the rest, specify a `max_items` and use: `start_index={% assign step = max_items | default: items.size %}{{ start_index | plus: step }}`
-{%- endif %}
+> To see more, use: `pagination_id="{{ pagination_id }}"`, `start_index={{ start_index | plus: items.size }}`
 {%- endif %}
 {%- endif %}
 """
@@ -121,3 +144,13 @@ class WorkspaceDiagnosticsResponse(PaginatedResponse):
             "markdown": workspace_markdown_template,
         }
     )
+
+
+__all__ = [
+    "Diagnostic",
+    "FileDiagnosticsRequest",
+    "FileDiagnosticsResponse",
+    "WorkspaceDiagnosticItem",
+    "WorkspaceDiagnosticsRequest",
+    "WorkspaceDiagnosticsResponse",
+]

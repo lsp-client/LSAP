@@ -1,8 +1,32 @@
+"""
+# Completion API
+
+The Completion API (IntelliSense) provides context-aware code suggestions at a
+specific position. For an Agent, this is primarily an exploration and discovery
+tool to find available methods or properties.
+
+## Example Usage
+
+### Scenario 1: Discovering methods on an object after dot
+
+Request:
+
+```json
+{
+  "locate": {
+    "file_path": "src/main.py",
+    "find": "client."
+  },
+  "max_items": 5
+}
+```
+"""
+
 from typing import Final
 
 from pydantic import BaseModel, ConfigDict
 
-from lsap.schema.abc import PaginatedRequest, PaginatedResponse
+from lsap.schema._abc import PaginatedRequest, PaginatedResponse
 from lsap.schema.locate import LocateRequest
 
 
@@ -37,6 +61,9 @@ class CompletionRequest(LocateRequest, PaginatedRequest):
 
 markdown_template: Final = """
 # Code Completion
+{% if total != nil -%}
+Total suggestions: {{ total }} | Showing: {{ items.size }}{% if max_items != nil %} (Offset: {{ start_index }}, Limit: {{ max_items }}){% endif %}
+{%- endif %}
 
 {% if items.size == 0 -%}
 No completion suggestions found.
@@ -49,7 +76,7 @@ No completion suggestions found.
 {%- for item in items %}
 ### {{ forloop.index }}. `{{ item.label }}` ({{ item.kind }})
 {%- if item.detail %}
-- Detail: {{ item.detail }}
+- Detail: `{{ item.detail }}`
 {%- endif %}
 {%- if item.insert_text and item.insert_text != item.label %}
 - Insert: `{{ item.insert_text }}`
@@ -62,17 +89,14 @@ No completion suggestions found.
 {% if has_more -%}
 ---
 > [!TIP]
-{%- if pagination_id != nil %}
-> Use `pagination_id="{{ pagination_id }}"` to fetch more suggestions.
-{%- else %}
-> More results available. Use `start_index` to fetch more.
+> More suggestions available.
+> To see more, use: `pagination_id="{{ pagination_id }}"`, `start_index={{ start_index | plus: items.size }}`
 {%- endif %}
 {%- endif %}
 
 ---
 > [!TIP]
 > Use these symbols to construct your next code edit. You can focus on a specific method to get more details.
-{%- endif %}
 """
 
 
@@ -84,3 +108,10 @@ class CompletionResponse(PaginatedResponse):
             "markdown": markdown_template,
         }
     )
+
+
+__all__ = [
+    "CompletionItem",
+    "CompletionRequest",
+    "CompletionResponse",
+]

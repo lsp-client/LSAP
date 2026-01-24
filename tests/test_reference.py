@@ -1,8 +1,21 @@
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import pytest
+from lsp_client.capability.request import (
+    WithRequestDocumentSymbol,
+    WithRequestHover,
+    WithRequestImplementation,
+    WithRequestReferences,
+)
+from lsp_client.client.document_state import DocumentStateManager
+from lsp_client.protocol import CapabilityClientProtocol
+from lsp_client.protocol.lang import LanguageConfig
+from lsp_client.utils.config import ConfigurationMap
+from lsp_client.utils.workspace import DEFAULT_WORKSPACE_DIR, Workspace, WorkspaceFolder
 from lsprotocol.types import (
     DocumentSymbol,
+    LanguageKind,
     Location,
     SymbolKind,
 )
@@ -12,22 +25,10 @@ from lsprotocol.types import (
 from lsprotocol.types import (
     Range as LSPRange,
 )
-from lsp_client.capability.request import (
-    WithRequestReferences,
-    WithRequestDocumentSymbol,
-    WithRequestHover,
-    WithRequestImplementation,
-)
-from lsp_client.protocol.lang import LanguageConfig
-from lsp_client.protocol import CapabilityClientProtocol
-from lsp_client.client.document_state import DocumentStateManager
-from lsp_client.utils.config import ConfigurationMap
-from lsp_client.utils.workspace import Workspace, WorkspaceFolder, DEFAULT_WORKSPACE_DIR
-from lsprotocol.types import LanguageKind
+
 from lsap.capability.reference import ReferenceCapability
 from lsap.schema.locate import LineScope, Locate
 from lsap.schema.reference import ReferenceRequest
-from contextlib import asynccontextmanager
 
 
 class MockReferenceClient(
@@ -146,7 +147,11 @@ async def test_reference():
     capability = ReferenceCapability(client=client)  # type: ignore
 
     req = ReferenceRequest(
-        locate=Locate(file_path=Path("test.py"), scope=LineScope(line=2), find="foo")
+        locate=Locate(
+            file_path=Path("test.py"),
+            scope=LineScope(start_line=2, end_line=3),
+            find="foo",
+        )
     )
 
     resp = await capability(req)
@@ -165,7 +170,11 @@ async def test_reference_pagination():
 
     # First page
     req1 = ReferenceRequest(
-        locate=Locate(file_path=Path("test.py"), scope=LineScope(line=2), find="foo"),
+        locate=Locate(
+            file_path=Path("test.py"),
+            scope=LineScope(start_line=2, end_line=3),
+            find="foo",
+        ),
         max_items=1,
     )
     resp1 = await capability(req1)
@@ -176,7 +185,11 @@ async def test_reference_pagination():
 
     # Second page
     req2 = ReferenceRequest(
-        locate=Locate(file_path=Path("test.py"), scope=LineScope(line=2), find="foo"),
+        locate=Locate(
+            file_path=Path("test.py"),
+            scope=LineScope(start_line=2, end_line=3),
+            find="foo",
+        ),
         pagination_id=resp1.pagination_id,
         start_index=1,
         max_items=1,
@@ -185,7 +198,7 @@ async def test_reference_pagination():
     assert resp2 is not None
     assert len(resp2.items) == 1
     assert resp2.has_more is False
-    assert resp2.pagination_id is None
+    assert resp2.pagination_id == resp1.pagination_id
 
 
 @pytest.mark.asyncio
@@ -198,7 +211,11 @@ async def test_unsupported_implementation():
     # when a capability is not supported, but the mock now supports everything.
     # This test passes by design - the capability is supported.
     req = ReferenceRequest(
-        locate=Locate(file_path=Path("test.py"), scope=LineScope(line=2), find="foo"),
+        locate=Locate(
+            file_path=Path("test.py"),
+            scope=LineScope(start_line=2, end_line=3),
+            find="foo",
+        ),
         mode="implementations",
     )
 

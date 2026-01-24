@@ -1,4 +1,5 @@
 import re
+from collections.abc import Iterator
 from pathlib import Path
 from typing import NamedTuple
 
@@ -37,7 +38,7 @@ def _to_regex(text: str) -> str:
     if not tokens:
         return ""
 
-    def parts():
+    def parts() -> Iterator[str]:
         for i, token in enumerate(tokens):
             if token[0].isspace():
                 yield r"\s+"
@@ -64,20 +65,15 @@ async def _get_scope_info(
         case None:
             return ScopeInfo(reader.full_range, None)
 
-        case LineScope(line=line):
-            match line:
-                case int():
-                    start, end = line - 1, line - 1
-                case (s, e):
-                    start, end = s - 1, e - 1
-
-            return ScopeInfo(
-                LSPRange(
-                    start=LSPPosition(line=start, character=0),
-                    end=LSPPosition(line=end + 1, character=0),
-                ),
-                None,
+        case LineScope(start_line=start_line, end_line=end_line):
+            start = LSPPosition(line=start_line - 1, character=0)
+            end = (
+                reader.full_range.end
+                if end_line == 0
+                else LSPPosition(line=end_line - 1, character=0)
             )
+
+            return ScopeInfo(LSPRange(start=start, end=end), None)
         case SymbolScope(symbol_path=path):
             symbols = await ensure_capability(
                 client, WithRequestDocumentSymbol
@@ -99,50 +95,76 @@ class LocateCapability(Capability[LocateRequest, LocateResponse]):
             self.client, locate.file_path, locate.scope, reader
         )
 
-        snippet = reader.read(info.range)
-        if not snippet:
-            return None
-
-        pos: LSPPosition | None = None
-
-        if locate.find:
-            if marker_info := detect_marker(locate.find):
-                marker, _, _ = marker_info
-                before, _, after = locate.find.partition(marker)
-                re_before, re_after = _to_regex(before), _to_regex(after)
-
-                if not re_before and not re_after:
-                    offset = 0
-                elif m := re.search(
-                    f"({re_before})\\s*({re_after})", snippet.exact_content
-                ):
-                    offset = m.end(1)
-                else:
-                    return None
-            elif m := re.search(_to_regex(locate.find), snippet.exact_content):
-                offset = m.start()
-            else:
-                return None
-
-            pos = reader.offset_to_position(snippet.range.start, offset)
-        else:
-            match locate.scope:
-                case SymbolScope():
-                    pos = info.selection_start
-                case LineScope():
-                    m = re.search(r"\S", snippet.exact_content)
-                    pos = reader.offset_to_position(
-                        snippet.range.start, m.start() if m else 0
-                    )
-                case _:
-                    pos = info.range.start
-
-        if pos:
+        if pos := (
+            self._find_position(locate.find, info.range, reader)
+            if locate.find
+            else self._default_position(locate.scope, info, reader)
+        ):
             return LocateResponse(
                 file_path=locate.file_path,
                 position=Position.from_lsp(pos),
             )
+
         return None
+
+    def _find_position(
+        self, find: str, scope_range: LSPRange, reader: DocumentReader
+    ) -> LSPPosition | None:
+        """Find the position of the search string or marker within the scope.
+
+        If a marker is present, the position is at the character immediately
+        following the marker. If there is no character following the marker,
+        the position is at the character immediately preceding the marker.
+        The marker itself is only used to identify the position and does not
+        represent any characters or whitespace in the content.
+        """
+        snippet = reader.read(scope_range)
+        if not snippet:
+            return None
+
+        if marker_info := detect_marker(find):
+            before, _, after = find.partition(marker_info.marker)
+            match (before, after):
+                case ("", ""):
+                    offset = 0
+                case (before, ""):
+                    pattern = re.compile(re.escape(before))
+                    if m := pattern.search(snippet.exact_content):
+                        offset = m.end()
+                    else:
+                        return None
+                case (before, after):
+                    pattern = re.compile(re.escape(before) + re.escape(after))
+                    if m := pattern.search(snippet.exact_content):
+                        offset = m.start() + len(before)
+                    else:
+                        return None
+        elif m := re.search(_to_regex(find), snippet.exact_content):
+            offset = m.start()
+        else:
+            return None
+
+        return reader.offset_to_position(snippet.range.start, offset)
+
+    def _default_position(
+        self,
+        scope: LineScope | SymbolScope | None,
+        info: ScopeInfo,
+        reader: DocumentReader,
+    ) -> LSPPosition | None:
+        match scope:
+            case SymbolScope():
+                return info.selection_start
+            case LineScope():
+                snippet = reader.read(info.range)
+                if not snippet:
+                    return info.range.start
+                m = re.search(r"\S", snippet.exact_content)
+                return reader.offset_to_position(
+                    snippet.range.start, m.start() if m else 0
+                )
+            case _:
+                return info.range.start
 
 
 @define
@@ -179,9 +201,6 @@ class LocateRangeCapability(Capability[LocateRangeRequest, LocateRangeResponse])
         if final_range:
             return LocateRangeResponse(
                 file_path=locate.file_path,
-                range=Range(
-                    start=Position.from_lsp(final_range.start),
-                    end=Position.from_lsp(final_range.end),
-                ),
+                range=Range.from_lsp(final_range),
             )
         return None

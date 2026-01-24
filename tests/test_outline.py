@@ -1,22 +1,22 @@
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 import pytest
-from lsprotocol.types import DocumentSymbol, SymbolKind
-from lsprotocol.types import Position as LSPPosition
-from lsprotocol.types import Range as LSPRange
 from lsp_client.capability.request import (
     WithRequestDocumentSymbol,
     WithRequestHover,
 )
-from lsp_client.protocol.lang import LanguageConfig
-from lsp_client.protocol import CapabilityClientProtocol
 from lsp_client.client.document_state import DocumentStateManager
+from lsp_client.protocol import CapabilityClientProtocol
+from lsp_client.protocol.lang import LanguageConfig
 from lsp_client.utils.config import ConfigurationMap
-from lsp_client.utils.workspace import Workspace, WorkspaceFolder, DEFAULT_WORKSPACE_DIR
-from lsprotocol.types import LanguageKind
+from lsp_client.utils.workspace import DEFAULT_WORKSPACE_DIR, Workspace, WorkspaceFolder
+from lsprotocol.types import DocumentSymbol, LanguageKind, SymbolKind
+from lsprotocol.types import Position as LSPPosition
+from lsprotocol.types import Range as LSPRange
+
 from lsap.capability.outline import OutlineCapability
-from lsap.schema.outline import OutlineRequest
-from contextlib import asynccontextmanager
+from lsap.schema.outline import OutlineRequest, SymbolScope
 
 
 class MockOutlineClient(
@@ -120,3 +120,279 @@ async def test_outline():
 
     assert resp.items[1].name == "foo"
     assert len(resp.items[1].path) == 2
+
+
+@pytest.mark.asyncio
+async def test_outline_top():
+    client = MockOutlineClient()
+    capability = OutlineCapability(client=client)  # type: ignore
+
+    req = OutlineRequest(file_path=Path("test.py"), top=True)
+
+    resp = await capability(req)
+    assert resp is not None
+    assert len(resp.items) == 1
+
+    assert resp.items[0].name == "A"
+    assert len(resp.items[0].path) == 1
+
+
+@pytest.mark.asyncio
+async def test_outline_top_expansion():
+    class MockModuleClient(MockOutlineClient):
+        async def request_document_symbol_list(self, file_path) -> list[DocumentSymbol]:
+            foo_symbol = DocumentSymbol(
+                name="foo",
+                kind=SymbolKind.Function,
+                range=LSPRange(
+                    start=LSPPosition(line=1, character=0),
+                    end=LSPPosition(line=1, character=10),
+                ),
+                selection_range=LSPRange(
+                    start=LSPPosition(line=1, character=4),
+                    end=LSPPosition(line=1, character=7),
+                ),
+            )
+            module_symbol = DocumentSymbol(
+                name="mymodule",
+                kind=SymbolKind.Module,
+                range=LSPRange(
+                    start=LSPPosition(line=0, character=0),
+                    end=LSPPosition(line=2, character=0),
+                ),
+                selection_range=LSPRange(
+                    start=LSPPosition(line=0, character=0),
+                    end=LSPPosition(line=0, character=0),
+                ),
+                children=[foo_symbol],
+            )
+            return [module_symbol]
+
+    client = MockModuleClient()
+    capability = OutlineCapability(client=client)  # type: ignore
+
+    req = OutlineRequest(file_path=Path("test.py"), top=True)
+
+    resp = await capability(req)
+    assert resp is not None
+    assert len(resp.items) == 1
+    assert resp.items[0].name == "foo"
+    assert resp.items[0].path == ["mymodule", "foo"]
+
+
+@pytest.mark.asyncio
+async def test_outline_filtering():
+    class MockFilteringClient(MockOutlineClient):
+        async def request_document_symbol_list(self, file_path) -> list[DocumentSymbol]:
+            inner_var = DocumentSymbol(
+                name="x",
+                kind=SymbolKind.Variable,
+                range=LSPRange(
+                    start=LSPPosition(line=2, character=8),
+                    end=LSPPosition(line=2, character=9),
+                ),
+                selection_range=LSPRange(
+                    start=LSPPosition(line=2, character=8),
+                    end=LSPPosition(line=2, character=9),
+                ),
+            )
+            inner_func = DocumentSymbol(
+                name="inner",
+                kind=SymbolKind.Function,
+                range=LSPRange(
+                    start=LSPPosition(line=3, character=8),
+                    end=LSPPosition(line=4, character=8),
+                ),
+                selection_range=LSPRange(
+                    start=LSPPosition(line=3, character=12),
+                    end=LSPPosition(line=3, character=17),
+                ),
+            )
+            foo_symbol = DocumentSymbol(
+                name="foo",
+                kind=SymbolKind.Function,
+                range=LSPRange(
+                    start=LSPPosition(line=1, character=0),
+                    end=LSPPosition(line=5, character=0),
+                ),
+                selection_range=LSPRange(
+                    start=LSPPosition(line=1, character=4),
+                    end=LSPPosition(line=1, character=7),
+                ),
+                children=[inner_var, inner_func],
+            )
+            return [foo_symbol]
+
+    client = MockFilteringClient()
+    capability = OutlineCapability(client=client)  # type: ignore
+
+    req = OutlineRequest(file_path=Path("test.py"))
+
+    resp = await capability(req)
+    assert resp is not None
+    # Should only contain 'foo', not 'x' or 'inner'
+    assert len(resp.items) == 1
+    assert resp.items[0].name == "foo"
+
+
+@pytest.mark.asyncio
+async def test_outline_nested_modules():
+    class MockNestedModuleClient(MockOutlineClient):
+        async def request_document_symbol_list(self, file_path) -> list[DocumentSymbol]:
+            func_c = DocumentSymbol(
+                name="C",
+                kind=SymbolKind.Function,
+                range=LSPRange(
+                    start=LSPPosition(line=2, character=0),
+                    end=LSPPosition(line=2, character=10),
+                ),
+                selection_range=LSPRange(
+                    start=LSPPosition(line=2, character=4),
+                    end=LSPPosition(line=2, character=5),
+                ),
+            )
+            mod_b = DocumentSymbol(
+                name="B",
+                kind=SymbolKind.Module,
+                range=LSPRange(
+                    start=LSPPosition(line=1, character=0),
+                    end=LSPPosition(line=3, character=0),
+                ),
+                selection_range=LSPRange(
+                    start=LSPPosition(line=1, character=0),
+                    end=LSPPosition(line=1, character=0),
+                ),
+                children=[func_c],
+            )
+            mod_a = DocumentSymbol(
+                name="A",
+                kind=SymbolKind.Module,
+                range=LSPRange(
+                    start=LSPPosition(line=0, character=0),
+                    end=LSPPosition(line=4, character=0),
+                ),
+                selection_range=LSPRange(
+                    start=LSPPosition(line=0, character=0),
+                    end=LSPPosition(line=0, character=0),
+                ),
+                children=[mod_b],
+            )
+            return [mod_a]
+
+    client = MockNestedModuleClient()
+    capability = OutlineCapability(client=client)  # type: ignore
+
+    req = OutlineRequest(file_path=Path("test.py"), top=True)
+
+    resp = await capability(req)
+    assert resp is not None
+    assert len(resp.items) == 1
+    assert resp.items[0].name == "C"
+    assert resp.items[0].path == ["A", "B", "C"]
+
+
+@pytest.mark.asyncio
+async def test_outline_scope():
+    client = MockOutlineClient()
+    capability = OutlineCapability(client=client)  # type: ignore
+
+    # Test successful scope
+    req = OutlineRequest(
+        file_path=Path("test.py"),
+        scope=SymbolScope(symbol_path=["A"]),
+    )
+    resp = await capability(req)
+    assert resp is not None
+    assert len(resp.items) == 2
+    assert resp.items[0].name == "A"
+    assert resp.items[1].name == "foo"
+
+    # Test nested scope
+    req = OutlineRequest(
+        file_path=Path("test.py"),
+        scope=SymbolScope(symbol_path=["A", "foo"]),
+    )
+    resp = await capability(req)
+    assert resp is not None
+    assert len(resp.items) == 1
+    assert resp.items[0].name == "foo"
+
+
+@pytest.mark.asyncio
+async def test_outline_scope_not_found():
+    client = MockOutlineClient()
+    capability = OutlineCapability(client=client)  # type: ignore
+
+    req = OutlineRequest(
+        file_path=Path("test.py"),
+        scope=SymbolScope(symbol_path=["NonExistent"]),
+    )
+    resp = await capability(req)
+    assert resp is not None
+    assert len(resp.items) == 0
+
+
+@pytest.mark.asyncio
+async def test_outline_scope_top():
+    client = MockOutlineClient()
+    capability = OutlineCapability(client=client)  # type: ignore
+
+    # With scope and top=True, should only return the scoped symbol itself (if it's not a module)
+    # or its direct children if it is a module.
+    # In MockOutlineClient, A is a class, so it should return A.
+    req = OutlineRequest(
+        file_path=Path("test.py"),
+        scope=SymbolScope(symbol_path=["A"]),
+        top=True,
+    )
+    resp = await capability(req)
+    assert resp is not None
+    assert len(resp.items) == 1
+    assert resp.items[0].name == "A"
+
+
+@pytest.mark.asyncio
+async def test_outline_scope_top_module():
+    class MockModuleClient(MockOutlineClient):
+        async def request_document_symbol_list(self, file_path) -> list[DocumentSymbol]:
+            foo_symbol = DocumentSymbol(
+                name="foo",
+                kind=SymbolKind.Function,
+                range=LSPRange(
+                    start=LSPPosition(line=1, character=0),
+                    end=LSPPosition(line=1, character=10),
+                ),
+                selection_range=LSPRange(
+                    start=LSPPosition(line=1, character=4),
+                    end=LSPPosition(line=1, character=7),
+                ),
+            )
+            module_symbol = DocumentSymbol(
+                name="mymodule",
+                kind=SymbolKind.Module,
+                range=LSPRange(
+                    start=LSPPosition(line=0, character=0),
+                    end=LSPPosition(line=2, character=0),
+                ),
+                selection_range=LSPRange(
+                    start=LSPPosition(line=0, character=0),
+                    end=LSPPosition(line=0, character=0),
+                ),
+                children=[foo_symbol],
+            )
+            return [module_symbol]
+
+    client = MockModuleClient()
+    capability = OutlineCapability(client=client)  # type: ignore
+
+    # Scoped to the module with top=True should expand the module
+    req = OutlineRequest(
+        file_path=Path("test.py"),
+        scope=SymbolScope(symbol_path=["mymodule"]),
+        top=True,
+    )
+    resp = await capability(req)
+    assert resp is not None
+    assert len(resp.items) == 1
+    assert resp.items[0].name == "foo"
+    assert resp.items[0].path == ["mymodule", "foo"]

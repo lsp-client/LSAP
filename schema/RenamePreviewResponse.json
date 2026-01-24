@@ -1,0 +1,220 @@
+{
+  "$defs": {
+    "LineScope": {
+      "description": "Scope by line range",
+      "properties": {
+        "start_line": {
+          "description": "Start line number (1-based, inclusive)",
+          "minimum": 1,
+          "title": "Start Line",
+          "type": "integer"
+        },
+        "end_line": {
+          "description": "End line number (1-based, exclusive). When set to 0, means till EOF.",
+          "title": "End Line",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "start_line",
+        "end_line"
+      ],
+      "title": "LineScope",
+      "type": "object"
+    },
+    "Locate": {
+      "anyOf": [
+        {
+          "required": [
+            "file_path",
+            "scope"
+          ]
+        },
+        {
+          "required": [
+            "file_path",
+            "find"
+          ]
+        }
+      ],
+      "description": "Two-stage location: scope \u2192 find.\n\nResolution rules:\n    1. SymbolScope without find: symbol declaration position (for references, rename)\n    2. With find containing marker: marker position\n    3. With find only: start of matched text\n    4. No scope + find: search entire file\n\nMarker Detection:\n    The marker is automatically detected using nested bracket notation:\n    - <|> (single level)\n    - <<|>> (double level) if <|> appears more than once\n    ... and so on\n\n    The marker with the deepest nesting level that appears exactly once\n    is chosen as the position marker.\n\nExamples:\n    # Symbol declaration\n    Locate(file_path=\"foo.py\", scope=SymbolScope(symbol_path=[\"MyClass\"]))\n\n    # Completion trigger point - basic marker\n    Locate(file_path=\"foo.py\", find=\"self.<|>\")\n\n    # When <|> exists in source, use deeper nesting\n    Locate(file_path=\"foo.py\", find=\"x = <|> + y <<|>> z\")\n    # Will use <<|>> as the position marker\n\n    # Specific location in function\n    Locate(\n        file_path=\"foo.py\",\n        scope=SymbolScope(symbol_path=[\"process\"]),\n        find=\"return <|>result\"\n    )",
+      "properties": {
+        "file_path": {
+          "format": "path",
+          "title": "File Path",
+          "type": "string"
+        },
+        "scope": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LineScope"
+            },
+            {
+              "$ref": "#/$defs/SymbolScope"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scope"
+        },
+        "find": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Find"
+        }
+      },
+      "required": [
+        "file_path"
+      ],
+      "title": "Locate",
+      "type": "object"
+    },
+    "RenameDiff": {
+      "description": "Line-level change showing before and after rename.",
+      "properties": {
+        "line": {
+          "description": "1-based line number",
+          "minimum": 1,
+          "title": "Line",
+          "type": "integer"
+        },
+        "original": {
+          "description": "Original line content before rename",
+          "title": "Original",
+          "type": "string"
+        },
+        "modified": {
+          "description": "Modified line content after rename",
+          "title": "Modified",
+          "type": "string"
+        }
+      },
+      "required": [
+        "line",
+        "original",
+        "modified"
+      ],
+      "title": "RenameDiff",
+      "type": "object"
+    },
+    "RenameFileChange": {
+      "description": "Changes within a single file.",
+      "properties": {
+        "file_path": {
+          "format": "path",
+          "title": "File Path",
+          "type": "string"
+        },
+        "diffs": {
+          "items": {
+            "$ref": "#/$defs/RenameDiff"
+          },
+          "title": "Diffs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "file_path",
+        "diffs"
+      ],
+      "title": "RenameFileChange",
+      "type": "object"
+    },
+    "RenamePreviewRequest": {
+      "description": "Previews a rename operation without applying changes.\n\nReturns a rename_id that can be used to execute the rename later,\nalong with a preview of all affected files and line changes.",
+      "properties": {
+        "locate": {
+          "$ref": "#/$defs/Locate"
+        },
+        "new_name": {
+          "description": "The new name for the symbol",
+          "title": "New Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "locate",
+        "new_name"
+      ],
+      "title": "RenamePreviewRequest",
+      "type": "object"
+    },
+    "SymbolScope": {
+      "description": "Scope by symbol, also serves as declaration locator when find is omitted",
+      "properties": {
+        "symbol_path": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Symbol Path",
+          "type": "array"
+        }
+      },
+      "required": [
+        "symbol_path"
+      ],
+      "title": "SymbolScope",
+      "type": "object"
+    }
+  },
+  "markdown": "\n# Rename Preview: `{{ old_name }}` \u2192 `{{ new_name }}`\n\nID: `{{ rename_id }}`\nSummary: Affects {{ total_files }} files and {{ total_occurrences }} occurrences.\n\n{% assign num_changes = changes | size -%}\n{% if num_changes == 0 -%}\nNo changes to preview.\n{%- else -%}\n{%- for file in changes %}\n## `{{ file.file_path }}`\n{% for diff in file.diffs %}\nLine `{{ diff.line }}`:\n```diff\n- {{ diff.original }}\n+ {{ diff.modified }}\n```\n{% endfor %}\n{% endfor -%}\n---\n> [!TIP]\n> To apply this rename, use `rename_execute` with `rename_id=\"{{ rename_id }}\"`.\n> To exclude files, add `exclude_files=[\"path/to/exclude.py\"]` or use glob patterns like `exclude_files=[\"tests/**/*.py\", \"**/*_test.py\"]`.\n{%- endif %}\n",
+  "properties": {
+    "request": {
+      "$ref": "#/$defs/RenamePreviewRequest"
+    },
+    "rename_id": {
+      "description": "Unique ID for this preview",
+      "title": "Rename Id",
+      "type": "string"
+    },
+    "old_name": {
+      "title": "Old Name",
+      "type": "string"
+    },
+    "new_name": {
+      "title": "New Name",
+      "type": "string"
+    },
+    "total_files": {
+      "title": "Total Files",
+      "type": "integer"
+    },
+    "total_occurrences": {
+      "title": "Total Occurrences",
+      "type": "integer"
+    },
+    "changes": {
+      "items": {
+        "$ref": "#/$defs/RenameFileChange"
+      },
+      "title": "Changes",
+      "type": "array"
+    },
+    "applied": {
+      "const": false,
+      "default": false,
+      "title": "Applied",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "request",
+    "rename_id",
+    "old_name",
+    "new_name",
+    "total_files",
+    "total_occurrences",
+    "changes"
+  ],
+  "title": "RenamePreviewResponse",
+  "type": "object"
+}

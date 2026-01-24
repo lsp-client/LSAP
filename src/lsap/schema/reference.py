@@ -1,8 +1,66 @@
+"""
+# Reference API
+
+The Reference API finds all locations where a specific symbol is used across the codebase.
+
+## Example Usage
+
+### Scenario 1: Finding all references of a function
+
+Request:
+
+```json
+{
+  "locate": {
+    "file_path": "src/utils.py",
+    "scope": {
+      "symbol_path": ["format_date"]
+    }
+  },
+  "max_items": 10
+}
+```
+
+### Scenario 2: Finding all implementations of an interface method
+
+Request:
+
+```json
+{
+  "locate": {
+    "file_path": "src/base.py",
+    "scope": {
+      "symbol_path": ["DatabaseConnection", "connect"]
+    }
+  },
+  "mode": "implementations",
+  "max_items": 5
+}
+```
+
+### Scenario 3: Finding all classes that implement an interface
+
+Request:
+
+```json
+{
+  "locate": {
+    "file_path": "src/interfaces.py",
+    "scope": {
+      "symbol_path": ["IRepository"]
+    }
+  },
+  "mode": "implementations",
+  "max_items": 5
+}
+```
+"""
+
 from typing import Final, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from .abc import PaginatedRequest, PaginatedResponse
+from ._abc import PaginatedRequest, PaginatedResponse
 from .locate import LocateRequest
 from .models import Location, SymbolDetailInfo
 
@@ -41,7 +99,7 @@ Total {{ request.mode }}: {{ total }} | Showing: {{ items.size }}{% if max_items
 No {{ request.mode }} found.
 {%- else -%}
 {%- for item in items -%}
-### {{ item.location.file_path }}:{{ item.location.range.start.line }}
+### `{{ item.location.file_path }}:{{ item.location.range.start.line }}`
 {%- if item.symbol != nil %}
 In `{{ item.symbol.path | join: "." }}` (`{{ item.symbol.kind }}`)
 {%- endif %}
@@ -56,11 +114,7 @@ In `{{ item.symbol.path | join: "." }}` (`{{ item.symbol.kind }}`)
 ---
 > [!TIP]
 > More {{ request.mode }} available.
-{%- if pagination_id != nil %}
-> Use `pagination_id="{{ pagination_id }}"` to fetch the next page.
-{%- else %}
-> To see more, specify a `max_items` and use: `start_index={% assign step = max_items | default: items.size %}{{ start_index | plus: step }}`
-{%- endif %}
+> To see more, use: `pagination_id="{{ pagination_id }}"`, `start_index={{ start_index | plus: items.size }}`
 {%- endif %}
 {%- endif %}
 """
@@ -75,3 +129,10 @@ class ReferenceResponse(PaginatedResponse):
             "markdown": markdown_template,
         }
     )
+
+
+__all__ = [
+    "ReferenceItem",
+    "ReferenceRequest",
+    "ReferenceResponse",
+]

@@ -1,6 +1,6 @@
 # LSAP: Language Server Agent Protocol
 
-[![PyPI version](https://img.shields.io/pypi/v/lsp-client.svg)](https://pypi.org/project/lsp-client/)
+[![PyPI version](https://img.shields.io/pypi/v/lsap-sdk.svg)](https://pypi.org/project/lsap-sdk/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Protocol Version](https://img.shields.io/badge/Protocol-v1.0.0--alpha-blue.svg)]()
 

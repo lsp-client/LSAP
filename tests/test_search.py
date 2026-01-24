@@ -1,8 +1,16 @@
+from collections.abc import Sequence
+from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Sequence
 
 import pytest
+from lsp_client.capability.request import WithRequestWorkspaceSymbol
+from lsp_client.client.document_state import DocumentStateManager
+from lsp_client.protocol import CapabilityClientProtocol
+from lsp_client.protocol.lang import LanguageConfig
+from lsp_client.utils.config import ConfigurationMap
+from lsp_client.utils.workspace import DEFAULT_WORKSPACE_DIR, Workspace, WorkspaceFolder
 from lsprotocol.types import (
+    LanguageKind,
     Location,
     LocationUriOnly,
     WorkspaceSymbol,
@@ -16,17 +24,10 @@ from lsprotocol.types import (
 from lsprotocol.types import (
     SymbolKind as LSPSymbolKind,
 )
-from lsp_client.capability.request import WithRequestWorkspaceSymbol
-from lsp_client.protocol.lang import LanguageConfig
-from lsp_client.protocol import CapabilityClientProtocol
-from lsp_client.client.document_state import DocumentStateManager
-from lsp_client.utils.config import ConfigurationMap
-from lsp_client.utils.workspace import Workspace, WorkspaceFolder, DEFAULT_WORKSPACE_DIR
-from lsprotocol.types import LanguageKind
+
 from lsap.capability.search import SearchCapability
 from lsap.schema.models import SymbolKind
 from lsap.schema.search import SearchRequest
-from contextlib import asynccontextmanager
 
 
 class MockSearchClient(
@@ -218,6 +219,29 @@ async def test_search_pagination():
     assert len(resp2.items) == 2
     assert resp2.items[0].name != resp.items[0].name
     assert resp2.total == 10
+    assert resp2.pagination_id == resp.pagination_id
+
+
+@pytest.mark.asyncio
+async def test_search_pagination_strict():
+    from lsap.exception import PaginationError
+
+    client = MockSearchClient()
+    capability = SearchCapability(client=client)  # type: ignore
+
+    # Request with start_index > 0 but NO pagination_id - Should FAIL
+    req = SearchRequest(query="multi", max_items=2, start_index=2)
+    with pytest.raises(PaginationError) as excinfo:
+        await capability(req)
+    assert "pagination_id is required" in str(excinfo.value)
+
+    # Request with invalid pagination_id - Should FAIL
+    req2 = SearchRequest(
+        query="multi", max_items=2, start_index=2, pagination_id="invalid"
+    )
+    with pytest.raises(PaginationError) as excinfo:
+        await capability(req2)
+    assert "not found or expired" in str(excinfo.value)
 
 
 @pytest.mark.asyncio
