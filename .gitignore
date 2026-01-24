@@ -1,17 +1,6 @@
-# Python-generated files
-__pycache__/
-*.py[oc]
-build/
-dist/
-wheels/
-*.egg-info
+# OS generated files
+.DS_Store
 
-# Virtual environments
-.venv
-
-uv.lock
-
-references/
 # Python-generated files
 __pycache__/
 *.py[oc]
