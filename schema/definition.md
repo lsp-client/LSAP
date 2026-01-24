@@ -14,11 +14,14 @@ Request:
 
 ```json
 {
-  "locate": {
-    "file_path": "main.py",
-    "line": 15,
-    "find": "send_message"
-  },
+    "locate": {
+      "file_path": "main.py",
+      "scope": {
+        "start_line": 15,
+        "end_line": 16
+      },
+      "find": "send_message"
+    },
   "mode": "definition",
   "include_code": true
 }
@@ -30,11 +33,14 @@ Request:
 
 ```json
 {
-  "locate": {
-    "file_path": "main.cpp",
-    "line": 20,
-    "find": "process_data"
-  },
+    "locate": {
+      "file_path": "main.cpp",
+      "scope": {
+        "start_line": 20,
+        "end_line": 21
+      },
+      "find": "process_data"
+    },
   "mode": "declaration",
   "include_code": true
 }
@@ -46,11 +52,14 @@ Request:
 
 ```json
 {
-  "locate": {
-    "file_path": "main.py",
-    "line": 30,
-    "find": "result"
-  },
+    "locate": {
+      "file_path": "main.py",
+      "scope": {
+        "start_line": 30,
+        "end_line": 31
+      },
+      "find": "result"
+    },
   "mode": "type_definition",
   "include_code": true
 }
