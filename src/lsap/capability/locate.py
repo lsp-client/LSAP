@@ -201,9 +201,6 @@ class LocateRangeCapability(Capability[LocateRangeRequest, LocateRangeResponse])
         if final_range:
             return LocateRangeResponse(
                 file_path=locate.file_path,
-                range=Range(
-                    start=Position.from_lsp(final_range.start),
-                    end=Position.from_lsp(final_range.end),
-                ),
+                range=Range.from_lsp(final_range),
             )
         return None

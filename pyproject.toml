@@ -16,6 +16,7 @@ dependencies = [
     "asyncer>=0.0.11",
     "attrs>=25.4.0",
     "cattrs>=25.3.0",
+    "loguru>=0.7.3",
     "lsp-client>=0.3.6",
     "lsprotocol>=2025.0.0",
     "pydantic>=2.12.5",

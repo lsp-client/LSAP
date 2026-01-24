@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Self
 
 from lsprotocol.types import Position as LSPPosition
+from lsprotocol.types import Range as LSPRange
 from lsprotocol.types import SymbolKind as LSPSymbolKind
 from pydantic import BaseModel, Field
 
@@ -40,6 +41,14 @@ class Position(BaseModel):
 class Range(BaseModel):
     start: Position
     end: Position
+
+    @classmethod
+    def from_lsp(cls, range: LSPRange) -> Self:
+        """Convert from LSP Range to Range"""
+        return cls(
+            start=Position.from_lsp(range.start),
+            end=Position.from_lsp(range.end),
+        )
 
 
 class Location(BaseModel):
@@ -96,6 +105,18 @@ class SymbolCodeInfo(SymbolInfo):
     """Source code of the symbol"""
 
 
+class CallHierarchyItem(BaseModel):
+    file_path: Path
+    name: str
+    kind: SymbolKind
+    range: Range
+
+
+class CallHierarchy(BaseModel):
+    incoming: list[CallHierarchyItem] = Field(default_factory=list)
+    outgoing: list[CallHierarchyItem] = Field(default_factory=list)
+
+
 class SymbolDetailInfo(SymbolInfo):
     detail: str | None = None
     hover: str | None = None
@@ -103,6 +124,8 @@ class SymbolDetailInfo(SymbolInfo):
 
 
 __all__ = [
+    "CallHierarchy",
+    "CallHierarchyItem",
     "Location",
     "Position",
     "Range",
