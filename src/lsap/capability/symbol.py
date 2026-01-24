@@ -14,7 +14,6 @@ from lsprotocol.types import Position as LSPPosition
 from lsap.schema.models import (
     CallHierarchy,
     CallHierarchyItem,
-    Position,
     Range,
     SymbolCodeInfo,
     SymbolKind,
@@ -122,8 +121,5 @@ class SymbolCapability(Capability[SymbolRequest, SymbolResponse]):
             path=path,
             kind=SymbolKind.from_lsp(symbol.kind),
             code=code,
-            range=Range(
-                start=Position.from_lsp(symbol.range.start),
-                end=Position.from_lsp(symbol.range.end),
-            ),
+            range=Range.from_lsp(symbol.range),
         )

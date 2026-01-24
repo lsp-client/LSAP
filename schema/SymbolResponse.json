@@ -122,12 +122,72 @@
       ],
       "title": "SymbolKind",
       "type": "string"
+    },
+    "CallHierarchyItem": {
+      "properties": {
+        "file_path": {
+          "format": "path",
+          "title": "File Path",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/SymbolKind"
+        },
+        "range": {
+          "$ref": "#/$defs/Range"
+        }
+      },
+      "required": [
+        "file_path",
+        "name",
+        "kind",
+        "range"
+      ],
+      "title": "CallHierarchyItem",
+      "type": "object"
+    },
+    "CallHierarchy": {
+      "properties": {
+        "incoming": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/CallHierarchyItem"
+          },
+          "title": "Incoming",
+          "type": "array"
+        },
+        "outgoing": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/CallHierarchyItem"
+          },
+          "title": "Outgoing",
+          "type": "array"
+        }
+      },
+      "title": "CallHierarchy",
+      "type": "object"
     }
   },
-  "markdown": "\n# Symbol: `{{ info.path | join: \".\" }}` (`{{ info.kind }}`) at `{{ info.file_path }}`\n\n{% if info.code != nil -%}\n## Implementation\n```{{ info.file_path.suffix | remove_first: \".\" }}\n{{ info.code }}\n```\n{%- endif %}\n",
+  "markdown": "\n# Symbol: `{{ info.path | join: \".\" }}` (`{{ info.kind }}`) at `{{ info.file_path }}`\n\n{% if info.code != nil -%}\n## Implementation\n```{{ info.file_path.suffix | remove_first: \".\" }}\n{{ info.code }}\n```\n{%- endif %}\n\n{% if call_hierarchy != nil -%}\n{% if call_hierarchy.incoming.size > 0 -%}\n## Incoming Calls\n{% for item in call_hierarchy.incoming -%}\n- `{{ item.name }}` (`{{ item.kind }}`) at `{{ item.file_path }}:{{ item.range.start.line }}`\n{% endfor -%}\n{%- endif %}\n\n{% if call_hierarchy.outgoing.size > 0 -%}\n## Outgoing Calls\n{% for item in call_hierarchy.outgoing -%}\n- `{{ item.name }}` (`{{ item.kind }}`) at `{{ item.file_path }}:{{ item.range.start.line }}`\n{% endfor -%}\n{%- endif %}\n{%- endif %}\n",
   "properties": {
     "info": {
       "$ref": "#/$defs/SymbolCodeInfo"
+    },
+    "call_hierarchy": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CallHierarchy"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     }
   },
   "required": [

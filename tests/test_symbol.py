@@ -2,13 +2,27 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 import pytest
-from lsp_client.capability.request import WithRequestDocumentSymbol, WithRequestHover
+from lsp_client.capability.request import (
+    WithRequestCallHierarchy,
+    WithRequestDocumentSymbol,
+    WithRequestHover,
+)
 from lsp_client.client.document_state import DocumentStateManager
 from lsp_client.protocol import CapabilityClientProtocol
 from lsp_client.protocol.lang import LanguageConfig
 from lsp_client.utils.config import ConfigurationMap
+from lsp_client.utils.types import AnyPath
 from lsp_client.utils.workspace import DEFAULT_WORKSPACE_DIR, Workspace, WorkspaceFolder
-from lsprotocol.types import DocumentSymbol, LanguageKind, SymbolKind
+from lsprotocol.types import (
+    CallHierarchyIncomingCall,
+    CallHierarchyOutgoingCall,
+    DocumentSymbol,
+    LanguageKind,
+    SymbolKind,
+)
+from lsprotocol.types import (
+    CallHierarchyItem as LSPCallHierarchyItem,
+)
 from lsprotocol.types import Position as LSPPosition
 from lsprotocol.types import Range as LSPRange
 
@@ -19,6 +33,7 @@ from lsap.schema.types import Symbol, SymbolPath
 
 
 class MockSymbolClient(
+    WithRequestCallHierarchy,
     WithRequestDocumentSymbol,
     WithRequestHover,
     CapabilityClientProtocol,
@@ -105,6 +120,74 @@ class MockSymbolClient(
 
     async def request_active_signature(self, file_path, position):
         return None
+
+    async def request_call_hierarchy_incoming_call(
+        self, file_path: AnyPath, position: LSPPosition
+    ) -> list[CallHierarchyIncomingCall]:
+        return [
+            CallHierarchyIncomingCall(
+                from_=LSPCallHierarchyItem(
+                    name="caller",
+                    kind=SymbolKind.Function,
+                    uri="file:///caller.py",
+                    range=LSPRange(
+                        start=LSPPosition(line=4, character=0),
+                        end=LSPPosition(line=4, character=10),
+                    ),
+                    selection_range=LSPRange(
+                        start=LSPPosition(line=4, character=0),
+                        end=LSPPosition(line=4, character=10),
+                    ),
+                ),
+                from_ranges=[],
+            )
+        ]
+
+    async def request_call_hierarchy_outgoing_call(
+        self, file_path: AnyPath, position: LSPPosition
+    ) -> list[CallHierarchyOutgoingCall]:
+        return [
+            CallHierarchyOutgoingCall(
+                to=LSPCallHierarchyItem(
+                    name="callee",
+                    kind=SymbolKind.Function,
+                    uri="file:///callee.py",
+                    range=LSPRange(
+                        start=LSPPosition(line=9, character=0),
+                        end=LSPPosition(line=9, character=10),
+                    ),
+                    selection_range=LSPRange(
+                        start=LSPPosition(line=9, character=0),
+                        end=LSPPosition(line=9, character=10),
+                    ),
+                ),
+                from_ranges=[],
+            )
+        ]
+
+
+@pytest.mark.asyncio
+async def test_symbol_call_hierarchy():
+    client = MockSymbolClient()
+    capability = SymbolCapability(client=client)  # type: ignore
+
+    req = SymbolRequest(
+        locate=Locate(
+            file_path=Path("test.py"),
+            scope=SymbolScope(symbol_path=SymbolPath([Symbol("A"), Symbol("foo")])),
+        )
+    )
+
+    resp = await capability(req)
+    assert resp is not None
+    assert resp.call_hierarchy is not None
+    assert len(resp.call_hierarchy.incoming) == 1
+    assert resp.call_hierarchy.incoming[0].name == "caller"
+    assert resp.call_hierarchy.incoming[0].range.start.line == 5
+
+    assert len(resp.call_hierarchy.outgoing) == 1
+    assert resp.call_hierarchy.outgoing[0].name == "callee"
+    assert resp.call_hierarchy.outgoing[0].range.start.line == 10
 
 
 @pytest.mark.asyncio
