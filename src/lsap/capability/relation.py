@@ -139,7 +139,7 @@ class RelationCapability(Capability[RelationRequest, RelationResponse]):
                 # Skip if already visited to prevent redundant queue entries
                 if next_key not in visited:
                     next_node = self._to_chain_node(next_item)
-                    next_path = path + [next_node]
+                    next_path = [*path, next_node]
                     queue.append((next_item, next_path, depth + 1))
 
         return found_chains
