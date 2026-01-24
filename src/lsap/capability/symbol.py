@@ -58,7 +58,7 @@ class SymbolCapability(Capability[SymbolRequest, SymbolResponse]):
         call_hierarchy = await self._get_call_hierarchy(location.file_path, lsp_pos)
 
         return SymbolResponse(
-            **best_match.model_dump(),
+            info=best_match,
             call_hierarchy=call_hierarchy,
         )
 

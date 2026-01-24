@@ -121,10 +121,10 @@ async def test_symbol_from_path():
 
     resp = await capability(req)
     assert resp is not None
-    assert resp.path == ["A", "foo"]
-    assert resp.code is not None
-    assert "def foo(self):" in resp.code
-    assert "pass" in resp.code
+    assert resp.info.path == ["A", "foo"]
+    assert resp.info.code is not None
+    assert "def foo(self):" in resp.info.code
+    assert "pass" in resp.info.code
 
 
 @pytest.mark.asyncio
@@ -142,9 +142,9 @@ async def test_symbol_from_text():
 
     resp = await capability(req)
     assert resp is not None
-    assert resp.path == ["A", "foo"]
-    assert resp.code is not None
-    assert "def foo(self):" in resp.code
+    assert resp.info.path == ["A", "foo"]
+    assert resp.info.code is not None
+    assert "def foo(self):" in resp.info.code
 
 
 def test_iter_symbols():

@@ -57,12 +57,12 @@ class SymbolRequest(LocateRequest):
 
 
 markdown_template: Final = """
-# Symbol: `{{ path | join: "." }}` (`{{ kind }}`) at `{{ file_path }}`
+# Symbol: `{{ info.path | join: "." }}` (`{{ info.kind }}`) at `{{ info.file_path }}`
 
-{% if code != nil -%}
+{% if info.code != nil -%}
 ## Implementation
-```{{ file_path.suffix | remove_first: "." }}
-{{ code }}
+```{{ info.file_path.suffix | remove_first: "." }}
+{{ info.code }}
 ```
 {%- endif %}
 
@@ -84,7 +84,8 @@ markdown_template: Final = """
 """
 
 
-class SymbolResponse(SymbolCodeInfo, Response):
+class SymbolResponse(Response):
+    info: SymbolCodeInfo
     call_hierarchy: CallHierarchy | None = None
 
     model_config = ConfigDict(
