@@ -17,6 +17,10 @@
 
 - Path Handling: `client.from_uri()` returns relative paths by default. Use `relative=False` explicitly when absolute paths are required (e.g., for path comparisons in exclusion sets).
 
+## API Design
+
+- **Skill**: MUST use `lsap-api-design` skill first before designing new APIs
+
 ## Testing
 
 - Run `uv sync --upgrade` before testing and fixing type errors
