@@ -12,20 +12,24 @@ The Inspect API provides "how to use" information for a specific symbol. While t
 | Feature | Inspect API | Symbol API |
 |---------|-------------|------------|
 | **Primary Focus** | How to use the symbol | What the symbol is/does |
-| **Content** | Signature, Docstring, Usage Examples | Full Source Code, Implementation |
+| **Content** | Signature, Documentation, Usage Examples | Full Source Code, Implementation |
 | **Goal** | Integration & Calling | Understanding Implementation |
 | **Context** | External perspective | Internal perspective |
 
 ## Request Schema
 - `locate`: The target symbol to inspect (supports `file_path`, `symbol_path`, `find`, etc.).
-- `include_usage`: (Boolean) Whether to include real-world usage examples from the codebase.
-- `max_usage_examples`: (Integer) Maximum number of usage examples to return.
+- `include_examples`: (Integer) Number of usage examples to include (0-20, default: 3).
+- `include_signature`: (Boolean) Whether to include the symbol's signature (default: true).
+- `include_doc`: (Boolean) Whether to include the symbol's documentation/hover content (default: true).
+- `include_call_hierarchy`: (Boolean) Whether to include call hierarchy information (default: false).
+- `include_external`: (Boolean) Whether to include examples from external libraries (default: false).
+- `context_lines`: (Integer) Number of context lines around usage examples (0-10, default: 2).
 
 ## Response Schema
-- `symbol`: Basic information about the symbol (name, kind, location).
+- `info`: Detailed information about the symbol (`SymbolDetailInfo` with name, kind, location, hover).
 - `signature`: The formal signature of the symbol (e.g., function parameters and return types).
-- `documentation`: The docstring or comments associated with the symbol.
-- `usages`: A list of code snippets showing how the symbol is used elsewhere.
+- `examples`: A list of usage examples showing how the symbol is used elsewhere, with code, location, context, and call pattern.
+- `call_hierarchy`: Optional call hierarchy information showing incoming and outgoing calls.
 
 ## Example: Inspecting a function
 **Request:**
@@ -37,26 +41,38 @@ The Inspect API provides "how to use" information for a specific symbol. While t
       "symbol_path": ["verify_token"]
     }
   },
-  "include_usage": true,
-  "max_usage_examples": 2
+  "include_examples": 2,
+  "include_signature": true,
+  "include_doc": true
 }
 ```
 
 **Response:**
 ```json
 {
-  "symbol": {
+  "info": {
     "name": "verify_token",
     "kind": "function",
-    "location": { "uri": "file:///src/utils/auth.py", "range": { ... } }
+    "file_path": "src/utils/auth.py",
+    "path": ["verify_token"],
+    "range": { "start": { "line": 10, "character": 1 }, "end": { "line": 15, "character": 1 } },
+    "hover": "Verifies a JWT token and returns the decoded payload.\n\n:param token: The JWT string to verify.\n:param secret: Optional secret override."
   },
   "signature": "def verify_token(token: str, secret: str = None) -> UserPayload",
-  "documentation": "Verifies a JWT token and returns the decoded payload.\n\n:param token: The JWT string to verify.\n:param secret: Optional secret override.",
-  "usages": [
+  "examples": [
     {
-      "file_path": "src/api/middleware.py",
-      "line": 42,
-      "code": "payload = verify_token(auth_header.split(' ')[1])"
+      "code": "payload = verify_token(auth_header.split(' ')[1])",
+      "location": {
+        "file_path": "src/api/middleware.py",
+        "range": { "start": { "line": 42, "character": 5 }, "end": { "line": 42, "character": 55 } }
+      },
+      "context": {
+        "name": "authenticate",
+        "kind": "function",
+        "file_path": "src/api/middleware.py",
+        "path": ["authenticate"]
+      },
+      "call_pattern": "verify_token(auth_header.split(' ')[1])"
     }
   ]
 }

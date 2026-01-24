@@ -18,20 +18,26 @@ The Explore API provides "what's around" information for a specific code element
 | **Content** | Siblings, Callers, Callees, Types | Call/Type Hierarchy Tree |
 
 ## Relationship Types
-- **Hierarchy**: The parent/child relationship (e.g., class members, module contents).
-- **Calls**: Outgoing calls (dependencies) and incoming calls (dependents).
-- **Types**: Type relationships (e.g., base classes, interface implementations).
 - **Siblings**: Other symbols defined in the same scope or file.
+- **Dependencies**: Symbols that this symbol depends on.
+- **Dependents**: Symbols that depend on this symbol.
+- **Hierarchy**: Inheritance hierarchy (parents and children classes/interfaces).
+- **Calls**: Call hierarchy information (incoming and outgoing calls).
 
 ## Request Schema
 - `locate`: The target symbol to explore.
-- `depth`: (Integer) How many levels of relationships to traverse (default: 1).
-- `relationship_types`: (List of Strings) Which types of relationships to include (e.g., `["calls", "hierarchy", "siblings"]`).
+- `include`: (List of Strings) Which types of relationships to include. Options: `["siblings", "dependencies", "dependents", "hierarchy", "calls"]`. Default: `["siblings", "dependencies"]`.
+- `max_items`: (Integer) Maximum number of items to return for each relationship type (1-50, default: 10).
+- `resolve_info`: (Boolean) Whether to resolve detailed information for symbols (default: false).
+- `include_external`: (Boolean) Whether to include external library symbols (default: false).
 
 ## Response Schema
-- `center`: The symbol at the center of the exploration.
-- `relationships`: A structured map of related symbols grouped by relationship type.
-- `summary`: A high-level description of the symbol's neighborhood.
+- `target`: The symbol being explored (`SymbolInfo`).
+- `siblings`: List of symbols defined in the same scope or file.
+- `dependencies`: List of symbols that this symbol depends on.
+- `dependents`: List of symbols that depend on this symbol.
+- `hierarchy`: Optional inheritance hierarchy information with `parents` and `children`.
+- `calls`: Optional call hierarchy information with `incoming` and `outgoing` calls.
 
 ## Example: Exploring a class
 **Request:**
@@ -43,27 +49,62 @@ The Explore API provides "what's around" information for a specific code element
       "symbol_path": ["User"]
     }
   },
-  "relationship_types": ["hierarchy", "siblings", "calls"],
-  "depth": 1
+  "include": ["hierarchy", "siblings", "calls"],
+  "max_items": 10
 }
 ```
 
 **Response:**
 ```json
 {
-  "center": { "name": "User", "kind": "class" },
-  "relationships": {
-    "hierarchy": [
-      { "name": "User.validate", "kind": "method" },
-      { "name": "User.save", "kind": "method" }
+  "target": { 
+    "name": "User", 
+    "kind": "class",
+    "file_path": "src/models/user.py",
+    "path": ["User"]
+  },
+  "siblings": [
+    { 
+      "name": "UserRole", 
+      "kind": "enum",
+      "file_path": "src/models/user.py",
+      "path": ["UserRole"]
+    },
+    { 
+      "name": "AnonymousUser", 
+      "kind": "class",
+      "file_path": "src/models/user.py",
+      "path": ["AnonymousUser"]
+    }
+  ],
+  "hierarchy": {
+    "parents": [
+      {
+        "name": "BaseModel",
+        "kind": "class",
+        "file_path": "src/models/base.py",
+        "path": ["BaseModel"]
+      }
     ],
-    "siblings": [
-      { "name": "UserRole", "kind": "enum" },
-      { "name": "AnonymousUser", "kind": "class" }
-    ],
-    "dependents": [
-      { "name": "AuthService", "kind": "class", "file": "src/services/auth.py" }
+    "children": [
+      {
+        "name": "AdminUser",
+        "kind": "class",
+        "file_path": "src/models/admin.py",
+        "path": ["AdminUser"]
+      }
     ]
+  },
+  "calls": {
+    "incoming": [
+      {
+        "name": "authenticate",
+        "kind": "function",
+        "file_path": "src/services/auth.py",
+        "range": { "start": { "line": 15, "character": 1 }, "end": { "line": 20, "character": 1 } }
+      }
+    ],
+    "outgoing": []
   }
 }
 ```
@@ -72,18 +113,20 @@ The Explore API provides "what's around" information for a specific code element
 ```markdown
 # Explore: `User` (class)
 
-`User` is a central model in `src/models/user.py`, primarily used by `AuthService`.
-
-## Hierarchy (Members)
-- `validate` (method)
-- `save` (method)
-
-## Siblings (In same file)
+## Siblings
 - `UserRole` (enum)
 - `AnonymousUser` (class)
 
-## Dependents (Used by)
-- `AuthService` (src/services/auth.py)
+## Hierarchy
+### Parents
+- `BaseModel` (class) in `src/models/base.py`
+
+### Children
+- `AdminUser` (class) in `src/models/admin.py`
+
+## Call Hierarchy
+### Incoming Calls
+- `authenticate` (function) at `src/services/auth.py:15`
 ```
 
 ## See Also
