@@ -17,6 +17,7 @@ from lsap.schema.outline import OutlineRequest, OutlineResponse
 from lsap.schema.types import SymbolPath
 from lsap.utils.capability import ensure_capability
 from lsap.utils.markdown import clean_hover_content
+from lsap.utils.symbol import iter_symbols
 
 from .abc import Capability
 
@@ -33,11 +34,29 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
         if symbols is None:
             return None
 
-        if req.top:
-            symbols_iter = self._iter_top_symbols(symbols)
+        if req.scope:
+            target_path = req.scope.symbol_path
+            matched = [
+                (path, symbol)
+                for path, symbol in iter_symbols(symbols)
+                if path == target_path
+            ]
+            if not matched:
+                return OutlineResponse(file_path=req.file_path, items=[])
+
+            symbols_iter: list[tuple[SymbolPath, DocumentSymbol]] = []
+            for path, symbol in matched:
+                if req.top:
+                    symbols_iter.extend(self._iter_top_symbols([symbol], path[:-1]))
+                else:
+                    symbols_iter.extend(
+                        self._iter_filtered_symbols([symbol], None, path[:-1])
+                    )
+        elif req.top:
+            symbols_iter = list(self._iter_top_symbols(symbols))
         else:
             # Filter symbols: exclude implementation details inside functions/methods
-            symbols_iter = self._iter_filtered_symbols(symbols)
+            symbols_iter = list(self._iter_filtered_symbols(symbols))
 
         items = await self.resolve_symbols(req.file_path, symbols_iter)
 

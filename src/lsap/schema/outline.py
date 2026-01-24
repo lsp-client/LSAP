@@ -26,6 +26,19 @@ Request:
   "file_path": "src/controllers.py"
 }
 ```
+
+### Scenario 3: Getting outline for a specific class
+
+Request:
+
+```json
+{
+  "file_path": "src/models.py",
+  "scope": {
+    "symbol_path": ["MyClass"]
+  }
+}
+```
 """
 
 from pathlib import Path
@@ -34,6 +47,7 @@ from typing import Final
 from pydantic import ConfigDict
 
 from ._abc import Request, Response
+from .locate import SymbolScope
 from .models import SymbolDetailInfo
 
 
@@ -44,6 +58,9 @@ class OutlineRequest(Request):
     Use this to understand the structure of a file (classes, methods, functions)
     and quickly navigate its contents.
 
+    If `scope` is provided, it will locate the specified symbol and return the
+    outline for that symbol and its children.
+
     Note: By default (top=False), this API returns structural symbols only
     (classes, methods, top-level functions/variables), excluding symbols
     defined inside functions or methods (like local variables or nested
@@ -52,6 +69,8 @@ class OutlineRequest(Request):
     """
 
     file_path: Path
+    scope: SymbolScope | None = None
+    """Optional symbol path to narrow the outline (e.g. `MyClass` or `MyClass.my_method`)."""
     top: bool = False
     """If true, return only top-level symbols (expanding Module containers to show their direct children, and excluding nested members of classes and functions)."""
 
