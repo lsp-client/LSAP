@@ -185,10 +185,6 @@ def test_explore_response_markdown_rendering():
                     start=Position(line=5, character=1),
                     end=Position(line=5, character=10),
                 ),
-                selection_range=Range(
-                    start=Position(line=5, character=1),
-                    end=Position(line=5, character=10),
-                ),
             )
         ],
         outgoing=[
@@ -197,10 +193,6 @@ def test_explore_response_markdown_rendering():
                 kind=SymbolKind.Function,
                 file_path=Path("callee.py"),
                 range=Range(
-                    start=Position(line=10, character=1),
-                    end=Position(line=10, character=10),
-                ),
-                selection_range=Range(
                     start=Position(line=10, character=1),
                     end=Position(line=10, character=10),
                 ),
@@ -221,7 +213,7 @@ def test_explore_response_markdown_rendering():
 
     assert "# Explore: `MyClass` (`class`)" in markdown
     assert "## Siblings" in markdown
-    assert "- `OtherClass` (`class`) at line 21" in markdown
+    assert "- `OtherClass` (`class`) at line 20" in markdown
     assert "## Dependencies" in markdown
     assert "- `Helper` (`class`) in `utils.py`" in markdown
     assert "## Dependents" in markdown
@@ -233,7 +225,7 @@ def test_explore_response_markdown_rendering():
     assert "- `SubClass` (`class`) in `sub.py`" in markdown
     assert "## Call Hierarchy" in markdown
     assert "### Incoming Calls" in markdown
-    assert "- `caller_func` (`function`) at `caller.py:6`" in markdown
+    assert "- `caller_func` (`function`) at `caller.py:5`" in markdown
     assert "### Outgoing Calls" in markdown
-    assert "- `callee_func` (`function`) at `callee.py:11`" in markdown
+    assert "- `callee_func` (`function`) at `callee.py:10`" in markdown
     assert "Use this map to understand" in markdown

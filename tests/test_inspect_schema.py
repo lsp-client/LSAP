@@ -159,10 +159,6 @@ def test_inspect_response_markdown_rendering():
                     start=Position(line=5, character=1),
                     end=Position(line=5, character=10),
                 ),
-                selection_range=Range(
-                    start=Position(line=5, character=1),
-                    end=Position(line=5, character=10),
-                ),
             )
         ],
         outgoing=[],
