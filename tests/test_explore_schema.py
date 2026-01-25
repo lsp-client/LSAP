@@ -1,15 +1,17 @@
 from pathlib import Path
+
 import pytest
 from pydantic import ValidationError
+
 from lsap.schema.draft.explore import ExploreRequest, ExploreResponse, HierarchyInfo
 from lsap.schema.locate import Locate
 from lsap.schema.models import (
-    SymbolInfo,
     CallHierarchy,
     CallHierarchyItem,
-    SymbolKind,
     Position,
     Range,
+    SymbolInfo,
+    SymbolKind,
 )
 
 
@@ -185,10 +187,6 @@ def test_explore_response_markdown_rendering():
                     start=Position(line=5, character=1),
                     end=Position(line=5, character=10),
                 ),
-                selection_range=Range(
-                    start=Position(line=5, character=1),
-                    end=Position(line=5, character=10),
-                ),
             )
         ],
         outgoing=[
@@ -197,10 +195,6 @@ def test_explore_response_markdown_rendering():
                 kind=SymbolKind.Function,
                 file_path=Path("callee.py"),
                 range=Range(
-                    start=Position(line=10, character=1),
-                    end=Position(line=10, character=10),
-                ),
-                selection_range=Range(
                     start=Position(line=10, character=1),
                     end=Position(line=10, character=10),
                 ),

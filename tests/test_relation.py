@@ -16,6 +16,8 @@ from lsp_client.client.document_state import DocumentStateManager
 from lsp_client.protocol import CapabilityClientProtocol
 from lsp_client.protocol.lang import LanguageConfig
 from lsp_client.utils.config import ConfigurationMap
+from lsp_client.utils.types import AnyPath
+from lsp_client.utils.types import Position as LSPPosition
 from lsp_client.utils.workspace import (
     DEFAULT_WORKSPACE_DIR,
     Workspace,
@@ -29,7 +31,6 @@ from lsprotocol.types import (
     LanguageKind,
     SymbolKind,
 )
-from lsprotocol.types import Position as LSPPosition
 from lsprotocol.types import Range as LSPRange
 
 from lsap.capability.relation import RelationCapability
@@ -421,7 +422,11 @@ def test_relation_request_with_nested_symbol_path():
         max_depth=3,
     )
 
+    assert req.source.scope is not None
+    assert isinstance(req.source.scope, SymbolScope)
     assert req.source.scope.symbol_path == ["UserService", "get_user"]
+    assert req.target.scope is not None
+    assert isinstance(req.target.scope, SymbolScope)
     assert req.target.scope.symbol_path == ["Database", "query"]
     assert req.max_depth == 3
 
@@ -492,11 +497,12 @@ class MockRelationClient(
         yield
 
     async def request_document_symbol_list(
-        self, file_path: Path
+        self, file_path: AnyPath
     ) -> list[DocumentSymbol]:
         """Mock document symbol list - returns a single function symbol based on file name."""
+        path = Path(file_path)
         # Extract symbol name from file path (e.g., test_A.py -> A)
-        name = file_path.stem.replace("test_", "")
+        name = path.stem.replace("test_", "")
         if name in self.call_graph or any(
             name in calls for calls in self.call_graph.values()
         ):
@@ -536,11 +542,12 @@ class MockRelationClient(
         )
 
     async def prepare_call_hierarchy(
-        self, file_path: Path, position: LSPPosition
+        self, file_path: AnyPath, position: LSPPosition
     ) -> list[CallHierarchyItem] | None:
         """Mock prepare_call_hierarchy - returns item based on file path."""
+        path = Path(file_path)
         # Extract symbol name from file path (e.g., test_A.py -> A)
-        name = file_path.stem.replace("test_", "")
+        name = path.stem.replace("test_", "")
         if name in self.call_graph or any(
             name in calls for calls in self.call_graph.values()
         ):

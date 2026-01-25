@@ -1,17 +1,19 @@
 from pathlib import Path
+
 import pytest
 from pydantic import ValidationError
+
 from lsap.schema.draft.inspect import InspectRequest, InspectResponse, UsageExample
 from lsap.schema.locate import Locate
 from lsap.schema.models import (
-    SymbolDetailInfo,
+    CallHierarchy,
+    CallHierarchyItem,
     Location,
     Position,
     Range,
-    SymbolKind,
+    SymbolDetailInfo,
     SymbolInfo,
-    CallHierarchy,
-    CallHierarchyItem,
+    SymbolKind,
 )
 
 
@@ -73,6 +75,7 @@ def test_usage_example_model():
     )
     assert example.code == "func('test')"
     assert example.call_pattern == "func(arg)"
+    assert example.context is not None
     assert example.context.name == "caller"
 
 
@@ -156,10 +159,6 @@ def test_inspect_response_markdown_rendering():
                 kind=SymbolKind.Function,
                 file_path=Path("caller.py"),
                 range=Range(
-                    start=Position(line=5, character=1),
-                    end=Position(line=5, character=10),
-                ),
-                selection_range=Range(
                     start=Position(line=5, character=1),
                     end=Position(line=5, character=10),
                 ),

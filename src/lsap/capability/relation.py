@@ -28,14 +28,24 @@ class RelationCapability(Capability[RelationRequest, RelationResponse]):
 
     @override
     async def __call__(self, req: RelationRequest) -> RelationResponse | None:
+        from lsap.exception import NotFoundError
+
         # Resolve source symbol
         source_req = LocateRequest(locate=req.source)
-        if not (source_loc := await self.locate(source_req)):
+        try:
+            source_loc = await self.locate(source_req)
+            if not source_loc:
+                return None
+        except NotFoundError:
             return None
 
         # Resolve target symbol
         target_req = LocateRequest(locate=req.target)
-        if not (target_loc := await self.locate(target_req)):
+        try:
+            target_loc = await self.locate(target_req)
+            if not target_loc:
+                return None
+        except NotFoundError:
             return None
 
         # Get CallHierarchyItems for source and target
