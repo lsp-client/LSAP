@@ -16,3 +16,4 @@ uv.lock
 
 references/
 test.py
+.sisyphus/
