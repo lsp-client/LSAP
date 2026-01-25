@@ -160,7 +160,7 @@ class InspectResponse(Response):
 
 
 __all__ = [
-    "UsageExample",
     "InspectRequest",
     "InspectResponse",
+    "UsageExample",
 ]
