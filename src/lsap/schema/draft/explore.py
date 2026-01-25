@@ -89,7 +89,7 @@ markdown_template: Final = """
 {% if siblings.size > 0 -%}
 ## Siblings
 {% for item in siblings -%}
-- `{{ item.name }}` (`{{ item.kind }}`) {% if item.range != nil %}at line {{ item.range.start.line | plus: 1 }}{% endif %}
+- `{{ item.name }}` (`{{ item.kind }}`) {% if item.range != nil %}at line {{ item.range.start.line }}{% endif %}
 {% endfor -%}
 {%- endif %}
 
@@ -129,14 +129,14 @@ markdown_template: Final = """
 {% if calls.incoming.size > 0 -%}
 ### Incoming Calls
 {% for item in calls.incoming -%}
-- `{{ item.name }}` (`{{ item.kind }}`) at `{{ item.file_path }}:{{ item.range.start.line | plus: 1 }}`
+- `{{ item.name }}` (`{{ item.kind }}`) at `{{ item.file_path }}:{{ item.range.start.line }}`
 {% endfor -%}
 {%- endif %}
 
 {% if calls.outgoing.size > 0 -%}
 ### Outgoing Calls
 {% for item in calls.outgoing -%}
-- `{{ item.name }}` (`{{ item.kind }}`) at `{{ item.file_path }}:{{ item.range.start.line | plus: 1 }}`
+- `{{ item.name }}` (`{{ item.kind }}`) at `{{ item.file_path }}:{{ item.range.start.line }}`
 {% endfor -%}
 {%- endif %}
 {%- endif %}
