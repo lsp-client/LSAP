@@ -73,7 +73,14 @@ from .models import SymbolDetailInfo
 
 
 class OutlineFileItem(SymbolDetailInfo):
-    """Symbol information for directory outline mode."""
+    """
+    Thin semantic wrapper around :class:`SymbolDetailInfo` used for directory outline mode.
+
+    This class intentionally does not add any new fields or behaviour today; it exists as a
+    distinct type to make directory outline responses self-documenting and to preserve a
+    stable extension point for adding directory-specific metadata in the future without
+    breaking the public API.
+    """
 
 
 class OutlineRequest(Request):
@@ -101,13 +108,6 @@ class OutlineRequest(Request):
     """Optional symbol path to narrow the outline (e.g. `MyClass` or `MyClass.my_method`). Only valid for files."""
     recursive: bool = False
     """If true: for directories, scan subdirectories; for files, include all nested symbols."""
-
-    @model_validator(mode="after")
-    def validate_scope(self) -> Self:
-        """Ensure scope is only used with files, not directories."""
-        if self.scope is not None and self.path.is_dir():
-            raise ValueError("scope cannot be used with directory paths")
-        return self
 
 
 file_markdown_template: Final = """
@@ -161,6 +161,21 @@ class OutlineResponse(Response):
             "directory_markdown": directory_markdown_template,
         }
     )
+
+    @model_validator(mode="after")
+    def validate_response_fields(self) -> Self:
+        """Ensure correct fields are populated based on is_directory flag."""
+        if self.is_directory:
+            if self.files is None:
+                raise ValueError("files must be provided when is_directory=True")
+            if self.items is not None:
+                raise ValueError("items must be None when is_directory=True")
+        else:
+            if self.items is None:
+                raise ValueError("items must be provided when is_directory=False")
+            if self.files is not None:
+                raise ValueError("files must be None when is_directory=False")
+        return self
 
     @override
     def format(self, template_name: str = "markdown") -> str:

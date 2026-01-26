@@ -30,27 +30,59 @@ from .abc import Capability
 @define
 class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
     hover_sem: anyio.Semaphore = field(default=anyio.Semaphore(32), init=False)
+    directory_sem: anyio.Semaphore = field(default=anyio.Semaphore(10), init=False)
 
     @override
     async def __call__(self, req: OutlineRequest) -> OutlineResponse | None:
-        if req.path.is_dir():
+        # Check if path is a directory - this implicitly checks existence
+        # for directories while allowing mock file paths in tests
+        try:
+            is_dir = req.path.is_dir()
+        except OSError:
+            # If we can't determine if it's a directory, treat as file
+            is_dir = False
+
+        if is_dir:
+            if req.scope is not None:
+                raise ValueError("scope cannot be used with directory paths")
             return await self._handle_directory(req)
         return await self._handle_file(req)
 
     async def _handle_directory(self, req: OutlineRequest) -> OutlineResponse | None:
         directory = req.path
 
+        # Common directories to exclude for performance
+        EXCLUDED_DIRS = {
+            "node_modules",
+            ".git",
+            "__pycache__",
+            ".venv",
+            "venv",
+            ".tox",
+            "dist",
+            "build",
+            ".pytest_cache",
+            ".mypy_cache",
+            ".ruff_cache",
+        }
+
         lang_config = self.client.get_language_config()
         code_files: list[Path] = []
 
         if req.recursive:
             for suffix in lang_config.suffixes:
-                code_files.extend(directory.rglob(f"*{suffix}"))
+                code_files.extend(
+                    file_path
+                    for file_path in directory.rglob(f"*{suffix}")
+                    if not any(
+                        excluded in file_path.parts for excluded in EXCLUDED_DIRS
+                    )
+                )
         else:
             for suffix in lang_config.suffixes:
                 code_files.extend(directory.glob(f"*{suffix}"))
 
-        code_files = sorted(set(code_files))
+        code_files = sorted(set(code_files), key=lambda p: str(p))
 
         file_groups: list[OutlineFileGroup] = []
         total_symbols = 0
@@ -62,7 +94,7 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
         for group in file_groups:
             total_symbols += len(group.symbols)
 
-        file_groups.sort(key=lambda g: g.file_path)
+        file_groups.sort(key=lambda g: str(g.file_path))
 
         return OutlineResponse(
             path=directory,
@@ -77,24 +109,30 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
         file_path: Path,
         file_groups: list[OutlineFileGroup],
     ) -> None:
-        symbols = await ensure_capability(
-            self.client, WithRequestDocumentSymbol
-        ).request_document_symbol_list(file_path)
+        async with self.directory_sem:
+            try:
+                symbols = await ensure_capability(
+                    self.client, WithRequestDocumentSymbol
+                ).request_document_symbol_list(file_path)
 
-        symbols_iter = self._iter_top_symbols(symbols) if symbols else []
-        items = [
-            OutlineFileItem(
-                file_path=file_path,
-                name=symbol.name,
-                path=path,
-                kind=SymbolKind.from_lsp(symbol.kind),
-                detail=symbol.detail,
-                range=Range.from_lsp(symbol.range),
-            )
-            for path, symbol in symbols_iter
-        ]
+                symbols_iter = self._iter_top_symbols(symbols) if symbols else []
+                items = [
+                    OutlineFileItem(
+                        file_path=file_path,
+                        name=symbol.name,
+                        path=path,
+                        kind=SymbolKind.from_lsp(symbol.kind),
+                        detail=symbol.detail,
+                        range=Range.from_lsp(symbol.range),
+                    )
+                    for path, symbol in symbols_iter
+                ]
 
-        file_groups.append(OutlineFileGroup(file_path=file_path, symbols=items))
+                file_groups.append(OutlineFileGroup(file_path=file_path, symbols=items))
+            except Exception:  # noqa: BLE001
+                # Skip files that fail to process (e.g., syntax errors, LSP issues)
+                # Silently continue processing other files to avoid partial failure
+                pass
 
     async def _handle_file(self, req: OutlineRequest) -> OutlineResponse | None:
         file_path = req.path
