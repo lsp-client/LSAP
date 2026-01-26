@@ -132,11 +132,13 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
                 ]
 
                 file_groups.append(OutlineFileGroup(file_path=file_path, symbols=items))
-            except Exception as e:  # noqa: BLE001
-                # Skip files that fail to process (e.g., syntax errors, LSP issues)
+            except (OSError, PermissionError) as e:
+                # Skip files that fail due to permission or OS errors
                 # Continue processing other files to avoid partial failure
                 logger.debug(
-                    f"Failed to process file {file_path} in directory outline: {e}"
+                    "Failed to process file {} in directory outline: {}",
+                    file_path,
+                    e,
                 )
 
     async def _handle_file(self, req: OutlineRequest) -> OutlineResponse | None:

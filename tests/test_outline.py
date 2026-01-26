@@ -1,3 +1,4 @@
+import tempfile
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -402,8 +403,6 @@ async def test_outline_scope_top_module():
 
 @pytest.mark.asyncio
 async def test_outline_directory():
-    import tempfile
-
     class MockDirectoryClient(MockOutlineClient):
         def __init__(self, tmpdir):
             super().__init__()
@@ -476,8 +475,6 @@ async def test_outline_directory():
 
 @pytest.mark.asyncio
 async def test_outline_directory_recursive():
-    import tempfile
-
     class MockDirectoryClient(MockOutlineClient):
         def __init__(self, tmpdir):
             super().__init__()
@@ -568,7 +565,6 @@ async def test_outline_directory_recursive():
 @pytest.mark.asyncio
 async def test_outline_directory_scope_validation():
     """Test that scope parameter raises ValueError with directory paths."""
-    import tempfile
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmppath = Path(tmpdir)
@@ -591,7 +587,6 @@ async def test_outline_directory_scope_validation():
 @pytest.mark.asyncio
 async def test_outline_directory_excludes_non_code_files():
     """Test that non-code files like README.md are excluded from directory outline."""
-    import tempfile
 
     class MockDirectoryClient(MockOutlineClient):
         def __init__(self, tmpdir):
