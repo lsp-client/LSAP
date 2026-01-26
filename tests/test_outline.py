@@ -1,3 +1,4 @@
+import tempfile
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -402,8 +403,6 @@ async def test_outline_scope_top_module():
 
 @pytest.mark.asyncio
 async def test_outline_directory():
-    import tempfile
-
     class MockDirectoryClient(MockOutlineClient):
         def __init__(self, tmpdir):
             super().__init__()
@@ -457,6 +456,7 @@ async def test_outline_directory():
         resp = await capability(req)
         assert resp is not None
         assert resp.path == tmppath
+        assert resp.is_directory is True
         assert resp.total_files == 2
         assert resp.total_symbols == 2
 
@@ -475,8 +475,6 @@ async def test_outline_directory():
 
 @pytest.mark.asyncio
 async def test_outline_directory_recursive():
-    import tempfile
-
     class MockDirectoryClient(MockOutlineClient):
         def __init__(self, tmpdir):
             super().__init__()
@@ -546,6 +544,7 @@ async def test_outline_directory_recursive():
         resp = await capability(req)
         assert resp is not None
         assert resp.path == tmppath
+        assert resp.is_directory is True
         assert resp.total_files == 2
         assert resp.total_symbols == 2
         file_names = {group.file_path.name for group in resp.files}
@@ -556,7 +555,81 @@ async def test_outline_directory_recursive():
         resp = await capability(req)
         assert resp is not None
         assert resp.path == tmppath
+        assert resp.is_directory is True
         assert resp.total_files == 3
         assert resp.total_symbols == 3
         file_names = {group.file_path.name for group in resp.files}
         assert file_names == {"file1.py", "file2.py", "nested.py"}
+
+
+@pytest.mark.asyncio
+async def test_outline_directory_scope_validation():
+    """Test that scope parameter raises ValueError with directory paths."""
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmppath = Path(tmpdir)
+        (tmppath / "file1.py").write_text("class ClassA:\n    pass\n")
+
+        client = MockOutlineClient()
+        capability = OutlineCapability(client=client)  # type: ignore
+
+        # Should raise ValueError when scope is provided with directory path
+        with pytest.raises(
+            ValueError, match="scope cannot be used with directory paths"
+        ):
+            req = OutlineRequest(
+                path=tmppath,
+                scope={"symbol_path": ["SomeClass"]},
+            )
+            await capability(req)
+
+
+@pytest.mark.asyncio
+async def test_outline_directory_excludes_non_code_files():
+    """Test that non-code files like README.md are excluded from directory outline."""
+
+    class MockDirectoryClient(MockOutlineClient):
+        def __init__(self, tmpdir):
+            super().__init__()
+            self.tmpdir = tmpdir
+            self.file_symbols = {
+                "file1.py": [
+                    DocumentSymbol(
+                        name="ClassA",
+                        kind=SymbolKind.Class,
+                        range=LSPRange(
+                            start=LSPPosition(line=0, character=0),
+                            end=LSPPosition(line=1, character=0),
+                        ),
+                        selection_range=LSPRange(
+                            start=LSPPosition(line=0, character=6),
+                            end=LSPPosition(line=0, character=12),
+                        ),
+                    )
+                ],
+            }
+
+        async def request_document_symbol_list(self, file_path) -> list[DocumentSymbol]:
+            filename = file_path.name
+            return self.file_symbols.get(filename, [])
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmppath = Path(tmpdir)
+        (tmppath / "file1.py").write_text("class ClassA:\n    pass\n")
+        (tmppath / "README.md").write_text("# Not a code file")
+        (tmppath / "data.json").write_text('{"key": "value"}')
+
+        client = MockDirectoryClient(tmppath)
+        capability = OutlineCapability(client=client)  # type: ignore
+
+        req = OutlineRequest(path=tmppath)
+        resp = await capability(req)
+
+        assert resp is not None
+        assert resp.is_directory is True
+        assert resp.total_files == 1
+        # Explicitly verify that only the Python file is included
+        file_names = {group.file_path.name for group in resp.files}
+        assert file_names == {"file1.py"}
+        assert "README.md" not in file_names
+        assert "data.json" not in file_names

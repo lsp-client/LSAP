@@ -7,6 +7,7 @@ from typing import override
 import anyio
 import asyncer
 from attrs import define, field
+from loguru import logger
 from lsp_client.capability.request import WithRequestDocumentSymbol, WithRequestHover
 from lsprotocol.types import DocumentSymbol
 from lsprotocol.types import Position as LSPPosition
@@ -26,14 +27,42 @@ from lsap.utils.symbol import iter_symbols
 
 from .abc import Capability
 
+# Common directories to exclude for performance in recursive scans
+_EXCLUDED_DIRS = frozenset(
+    {
+        "node_modules",
+        ".git",
+        "__pycache__",
+        ".venv",
+        "venv",
+        ".tox",
+        "dist",
+        "build",
+        ".pytest_cache",
+        ".mypy_cache",
+        ".ruff_cache",
+    }
+)
+
 
 @define
 class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
     hover_sem: anyio.Semaphore = field(default=anyio.Semaphore(32), init=False)
+    directory_sem: anyio.Semaphore = field(default=anyio.Semaphore(10), init=False)
 
     @override
     async def __call__(self, req: OutlineRequest) -> OutlineResponse | None:
-        if req.path.is_dir():
+        # Check if path is a directory - this implicitly checks existence
+        # for directories while allowing mock file paths in tests
+        try:
+            is_dir = req.path.is_dir()
+        except OSError:
+            # If we can't determine if it's a directory, treat as file
+            is_dir = False
+
+        if is_dir:
+            if req.scope is not None:
+                raise ValueError("scope cannot be used with directory paths")
             return await self._handle_directory(req)
         return await self._handle_file(req)
 
@@ -45,12 +74,16 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
 
         if req.recursive:
             for suffix in lang_config.suffixes:
-                code_files.extend(directory.rglob(f"*{suffix}"))
+                code_files.extend(
+                    file_path
+                    for file_path in directory.rglob(f"*.{suffix}")
+                    if _EXCLUDED_DIRS.isdisjoint(file_path.parts)
+                )
         else:
             for suffix in lang_config.suffixes:
-                code_files.extend(directory.glob(f"*{suffix}"))
+                code_files.extend(directory.glob(f"*.{suffix}"))
 
-        code_files = sorted(set(code_files))
+        code_files = sorted(set(code_files), key=lambda p: str(p))
 
         file_groups: list[OutlineFileGroup] = []
         total_symbols = 0
@@ -62,7 +95,7 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
         for group in file_groups:
             total_symbols += len(group.symbols)
 
-        file_groups.sort(key=lambda g: g.file_path)
+        file_groups.sort(key=lambda g: str(g.file_path))
 
         return OutlineResponse(
             path=directory,
@@ -77,24 +110,34 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
         file_path: Path,
         file_groups: list[OutlineFileGroup],
     ) -> None:
-        symbols = await ensure_capability(
-            self.client, WithRequestDocumentSymbol
-        ).request_document_symbol_list(file_path)
+        async with self.directory_sem:
+            try:
+                symbols = await ensure_capability(
+                    self.client, WithRequestDocumentSymbol
+                ).request_document_symbol_list(file_path)
 
-        symbols_iter = self._iter_top_symbols(symbols) if symbols else []
-        items = [
-            OutlineFileItem(
-                file_path=file_path,
-                name=symbol.name,
-                path=path,
-                kind=SymbolKind.from_lsp(symbol.kind),
-                detail=symbol.detail,
-                range=Range.from_lsp(symbol.range),
-            )
-            for path, symbol in symbols_iter
-        ]
+                symbols_iter = self._iter_top_symbols(symbols) if symbols else []
+                items = [
+                    OutlineFileItem(
+                        file_path=file_path,
+                        name=symbol.name,
+                        path=path,
+                        kind=SymbolKind.from_lsp(symbol.kind),
+                        detail=symbol.detail,
+                        range=Range.from_lsp(symbol.range),
+                    )
+                    for path, symbol in symbols_iter
+                ]
 
-        file_groups.append(OutlineFileGroup(file_path=file_path, symbols=items))
+                file_groups.append(OutlineFileGroup(file_path=file_path, symbols=items))
+            except (OSError, PermissionError) as e:
+                # Skip files that fail due to permission or OS errors
+                # Continue processing other files to avoid partial failure
+                logger.debug(
+                    "Failed to process file {} in directory outline: {}",
+                    file_path,
+                    e,
+                )
 
     async def _handle_file(self, req: OutlineRequest) -> OutlineResponse | None:
         file_path = req.path
