@@ -1,29 +1,29 @@
 """
 # Outline API
 
-The Outline API returns a hierarchical tree of all symbols defined within a specific file.
-This allows an Agent to understand the structure of a file without reading the entire
-source code.
+The Outline API returns a hierarchical tree of all symbols defined within a specific file,
+or lists top-level symbols across all code files in a directory.
 
 ## Example Usage
 
-### Scenario 1: Getting outline for a model file
+### Scenario 1: Getting outline for a model file (top-level symbols only)
 
 Request:
 
 ```json
 {
-  "file_path": "src/models.py"
+  "path": "src/models.py"
 }
 ```
 
-### Scenario 2: Getting outline for a controller file
+### Scenario 2: Getting outline for a controller file (all nested symbols)
 
 Request:
 
 ```json
 {
-  "file_path": "src/controllers.py"
+  "path": "src/controllers.py",
+  "recursive": true
 }
 ```
 
@@ -33,50 +33,85 @@ Request:
 
 ```json
 {
-  "file_path": "src/models.py",
+  "path": "src/models.py",
   "scope": {
     "symbol_path": ["MyClass"]
   }
 }
 ```
+
+### Scenario 4: Getting outline for all files in a directory (immediate directory only)
+
+Request:
+
+```json
+{
+  "path": "src/models"
+}
+```
+
+### Scenario 5: Getting outline for all files in a directory (recursive scan)
+
+Request:
+
+```json
+{
+  "path": "src/models",
+  "recursive": true
+}
+```
 """
 
 from pathlib import Path
-from typing import Final
+from typing import Final, Self, override
 
-from pydantic import ConfigDict
+from pydantic import ConfigDict, model_validator
 
 from ._abc import Request, Response
 from .locate import SymbolScope
 from .models import SymbolDetailInfo
 
 
+class OutlineFileItem(SymbolDetailInfo):
+    """Symbol information for directory outline mode."""
+
+
 class OutlineRequest(Request):
     """
-    Retrieves a hierarchical outline of symbols within a file.
+    Retrieves a hierarchical outline of symbols within a file or directory.
 
     Use this to understand the structure of a file (classes, methods, functions)
-    and quickly navigate its contents.
+    and quickly navigate its contents, or to get an overview of all code files
+    in a directory.
 
-    If `scope` is provided, it will locate the specified symbol and return the
-    outline for that symbol and its children.
+    **File Mode**: When `path` points to a file, returns symbol hierarchy.
+    - recursive=False (default): Only top-level symbols (classes, top-level functions)
+    - recursive=True: All symbols including nested members (methods, nested functions)
 
-    Note: By default (top=False), this API returns structural symbols only
-    (classes, methods, top-level functions/variables), excluding symbols
-    defined inside functions or methods (like local variables or nested
-    functions) to reduce noise. When top=True, only first-level symbols
-    are returned.
+    **Directory Mode**: When `path` points to a directory, lists code files and symbols.
+    - recursive=False (default): Only files in the immediate directory
+    - recursive=True: Recursively scan subdirectories
+
+    If `scope` is provided (file mode only), it will locate the specified symbol
+    and return the outline for that symbol and its children.
     """
 
-    file_path: Path
+    path: Path
     scope: SymbolScope | None = None
-    """Optional symbol path to narrow the outline (e.g. `MyClass` or `MyClass.my_method`)."""
-    top: bool = False
-    """If true, return only top-level symbols (expanding Module containers to show their direct children, and excluding nested members of classes and functions)."""
+    """Optional symbol path to narrow the outline (e.g. `MyClass` or `MyClass.my_method`). Only valid for files."""
+    recursive: bool = False
+    """If true: for directories, scan subdirectories; for files, include all nested symbols."""
+
+    @model_validator(mode="after")
+    def validate_scope(self) -> Self:
+        """Ensure scope is only used with files, not directories."""
+        if self.scope is not None and self.path.is_dir():
+            raise ValueError("scope cannot be used with directory paths")
+        return self
 
 
-markdown_template: Final = """
-# Outline for `{{ file_path }}`
+file_markdown_template: Final = """
+# Outline for `{{ path }}`
 
 {% for item in items -%}
 {% assign level = item.path | size | plus: 1 -%}
@@ -87,19 +122,56 @@ markdown_template: Final = """
 {% endfor -%}
 """
 
+directory_markdown_template: Final = """
+# Directory Outline: `{{ path }}`
+
+Found {{ total_files }} code file(s) with {{ total_symbols }} top-level symbol(s)
+
+{% for group in files -%}
+## `{{ group.file_path }}`
+
+{% if group.symbols.size == 0 -%}
+No symbols found.
+{%- else -%}
+{%- for symbol in group.symbols %}
+- `{{ symbol.name }}` (`{{ symbol.kind }}`)
+{%- endfor %}
+{%- endif %}
+
+{% endfor -%}
+"""
+
+
+class OutlineFileGroup(Response):
+    file_path: Path
+    symbols: list[OutlineFileItem]
+
 
 class OutlineResponse(Response):
-    file_path: Path
-    items: list[SymbolDetailInfo]
+    path: Path
+    is_directory: bool
+    items: list[SymbolDetailInfo] | None = None
+    files: list[OutlineFileGroup] | None = None
+    total_files: int | None = None
+    total_symbols: int | None = None
 
     model_config = ConfigDict(
         json_schema_extra={
-            "markdown": markdown_template,
+            "markdown": file_markdown_template,
+            "directory_markdown": directory_markdown_template,
         }
     )
 
+    @override
+    def format(self, template_name: str = "markdown") -> str:
+        if template_name == "markdown" and self.is_directory:
+            template_name = "directory_markdown"
+        return super().format(template_name)
+
 
 __all__ = [
+    "OutlineFileGroup",
+    "OutlineFileItem",
     "OutlineRequest",
     "OutlineResponse",
 ]

@@ -13,7 +13,12 @@ from lsprotocol.types import Position as LSPPosition
 from lsprotocol.types import SymbolKind as LSPSymbolKind
 
 from lsap.schema.models import Range, SymbolDetailInfo, SymbolKind
-from lsap.schema.outline import OutlineRequest, OutlineResponse
+from lsap.schema.outline import (
+    OutlineFileGroup,
+    OutlineFileItem,
+    OutlineRequest,
+    OutlineResponse,
+)
 from lsap.schema.types import SymbolPath
 from lsap.utils.capability import ensure_capability
 from lsap.utils.markdown import clean_hover_content
@@ -28,9 +33,74 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
 
     @override
     async def __call__(self, req: OutlineRequest) -> OutlineResponse | None:
+        if req.path.is_dir():
+            return await self._handle_directory(req)
+        return await self._handle_file(req)
+
+    async def _handle_directory(self, req: OutlineRequest) -> OutlineResponse | None:
+        directory = req.path
+
+        lang_config = self.client.get_language_config()
+        code_files: list[Path] = []
+
+        if req.recursive:
+            for suffix in lang_config.suffixes:
+                code_files.extend(directory.rglob(f"*{suffix}"))
+        else:
+            for suffix in lang_config.suffixes:
+                code_files.extend(directory.glob(f"*{suffix}"))
+
+        code_files = sorted(set(code_files))
+
+        file_groups: list[OutlineFileGroup] = []
+        total_symbols = 0
+
+        async with asyncer.create_task_group() as tg:
+            for file_path in code_files:
+                _ = tg.soonify(self._process_file_for_directory)(file_path, file_groups)
+
+        for group in file_groups:
+            total_symbols += len(group.symbols)
+
+        file_groups.sort(key=lambda g: g.file_path)
+
+        return OutlineResponse(
+            path=directory,
+            is_directory=True,
+            files=file_groups,
+            total_files=len(file_groups),
+            total_symbols=total_symbols,
+        )
+
+    async def _process_file_for_directory(
+        self,
+        file_path: Path,
+        file_groups: list[OutlineFileGroup],
+    ) -> None:
         symbols = await ensure_capability(
             self.client, WithRequestDocumentSymbol
-        ).request_document_symbol_list(req.file_path)
+        ).request_document_symbol_list(file_path)
+
+        symbols_iter = self._iter_top_symbols(symbols) if symbols else []
+        items = [
+            OutlineFileItem(
+                file_path=file_path,
+                name=symbol.name,
+                path=path,
+                kind=SymbolKind.from_lsp(symbol.kind),
+                detail=symbol.detail,
+                range=Range.from_lsp(symbol.range),
+            )
+            for path, symbol in symbols_iter
+        ]
+
+        file_groups.append(OutlineFileGroup(file_path=file_path, symbols=items))
+
+    async def _handle_file(self, req: OutlineRequest) -> OutlineResponse | None:
+        file_path = req.path
+        symbols = await ensure_capability(
+            self.client, WithRequestDocumentSymbol
+        ).request_document_symbol_list(file_path)
         if symbols is None:
             return None
 
@@ -42,25 +112,24 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
                 if path == target_path
             ]
             if not matched:
-                return OutlineResponse(file_path=req.file_path, items=[])
+                return OutlineResponse(path=file_path, is_directory=False, items=[])
 
             symbols_iter: list[tuple[SymbolPath, DocumentSymbol]] = []
             for path, symbol in matched:
-                if req.top:
-                    symbols_iter.extend(self._iter_top_symbols([symbol], path[:-1]))
-                else:
+                if req.recursive:
                     symbols_iter.extend(
                         self._iter_filtered_symbols([symbol], None, path[:-1])
                     )
-        elif req.top:
-            symbols_iter = list(self._iter_top_symbols(symbols))
-        else:
-            # Filter symbols: exclude implementation details inside functions/methods
+                else:
+                    symbols_iter.extend(self._iter_top_symbols([symbol], path[:-1]))
+        elif req.recursive:
             symbols_iter = list(self._iter_filtered_symbols(symbols))
+        else:
+            symbols_iter = list(self._iter_top_symbols(symbols))
 
-        items = await self.resolve_symbols(req.file_path, symbols_iter)
+        items = await self.resolve_symbols(file_path, symbols_iter)
 
-        return OutlineResponse(file_path=req.file_path, items=items)
+        return OutlineResponse(path=file_path, is_directory=False, items=items)
 
     def _iter_top_symbols(
         self,
