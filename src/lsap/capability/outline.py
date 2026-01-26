@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import override
 
 import anyio
-import asyncer
 from attrs import define, field
 from lsp_client.capability.request import WithRequestDocumentSymbol, WithRequestHover
 from lsprotocol.types import DocumentSymbol
@@ -22,6 +21,7 @@ from lsap.schema.outline import (
 from lsap.schema.types import SymbolPath
 from lsap.utils.capability import ensure_capability
 from lsap.utils.markdown import clean_hover_content
+from lsap.utils.sem import with_sem
 from lsap.utils.symbol import iter_symbols
 
 from .abc import Capability
@@ -30,6 +30,7 @@ from .abc import Capability
 @define
 class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
     hover_sem: anyio.Semaphore = field(default=anyio.Semaphore(32), init=False)
+    directory_sem: anyio.Semaphore = field(default=anyio.Semaphore(10), init=False)
 
     @override
     async def __call__(self, req: OutlineRequest) -> OutlineResponse | None:
@@ -38,44 +39,51 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
         return await self._handle_file(req)
 
     async def _handle_directory(self, req: OutlineRequest) -> OutlineResponse | None:
-        directory = req.path
+        assert req.path.is_dir()
 
-        lang_config = self.client.get_language_config()
         code_files: list[Path] = []
 
-        if req.recursive:
-            for suffix in lang_config.suffixes:
-                code_files.extend(directory.rglob(f"*{suffix}"))
-        else:
-            for suffix in lang_config.suffixes:
-                code_files.extend(directory.glob(f"*{suffix}"))
-
-        code_files = sorted(set(code_files))
+        lang_config = self.client.get_language_config()
+        glob = req.path.rglob if req.recursive else req.path.glob
+        for suffix in lang_config.suffixes:
+            code_files.extend(glob(f"*{suffix}"))
 
         file_groups: list[OutlineFileGroup] = []
         total_symbols = 0
 
-        async with asyncer.create_task_group() as tg:
+        async with anyio.create_task_group() as tg:
             for file_path in code_files:
-                _ = tg.soonify(self._process_file_for_directory)(file_path, file_groups)
+                tg.start_soon(
+                    with_sem(
+                        self.directory_sem,
+                        self._process_file_for_directory,
+                        file_path,
+                        file_groups,
+                    )
+                )
 
         for group in file_groups:
             total_symbols += len(group.symbols)
 
-        file_groups.sort(key=lambda g: g.file_path)
+        has_subdirs = False
+        if not req.recursive:
+            for p in req.path.iterdir():
+                if p.is_dir() and not p.name.startswith("."):
+                    has_subdirs = True
+                    break
 
         return OutlineResponse(
-            path=directory,
+            path=req.path,
             is_directory=True,
+            request=req,
             files=file_groups,
             total_files=len(file_groups),
             total_symbols=total_symbols,
+            has_subdirs=has_subdirs,
         )
 
     async def _process_file_for_directory(
-        self,
-        file_path: Path,
-        file_groups: list[OutlineFileGroup],
+        self, file_path: Path, file_groups: list[OutlineFileGroup]
     ) -> None:
         symbols = await ensure_capability(
             self.client, WithRequestDocumentSymbol
@@ -112,7 +120,9 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
                 if path == target_path
             ]
             if not matched:
-                return OutlineResponse(path=file_path, is_directory=False, items=[])
+                return OutlineResponse(
+                    path=file_path, is_directory=False, request=req, items=[]
+                )
 
             symbols_iter: list[tuple[SymbolPath, DocumentSymbol]] = []
             for path, symbol in matched:
@@ -129,7 +139,9 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
 
         items = await self.resolve_symbols(file_path, symbols_iter)
 
-        return OutlineResponse(path=file_path, is_directory=False, items=items)
+        return OutlineResponse(
+            path=file_path, is_directory=False, request=req, items=items
+        )
 
     def _iter_top_symbols(
         self,
@@ -181,11 +193,18 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
         symbols_with_path: Iterable[tuple[SymbolPath, DocumentSymbol]],
     ) -> list[SymbolDetailInfo]:
         items: list[SymbolDetailInfo] = []
-        async with asyncer.create_task_group() as tg:
+        async with anyio.create_task_group() as tg:
             for path, symbol in symbols_with_path:
                 item = self._make_item(file_path, path, symbol)
                 items.append(item)
-                tg.soonify(self._fill_hover)(item, symbol.selection_range.start)
+                tg.start_soon(
+                    with_sem(
+                        self.hover_sem,
+                        self._fill_hover,
+                        item,
+                        symbol.selection_range.start,
+                    )
+                )
 
         return items
 
@@ -205,8 +224,7 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
         )
 
     async def _fill_hover(self, item: SymbolDetailInfo, pos: LSPPosition) -> None:
-        async with self.hover_sem:
-            if hover := await ensure_capability(
-                self.client, WithRequestHover
-            ).request_hover(item.file_path, pos):
-                item.hover = clean_hover_content(hover.value)
+        if hover := await ensure_capability(
+            self.client, WithRequestHover
+        ).request_hover(item.file_path, pos):
+            item.hover = clean_hover_content(hover.value)
