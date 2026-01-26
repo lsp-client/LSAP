@@ -52,17 +52,7 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
 
     @override
     async def __call__(self, req: OutlineRequest) -> OutlineResponse | None:
-        # Check if path is a directory - this implicitly checks existence
-        # for directories while allowing mock file paths in tests
-        try:
-            is_dir = req.path.is_dir()
-        except OSError:
-            # If we can't determine if it's a directory, treat as file
-            is_dir = False
-
-        if is_dir:
-            if req.scope is not None:
-                raise ValueError("scope cannot be used with directory paths")
+        if req.path.is_dir():
             return await self._handle_directory(req)
         return await self._handle_file(req)
 
