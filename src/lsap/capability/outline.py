@@ -7,6 +7,7 @@ from typing import override
 import anyio
 import asyncer
 from attrs import define, field
+from loguru import logger
 from lsp_client.capability.request import WithRequestDocumentSymbol, WithRequestHover
 from lsprotocol.types import DocumentSymbol
 from lsprotocol.types import Position as LSPPosition
@@ -25,6 +26,23 @@ from lsap.utils.markdown import clean_hover_content
 from lsap.utils.symbol import iter_symbols
 
 from .abc import Capability
+
+# Common directories to exclude for performance in recursive scans
+_EXCLUDED_DIRS = frozenset(
+    {
+        "node_modules",
+        ".git",
+        "__pycache__",
+        ".venv",
+        "venv",
+        ".tox",
+        "dist",
+        "build",
+        ".pytest_cache",
+        ".mypy_cache",
+        ".ruff_cache",
+    }
+)
 
 
 @define
@@ -51,21 +69,6 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
     async def _handle_directory(self, req: OutlineRequest) -> OutlineResponse | None:
         directory = req.path
 
-        # Common directories to exclude for performance
-        EXCLUDED_DIRS = {
-            "node_modules",
-            ".git",
-            "__pycache__",
-            ".venv",
-            "venv",
-            ".tox",
-            "dist",
-            "build",
-            ".pytest_cache",
-            ".mypy_cache",
-            ".ruff_cache",
-        }
-
         lang_config = self.client.get_language_config()
         code_files: list[Path] = []
 
@@ -75,7 +78,7 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
                     file_path
                     for file_path in directory.rglob(f"*{suffix}")
                     if not any(
-                        excluded in file_path.parts for excluded in EXCLUDED_DIRS
+                        excluded in file_path.parts for excluded in _EXCLUDED_DIRS
                     )
                 )
         else:
@@ -129,10 +132,12 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
                 ]
 
                 file_groups.append(OutlineFileGroup(file_path=file_path, symbols=items))
-            except Exception:  # noqa: BLE001
+            except Exception as e:  # noqa: BLE001
                 # Skip files that fail to process (e.g., syntax errors, LSP issues)
-                # Silently continue processing other files to avoid partial failure
-                pass
+                # Continue processing other files to avoid partial failure
+                logger.debug(
+                    f"Failed to process file {file_path} in directory outline: {e}"
+                )
 
     async def _handle_file(self, req: OutlineRequest) -> OutlineResponse | None:
         file_path = req.path
