@@ -76,14 +76,12 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
             for suffix in lang_config.suffixes:
                 code_files.extend(
                     file_path
-                    for file_path in directory.rglob(f"*{suffix}")
-                    if not any(
-                        excluded in file_path.parts for excluded in _EXCLUDED_DIRS
-                    )
+                    for file_path in directory.rglob(f"*.{suffix}")
+                    if _EXCLUDED_DIRS.isdisjoint(file_path.parts)
                 )
         else:
             for suffix in lang_config.suffixes:
-                code_files.extend(directory.glob(f"*{suffix}"))
+                code_files.extend(directory.glob(f"*.{suffix}"))
 
         code_files = sorted(set(code_files), key=lambda p: str(p))
 
