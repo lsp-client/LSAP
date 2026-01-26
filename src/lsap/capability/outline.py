@@ -65,12 +65,21 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
         for group in file_groups:
             total_symbols += len(group.symbols)
 
+        has_subdirs = False
+        if not req.recursive:
+            for p in req.path.iterdir():
+                if p.is_dir() and not p.name.startswith("."):
+                    has_subdirs = True
+                    break
+
         return OutlineResponse(
             path=req.path,
             is_directory=True,
+            request=req,
             files=file_groups,
             total_files=len(file_groups),
             total_symbols=total_symbols,
+            has_subdirs=has_subdirs,
         )
 
     async def _process_file_for_directory(
@@ -111,7 +120,9 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
                 if path == target_path
             ]
             if not matched:
-                return OutlineResponse(path=file_path, is_directory=False, items=[])
+                return OutlineResponse(
+                    path=file_path, is_directory=False, request=req, items=[]
+                )
 
             symbols_iter: list[tuple[SymbolPath, DocumentSymbol]] = []
             for path, symbol in matched:
@@ -128,7 +139,9 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
 
         items = await self.resolve_symbols(file_path, symbols_iter)
 
-        return OutlineResponse(path=file_path, is_directory=False, items=items)
+        return OutlineResponse(
+            path=file_path, is_directory=False, request=req, items=items
+        )
 
     def _iter_top_symbols(
         self,

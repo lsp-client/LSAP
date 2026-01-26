@@ -109,6 +109,12 @@ class OutlineRequest(Request):
     recursive: bool = False
     """If true: for directories, scan subdirectories; for files, include all nested symbols."""
 
+    @model_validator(mode="after")
+    def validate_request_fields(self) -> Self:
+        if self.scope and self.path.is_dir():
+            raise ValueError("scope cannot be used with directory paths")
+        return self
+
 
 file_markdown_template: Final = """
 # Outline for `{{ path }}`
@@ -139,6 +145,13 @@ No symbols found.
 {%- endif %}
 
 {% endfor -%}
+
+{% if has_subdirs and request.recursive == false -%}
+---
+
+> [!TIP]
+> Subdirectories found. Set `recursive=true` to scan them.
+{%- endif %}
 """
 
 
@@ -150,10 +163,12 @@ class OutlineFileGroup(Response):
 class OutlineResponse(Response):
     path: Path
     is_directory: bool
+    request: OutlineRequest
     items: list[SymbolDetailInfo] | None = None
     files: list[OutlineFileGroup] | None = None
     total_files: int | None = None
     total_symbols: int | None = None
+    has_subdirs: bool = False
 
     model_config = ConfigDict(
         json_schema_extra={
