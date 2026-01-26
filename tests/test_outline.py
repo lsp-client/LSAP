@@ -109,7 +109,7 @@ async def test_outline():
     client = MockOutlineClient()
     capability = OutlineCapability(client=client)  # type: ignore
 
-    req = OutlineRequest(file_path=Path("test.py"))
+    req = OutlineRequest(path=Path("test.py"), recursive=True)
 
     resp = await capability(req)
     assert resp is not None
@@ -123,11 +123,11 @@ async def test_outline():
 
 
 @pytest.mark.asyncio
-async def test_outline_top():
+async def test_outline_non_recursive():
     client = MockOutlineClient()
     capability = OutlineCapability(client=client)  # type: ignore
 
-    req = OutlineRequest(file_path=Path("test.py"), top=True)
+    req = OutlineRequest(path=Path("test.py"), recursive=False)
 
     resp = await capability(req)
     assert resp is not None
@@ -138,7 +138,7 @@ async def test_outline_top():
 
 
 @pytest.mark.asyncio
-async def test_outline_top_expansion():
+async def test_outline_non_recursive_expansion():
     class MockModuleClient(MockOutlineClient):
         async def request_document_symbol_list(self, file_path) -> list[DocumentSymbol]:
             foo_symbol = DocumentSymbol(
@@ -171,7 +171,7 @@ async def test_outline_top_expansion():
     client = MockModuleClient()
     capability = OutlineCapability(client=client)  # type: ignore
 
-    req = OutlineRequest(file_path=Path("test.py"), top=True)
+    req = OutlineRequest(path=Path("test.py"), recursive=False)
 
     resp = await capability(req)
     assert resp is not None
@@ -226,7 +226,7 @@ async def test_outline_filtering():
     client = MockFilteringClient()
     capability = OutlineCapability(client=client)  # type: ignore
 
-    req = OutlineRequest(file_path=Path("test.py"))
+    req = OutlineRequest(path=Path("test.py"))
 
     resp = await capability(req)
     assert resp is not None
@@ -282,7 +282,7 @@ async def test_outline_nested_modules():
     client = MockNestedModuleClient()
     capability = OutlineCapability(client=client)  # type: ignore
 
-    req = OutlineRequest(file_path=Path("test.py"), top=True)
+    req = OutlineRequest(path=Path("test.py"), recursive=False)
 
     resp = await capability(req)
     assert resp is not None
@@ -296,10 +296,11 @@ async def test_outline_scope():
     client = MockOutlineClient()
     capability = OutlineCapability(client=client)  # type: ignore
 
-    # Test successful scope
+    # Test successful scope with recursive=True (show nested symbols)
     req = OutlineRequest(
-        file_path=Path("test.py"),
+        path=Path("test.py"),
         scope=SymbolScope(symbol_path=["A"]),
+        recursive=True,
     )
     resp = await capability(req)
     assert resp is not None
@@ -309,8 +310,9 @@ async def test_outline_scope():
 
     # Test nested scope
     req = OutlineRequest(
-        file_path=Path("test.py"),
+        path=Path("test.py"),
         scope=SymbolScope(symbol_path=["A", "foo"]),
+        recursive=True,
     )
     resp = await capability(req)
     assert resp is not None
@@ -324,7 +326,7 @@ async def test_outline_scope_not_found():
     capability = OutlineCapability(client=client)  # type: ignore
 
     req = OutlineRequest(
-        file_path=Path("test.py"),
+        path=Path("test.py"),
         scope=SymbolScope(symbol_path=["NonExistent"]),
     )
     resp = await capability(req)
@@ -337,13 +339,13 @@ async def test_outline_scope_top():
     client = MockOutlineClient()
     capability = OutlineCapability(client=client)  # type: ignore
 
-    # With scope and top=True, should only return the scoped symbol itself (if it's not a module)
+    # With scope and recursive=False, should only return the scoped symbol itself (if it's not a module)
     # or its direct children if it is a module.
     # In MockOutlineClient, A is a class, so it should return A.
     req = OutlineRequest(
-        file_path=Path("test.py"),
+        path=Path("test.py"),
         scope=SymbolScope(symbol_path=["A"]),
-        top=True,
+        recursive=False,
     )
     resp = await capability(req)
     assert resp is not None
@@ -385,14 +387,176 @@ async def test_outline_scope_top_module():
     client = MockModuleClient()
     capability = OutlineCapability(client=client)  # type: ignore
 
-    # Scoped to the module with top=True should expand the module
+    # Scoped to the module with recursive=False should expand the module
     req = OutlineRequest(
-        file_path=Path("test.py"),
+        path=Path("test.py"),
         scope=SymbolScope(symbol_path=["mymodule"]),
-        top=True,
+        recursive=False,
     )
     resp = await capability(req)
     assert resp is not None
     assert len(resp.items) == 1
     assert resp.items[0].name == "foo"
     assert resp.items[0].path == ["mymodule", "foo"]
+
+
+@pytest.mark.asyncio
+async def test_outline_directory():
+    import tempfile
+
+    class MockDirectoryClient(MockOutlineClient):
+        def __init__(self, tmpdir):
+            super().__init__()
+            self.tmpdir = tmpdir
+            self.file_symbols = {
+                "file1.py": [
+                    DocumentSymbol(
+                        name="ClassA",
+                        kind=SymbolKind.Class,
+                        range=LSPRange(
+                            start=LSPPosition(line=0, character=0),
+                            end=LSPPosition(line=1, character=0),
+                        ),
+                        selection_range=LSPRange(
+                            start=LSPPosition(line=0, character=6),
+                            end=LSPPosition(line=0, character=12),
+                        ),
+                    )
+                ],
+                "file2.py": [
+                    DocumentSymbol(
+                        name="func_b",
+                        kind=SymbolKind.Function,
+                        range=LSPRange(
+                            start=LSPPosition(line=0, character=0),
+                            end=LSPPosition(line=1, character=0),
+                        ),
+                        selection_range=LSPRange(
+                            start=LSPPosition(line=0, character=4),
+                            end=LSPPosition(line=0, character=10),
+                        ),
+                    )
+                ],
+            }
+
+        async def request_document_symbol_list(self, file_path) -> list[DocumentSymbol]:
+            filename = file_path.name
+            return self.file_symbols.get(filename, [])
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmppath = Path(tmpdir)
+        (tmppath / "file1.py").write_text("class ClassA:\n    pass\n")
+        (tmppath / "file2.py").write_text("def func_b():\n    pass\n")
+        (tmppath / "README.md").write_text("# Not a code file")
+
+        client = MockDirectoryClient(tmppath)
+        capability = OutlineCapability(client=client)  # type: ignore
+
+        req = OutlineRequest(path=tmppath)
+
+        resp = await capability(req)
+        assert resp is not None
+        assert resp.path == tmppath
+        assert resp.total_files == 2
+        assert resp.total_symbols == 2
+
+        assert len(resp.files) == 2
+        file_names = {group.file_path.name for group in resp.files}
+        assert file_names == {"file1.py", "file2.py"}
+
+        for group in resp.files:
+            if group.file_path.name == "file1.py":
+                assert len(group.symbols) == 1
+                assert group.symbols[0].name == "ClassA"
+            elif group.file_path.name == "file2.py":
+                assert len(group.symbols) == 1
+                assert group.symbols[0].name == "func_b"
+
+
+@pytest.mark.asyncio
+async def test_outline_directory_recursive():
+    import tempfile
+
+    class MockDirectoryClient(MockOutlineClient):
+        def __init__(self, tmpdir):
+            super().__init__()
+            self.tmpdir = tmpdir
+            self.file_symbols = {
+                "file1.py": [
+                    DocumentSymbol(
+                        name="ClassA",
+                        kind=SymbolKind.Class,
+                        range=LSPRange(
+                            start=LSPPosition(line=0, character=0),
+                            end=LSPPosition(line=1, character=0),
+                        ),
+                        selection_range=LSPRange(
+                            start=LSPPosition(line=0, character=6),
+                            end=LSPPosition(line=0, character=12),
+                        ),
+                    )
+                ],
+                "file2.py": [
+                    DocumentSymbol(
+                        name="func_b",
+                        kind=SymbolKind.Function,
+                        range=LSPRange(
+                            start=LSPPosition(line=0, character=0),
+                            end=LSPPosition(line=1, character=0),
+                        ),
+                        selection_range=LSPRange(
+                            start=LSPPosition(line=0, character=4),
+                            end=LSPPosition(line=0, character=10),
+                        ),
+                    )
+                ],
+                "nested.py": [
+                    DocumentSymbol(
+                        name="ClassC",
+                        kind=SymbolKind.Class,
+                        range=LSPRange(
+                            start=LSPPosition(line=0, character=0),
+                            end=LSPPosition(line=1, character=0),
+                        ),
+                        selection_range=LSPRange(
+                            start=LSPPosition(line=0, character=6),
+                            end=LSPPosition(line=0, character=12),
+                        ),
+                    )
+                ],
+            }
+
+        async def request_document_symbol_list(self, file_path) -> list[DocumentSymbol]:
+            filename = file_path.name
+            return self.file_symbols.get(filename, [])
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmppath = Path(tmpdir)
+        (tmppath / "file1.py").write_text("class ClassA:\n    pass\n")
+        (tmppath / "file2.py").write_text("def func_b():\n    pass\n")
+        subdir = tmppath / "subdir"
+        subdir.mkdir()
+        (subdir / "nested.py").write_text("class ClassC:\n    pass\n")
+
+        client = MockDirectoryClient(tmppath)
+        capability = OutlineCapability(client=client)  # type: ignore
+
+        # Test non-recursive (default) - should only find files in immediate directory
+        req = OutlineRequest(path=tmppath, recursive=False)
+        resp = await capability(req)
+        assert resp is not None
+        assert resp.path == tmppath
+        assert resp.total_files == 2
+        assert resp.total_symbols == 2
+        file_names = {group.file_path.name for group in resp.files}
+        assert file_names == {"file1.py", "file2.py"}
+
+        # Test recursive - should find files in subdirectories too
+        req = OutlineRequest(path=tmppath, recursive=True)
+        resp = await capability(req)
+        assert resp is not None
+        assert resp.path == tmppath
+        assert resp.total_files == 3
+        assert resp.total_symbols == 3
+        file_names = {group.file_path.name for group in resp.files}
+        assert file_names == {"file1.py", "file2.py", "nested.py"}
