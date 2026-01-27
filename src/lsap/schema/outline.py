@@ -60,6 +60,27 @@ Request:
   "recursive": true
 }
 ```
+
+### Scenario 6: Getting outline for files matching glob pattern
+
+Request:
+
+```json
+{
+  "path": "src",
+  "glob": "**/*.py"
+}
+```
+
+### Scenario 7: Getting outline for specific files using glob without base path
+
+Request:
+
+```json
+{
+  "glob": "tests/**/*_test.ts"
+}
+```
 """
 
 from pathlib import Path
@@ -98,12 +119,16 @@ class OutlineRequest(Request):
     **Directory Mode**: When `path` points to a directory, lists code files and symbols.
     - recursive=False (default): Only files in the immediate directory
     - recursive=True: Recursively scan subdirectories
+    - glob: Optional glob pattern to filter files (e.g., "**/*.py", "src/**/*.ts")
 
     If `scope` is provided (file mode only), it will locate the specified symbol
     and return the outline for that symbol and its children.
     """
 
-    path: Path
+    path: Path | None = None
+    """Path to a file or directory. Required unless glob is provided."""
+    glob: str | None = None
+    """Glob pattern to filter files (e.g., "**/*.py", "src/**/*.ts"). Only valid for directory mode."""
     scope: SymbolScope | None = None
     """Optional symbol path to narrow the outline (e.g. `MyClass` or `MyClass.my_method`). Only valid for files."""
     recursive: bool = False
@@ -111,8 +136,14 @@ class OutlineRequest(Request):
 
     @model_validator(mode="after")
     def validate_request_fields(self) -> Self:
-        if self.scope and self.path.is_dir():
+        if self.path is None and self.glob is None:
+            raise ValueError("Either path or glob must be provided")
+        if self.glob and self.path and not self.path.is_dir():
+            raise ValueError("glob can only be used with directory paths")
+        if self.scope and self.path and self.path.is_dir():
             raise ValueError("scope cannot be used with directory paths")
+        if self.scope and self.glob:
+            raise ValueError("scope cannot be used with glob patterns")
         return self
 
 
