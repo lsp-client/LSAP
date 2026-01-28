@@ -2,7 +2,7 @@
 # Locate API
 
 The Locate API provides a unified way to specify a position or range in the codebase.
-It is used as a base for many other requests like `SymbolRequest`, `ReferenceRequest`,
+It is used as a base for many other requests like `InspectRequest`, `ReferenceRequest`,
 and `HierarchyRequest`.
 
 ## String Syntax

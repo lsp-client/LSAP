@@ -1,7 +1,7 @@
 # Search API
 
 The Search API provides fast, fuzzy symbol search across the entire workspace.
-Results are concise for quick discovery—use the Symbol API to get detailed
+Results are concise for quick discovery—use the Inspect API to get detailed
 information about specific symbols.
 
 ## Example Usage

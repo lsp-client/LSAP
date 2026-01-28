@@ -19,8 +19,8 @@ from lsap.schema.models import SymbolCodeInfo
 from lsap.utils.capability import ensure_capability
 
 from .abc import Capability
+from .inspect import InspectCapability
 from .locate import LocateCapability
-from .symbol import SymbolCapability
 
 
 @define
@@ -32,8 +32,8 @@ class DefinitionCapability(Capability[DefinitionRequest, DefinitionResponse]):
         return LocateCapability(self.client)
 
     @cached_property
-    def symbol(self) -> SymbolCapability:
-        return SymbolCapability(self.client)
+    def inspect(self) -> InspectCapability:
+        return InspectCapability(self.client)
 
     @override
     async def __call__(self, req: DefinitionRequest) -> DefinitionResponse | None:
@@ -74,7 +74,7 @@ class DefinitionCapability(Capability[DefinitionRequest, DefinitionResponse]):
             async def resolve_item(loc: Location) -> SymbolCodeInfo | None:
                 async with self.resolve_sem:
                     target_file_path = self.client.from_uri(loc.uri)
-                    if symbol_info := await self.symbol.resolve(
+                    if symbol_info := await self.inspect.resolve(
                         target_file_path,
                         loc.range.start,
                     ):

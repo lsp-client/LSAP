@@ -11,6 +11,7 @@ from lsp_client.capability.request import (
 )
 from lsprotocol.types import Position as LSPPosition
 
+from lsap.schema.inspect import InspectRequest, InspectResponse
 from lsap.schema.models import (
     CallHierarchy,
     CallHierarchyItem,
@@ -18,7 +19,6 @@ from lsap.schema.models import (
     SymbolCodeInfo,
     SymbolKind,
 )
-from lsap.schema.symbol import SymbolRequest, SymbolResponse
 from lsap.utils.capability import ensure_capability, get_capability
 from lsap.utils.document import DocumentReader
 from lsap.utils.symbol import symbol_at
@@ -29,7 +29,7 @@ from .outline import OutlineCapability
 
 
 @define
-class SymbolCapability(Capability[SymbolRequest, SymbolResponse]):
+class InspectCapability(Capability[InspectRequest, InspectResponse]):
     @cached_property
     def locate(self) -> LocateCapability:
         return LocateCapability(self.client)
@@ -39,7 +39,7 @@ class SymbolCapability(Capability[SymbolRequest, SymbolResponse]):
         return OutlineCapability(self.client)
 
     @override
-    async def __call__(self, req: SymbolRequest) -> SymbolResponse | None:
+    async def __call__(self, req: InspectRequest) -> InspectResponse | None:
         location = await self.locate(req)
         if not location:
             return None
@@ -55,7 +55,7 @@ class SymbolCapability(Capability[SymbolRequest, SymbolResponse]):
 
         call_hierarchy = await self._get_call_hierarchy(location.file_path, lsp_pos)
 
-        return SymbolResponse(
+        return InspectResponse(
             info=best_match,
             call_hierarchy=call_hierarchy,
         )

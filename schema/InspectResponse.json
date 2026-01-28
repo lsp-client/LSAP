@@ -173,7 +173,7 @@
       "type": "object"
     }
   },
-  "markdown": "\n# Symbol: `{{ info.path | join: \".\" }}` (`{{ info.kind }}`) at `{{ info.file_path }}`\n\n{% if info.code != nil -%}\n## Implementation\n```{{ info.file_path.suffix | remove_first: \".\" }}\n{{ info.code }}\n```\n{%- endif %}\n\n{% if call_hierarchy != nil -%}\n{% if call_hierarchy.incoming.size > 0 -%}\n## Incoming Calls\n{% for item in call_hierarchy.incoming -%}\n- `{{ item.name }}` (`{{ item.kind }}`) at `{{ item.file_path }}:{{ item.range.start.line }}`\n{% endfor -%}\n{%- endif %}\n\n{% if call_hierarchy.outgoing.size > 0 -%}\n## Outgoing Calls\n{% for item in call_hierarchy.outgoing -%}\n- `{{ item.name }}` (`{{ item.kind }}`) at `{{ item.file_path }}:{{ item.range.start.line }}`\n{% endfor -%}\n{%- endif %}\n{%- endif %}\n",
+  "markdown": "\n# Inspect: `{{ info.path | join: \".\" }}` (`{{ info.kind }}`) at `{{ info.file_path }}`\n\n{% if info.code != nil -%}\n## Implementation\n```{{ info.file_path.suffix | remove_first: \".\" }}\n{{ info.code }}\n```\n{%- endif %}\n\n{% if call_hierarchy != nil -%}\n{% if call_hierarchy.incoming.size > 0 -%}\n## Incoming Calls\n{% for item in call_hierarchy.incoming -%}\n- `{{ item.name }}` (`{{ item.kind }}`) at `{{ item.file_path }}:{{ item.range.start.line }}`\n{% endfor -%}\n{%- endif %}\n\n{% if call_hierarchy.outgoing.size > 0 -%}\n## Outgoing Calls\n{% for item in call_hierarchy.outgoing -%}\n- `{{ item.name }}` (`{{ item.kind }}`) at `{{ item.file_path }}:{{ item.range.start.line }}`\n{% endfor -%}\n{%- endif %}\n{%- endif %}\n",
   "properties": {
     "info": {
       "$ref": "#/$defs/SymbolCodeInfo"
@@ -193,6 +193,6 @@
   "required": [
     "info"
   ],
-  "title": "SymbolResponse",
+  "title": "InspectResponse",
   "type": "object"
 }

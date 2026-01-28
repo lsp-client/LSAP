@@ -1,12 +1,12 @@
 from typing import TypedDict
 
 from .definition import DefinitionCapability
+from .inspect import InspectCapability
 from .locate import LocateCapability
 from .outline import OutlineCapability
 from .reference import ReferenceCapability
 from .rename import RenameExecuteCapability, RenamePreviewCapability
 from .search import SearchCapability
-from .symbol import SymbolCapability
 
 
 class Capabilities(TypedDict):
@@ -17,4 +17,4 @@ class Capabilities(TypedDict):
     rename_preview: RenamePreviewCapability
     rename_execute: RenameExecuteCapability
     search: SearchCapability
-    symbol: SymbolCapability
+    inspect: InspectCapability
