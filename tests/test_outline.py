@@ -11,7 +11,7 @@ from lsp_client.client.document_state import DocumentStateManager
 from lsp_client.protocol import CapabilityClientProtocol
 from lsp_client.protocol.lang import LanguageConfig
 from lsp_client.utils.config import ConfigurationMap
-from lsp_client.utils.workspace import DEFAULT_WORKSPACE_DIR, Workspace, WorkspaceFolder
+from lsp_client.utils.workspace import WORKSPACE_ROOT_DIR, Workspace, WorkspaceFolder
 from lsprotocol.types import DocumentSymbol, LanguageKind, SymbolKind
 from lsprotocol.types import Position as LSPPosition
 from lsprotocol.types import Range as LSPRange
@@ -28,9 +28,9 @@ class MockOutlineClient(
     def __init__(self):
         self._workspace = Workspace(
             {
-                DEFAULT_WORKSPACE_DIR: WorkspaceFolder(
+                WORKSPACE_ROOT_DIR: WorkspaceFolder(
                     uri=Path.cwd().as_uri(),
-                    name=DEFAULT_WORKSPACE_DIR,
+                    name=WORKSPACE_ROOT_DIR,
                 )
             }
         )
@@ -737,7 +737,7 @@ async def test_outline_glob_without_path():
         (subdir / "nested.py").write_text("class NestedClass:\n    pass\n")
 
         # Change to tmpdir to test relative glob
-        old_cwd = os.getcwd()
+        old_cwd = Path.cwd()
         try:
             os.chdir(tmppath)
 
@@ -778,3 +778,39 @@ async def test_outline_validation_errors():
         # Test: scope with glob
         with pytest.raises(ValueError, match="scope cannot be used with glob patterns"):
             OutlineRequest(glob="*.py", scope=SymbolScope(symbol_path=["Test"]))
+
+        # Test: recursive with glob
+        with pytest.raises(
+            ValueError, match="recursive cannot be used with glob patterns"
+        ):
+            OutlineRequest(glob="**/*.py", recursive=True)
+
+        # Test: path does not exist when used with glob
+        with pytest.raises(ValueError, match="path must exist when used with glob"):
+            OutlineRequest(path=tmppath / "non_existent", glob="*.py")
+
+
+@pytest.mark.asyncio
+async def test_outline_glob_excludes_directories():
+    """Test that glob pattern excludes directories from results."""
+
+    class MockGlobClient(MockOutlineClient):
+        async def request_document_symbol_list(self, file_path) -> list[DocumentSymbol]:
+            return []
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmppath = Path(tmpdir)
+        (tmppath / "file.py").write_text("pass")
+        (tmppath / "dir.py").mkdir()  # A directory named dir.py
+
+        client = MockGlobClient()
+        capability = OutlineCapability(client=client)  # type: ignore
+
+        req = OutlineRequest(path=tmppath, glob="*.py")
+        resp = await capability(req)
+
+        assert resp is not None
+        assert resp.total_files == 1
+        file_names = {group.file_path.name for group in resp.files}
+        assert file_names == {"file.py"}
+        assert "dir.py" not in file_names

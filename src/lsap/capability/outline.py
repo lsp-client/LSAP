@@ -43,13 +43,13 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
 
         if req.glob:
             base_path = req.path or Path.cwd()
-            code_files = list(base_path.glob(req.glob))
+            code_files = [p for p in base_path.glob(req.glob) if p.is_file()]
         else:
             assert req.path is not None and req.path.is_dir()
             lang_config = self.client.get_language_config()
             glob_fn = req.path.rglob if req.recursive else req.path.glob
             for suffix in lang_config.suffixes:
-                code_files.extend(glob_fn(f"*{suffix}"))
+                code_files.extend(p for p in glob_fn(f"*{suffix}") if p.is_file())
 
         file_groups: list[OutlineFileGroup] = []
         total_symbols = 0

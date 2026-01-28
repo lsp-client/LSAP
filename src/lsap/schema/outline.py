@@ -126,7 +126,7 @@ class OutlineRequest(Request):
     """
 
     path: Path | None = None
-    """Path to a file or directory. Required unless glob is provided."""
+    """Path to a file or directory. When used with glob, serves as the base directory for the pattern. Required unless glob is provided without a base path."""
     glob: str | None = None
     """Glob pattern to filter files (e.g., "**/*.py", "src/**/*.ts"). Only valid for directory mode."""
     scope: SymbolScope | None = None
@@ -138,12 +138,23 @@ class OutlineRequest(Request):
     def validate_request_fields(self) -> Self:
         if self.path is None and self.glob is None:
             raise ValueError("Either path or glob must be provided")
-        if self.glob and self.path and not self.path.is_dir():
-            raise ValueError("glob can only be used with directory paths")
+
+        # Glob-related validations (directory mode only)
+        if self.glob:
+            if self.path:
+                if not self.path.exists():
+                    raise ValueError("path must exist when used with glob")
+                if not self.path.is_dir():
+                    raise ValueError("glob can only be used with directory paths")
+            if self.scope:
+                raise ValueError("scope cannot be used with glob patterns")
+            if self.recursive:
+                raise ValueError("recursive cannot be used with glob patterns")
+
+        # Scope-related validations (file mode only)
         if self.scope and self.path and self.path.is_dir():
             raise ValueError("scope cannot be used with directory paths")
-        if self.scope and self.glob:
-            raise ValueError("scope cannot be used with glob patterns")
+
         return self
 
 
