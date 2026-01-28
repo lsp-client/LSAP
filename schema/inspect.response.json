@@ -70,35 +70,13 @@
       "type": "string"
     }
   },
-  "markdown": "\n# Symbol: `{{ path | join: \".\" }}` (`{{ kind }}`) at `{{ file_path }}`\n\n{% if code != nil -%}\n## Implementation\n```{{ file_path.suffix | remove_first: \".\" }}\n{{ code }}\n```\n{%- endif %}\n",
+  "markdown": "\n# Inspect: `{{ path | join: \".\" }}` (`{{ kind }}`) at `{{ file_path }}`\n\n{% if code != nil -%}\n## Implementation\n```{{ file_path.suffix | remove_first: \".\" }}\n{{ code }}\n```\n{%- endif %}\n",
   "properties": {
-    "file_path": {
-      "format": "path",
-      "title": "File Path",
-      "type": "string"
-    },
-    "name": {
-      "title": "Name",
-      "type": "string"
-    },
-    "path": {
-      "items": {
-        "type": "string"
-      },
-      "title": "Path",
-      "type": "array"
-    },
-    "kind": {
-      "$ref": "#/$defs/SymbolKind"
-    },
-    "range": {
-      "anyOf": [
-        {
-          "$ref": "#/$defs/Range"
-        },
-        {
-          "type": "null"
-        }
+...
+  "title": "InspectResponse",
+  "type": "object"
+}
+
       ],
       "default": null
     },

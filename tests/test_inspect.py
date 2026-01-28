@@ -12,7 +12,7 @@ from lsp_client.protocol import CapabilityClientProtocol
 from lsp_client.protocol.lang import LanguageConfig
 from lsp_client.utils.config import ConfigurationMap
 from lsp_client.utils.types import AnyPath
-from lsp_client.utils.workspace import DEFAULT_WORKSPACE_DIR, Workspace, WorkspaceFolder
+from lsp_client.utils.workspace import WORKSPACE_ROOT_DIR, Workspace, WorkspaceFolder
 from lsprotocol.types import (
     CallHierarchyIncomingCall,
     CallHierarchyOutgoingCall,
@@ -26,13 +26,13 @@ from lsprotocol.types import (
 from lsprotocol.types import Position as LSPPosition
 from lsprotocol.types import Range as LSPRange
 
-from lsap.capability.symbol import SymbolCapability
+from lsap.capability.inspect import InspectCapability
+from lsap.schema.inspect import InspectRequest
 from lsap.schema.locate import LineScope, Locate, SymbolScope
-from lsap.schema.symbol import SymbolRequest
 from lsap.schema.types import Symbol, SymbolPath
 
 
-class MockSymbolClient(
+class MockInspectClient(
     WithRequestCallHierarchy,
     WithRequestDocumentSymbol,
     WithRequestHover,
@@ -41,9 +41,9 @@ class MockSymbolClient(
     def __init__(self):
         self._workspace = Workspace(
             {
-                DEFAULT_WORKSPACE_DIR: WorkspaceFolder(
+                WORKSPACE_ROOT_DIR: WorkspaceFolder(
                     uri=Path.cwd().as_uri(),
-                    name=DEFAULT_WORKSPACE_DIR,
+                    name=WORKSPACE_ROOT_DIR,
                 )
             }
         )
@@ -167,11 +167,11 @@ class MockSymbolClient(
 
 
 @pytest.mark.asyncio
-async def test_symbol_call_hierarchy():
-    client = MockSymbolClient()
-    capability = SymbolCapability(client=client)  # type: ignore
+async def test_inspect_call_hierarchy():
+    client = MockInspectClient()
+    capability = InspectCapability(client=client)  # type: ignore
 
-    req = SymbolRequest(
+    req = InspectRequest(
         locate=Locate(
             file_path=Path("test.py"),
             scope=SymbolScope(symbol_path=SymbolPath([Symbol("A"), Symbol("foo")])),
@@ -191,11 +191,11 @@ async def test_symbol_call_hierarchy():
 
 
 @pytest.mark.asyncio
-async def test_symbol_from_path():
-    client = MockSymbolClient()
-    capability = SymbolCapability(client=client)  # type: ignore
+async def test_inspect_from_path():
+    client = MockInspectClient()
+    capability = InspectCapability(client=client)  # type: ignore
 
-    req = SymbolRequest(
+    req = InspectRequest(
         locate=Locate(
             file_path=Path("test.py"),
             scope=SymbolScope(symbol_path=SymbolPath([Symbol("A"), Symbol("foo")])),
@@ -211,11 +211,11 @@ async def test_symbol_from_path():
 
 
 @pytest.mark.asyncio
-async def test_symbol_from_text():
-    client = MockSymbolClient()
-    capability = SymbolCapability(client=client)  # type: ignore
+async def test_inspect_from_text():
+    client = MockInspectClient()
+    capability = InspectCapability(client=client)  # type: ignore
 
-    req = SymbolRequest(
+    req = InspectRequest(
         locate=Locate(
             file_path=Path("test.py"),
             scope=LineScope(start_line=2, end_line=3),

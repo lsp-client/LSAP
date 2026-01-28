@@ -2,7 +2,7 @@
 # Search API
 
 The Search API provides fast, fuzzy symbol search across the entire workspace.
-Results are concise for quick discovery—use the Symbol API to get detailed
+Results are concise for quick discovery—use the Inspect API to get detailed
 information about specific symbols.
 
 ## Example Usage
@@ -68,7 +68,7 @@ class SearchRequest(PaginatedRequest):
     """
     Searches for symbols across the workspace by name pattern.
 
-    Returns concise results for quick discovery. Use SymbolRequest
+    Returns concise results for quick discovery. Use InspectRequest
     to get detailed information about a specific symbol.
     """
 

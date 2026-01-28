@@ -1,7 +1,7 @@
 """
-# Symbol API
+# Inspect API
 
-The Symbol API provides detailed information about a specific code symbol,
+The Inspect API provides detailed information about a specific code symbol,
 including its source code and documentation. It is the primary way for an
 Agent to understand the implementation and usage of a function, class, or variable.
 
@@ -47,7 +47,7 @@ from .locate import LocateRequest
 from .models import CallHierarchy, SymbolCodeInfo
 
 
-class SymbolRequest(LocateRequest):
+class InspectRequest(LocateRequest):
     """
     Retrieves detailed information about a symbol at a specific location.
 
@@ -57,7 +57,7 @@ class SymbolRequest(LocateRequest):
 
 
 markdown_template: Final = """
-# Symbol: `{{ info.path | join: "." }}` (`{{ info.kind }}`) at `{{ info.file_path }}`
+# Inspect: `{{ info.path | join: "." }}` (`{{ info.kind }}`) at `{{ info.file_path }}`
 
 {% if info.code != nil -%}
 ## Implementation
@@ -84,7 +84,7 @@ markdown_template: Final = """
 """
 
 
-class SymbolResponse(Response):
+class InspectResponse(Response):
     info: SymbolCodeInfo
     call_hierarchy: CallHierarchy | None = None
 
@@ -96,6 +96,6 @@ class SymbolResponse(Response):
 
 
 __all__ = [
-    "SymbolRequest",
-    "SymbolResponse",
+    "InspectRequest",
+    "InspectResponse",
 ]

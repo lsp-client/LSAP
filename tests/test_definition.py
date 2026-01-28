@@ -14,7 +14,7 @@ from lsp_client.client.document_state import DocumentStateManager
 from lsp_client.protocol import CapabilityClientProtocol
 from lsp_client.protocol.lang import LanguageConfig
 from lsp_client.utils.config import ConfigurationMap
-from lsp_client.utils.workspace import DEFAULT_WORKSPACE_DIR, Workspace, WorkspaceFolder
+from lsp_client.utils.workspace import WORKSPACE_ROOT_DIR, Workspace, WorkspaceFolder
 from lsprotocol.types import DocumentSymbol, LanguageKind, Location, SymbolKind
 from lsprotocol.types import Position as LSPPosition
 from lsprotocol.types import Range as LSPRange
@@ -35,9 +35,9 @@ class MockDefinitionClient(
     def __init__(self):
         self._workspace = Workspace(
             {
-                DEFAULT_WORKSPACE_DIR: WorkspaceFolder(
+                WORKSPACE_ROOT_DIR: WorkspaceFolder(
                     uri=Path.cwd().as_uri(),
-                    name=DEFAULT_WORKSPACE_DIR,
+                    name=WORKSPACE_ROOT_DIR,
                 )
             }
         )
