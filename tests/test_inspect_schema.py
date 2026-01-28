@@ -1,17 +1,19 @@
 from pathlib import Path
+
 import pytest
 from pydantic import ValidationError
+
 from lsap.schema.draft.inspect import InspectRequest, InspectResponse, UsageExample
 from lsap.schema.locate import Locate
 from lsap.schema.models import (
-    SymbolDetailInfo,
+    CallHierarchy,
+    CallHierarchyItem,
     Location,
     Position,
     Range,
-    SymbolKind,
+    SymbolDetailInfo,
     SymbolInfo,
-    CallHierarchy,
-    CallHierarchyItem,
+    SymbolKind,
 )
 
 
