@@ -176,7 +176,7 @@ class ExploreResponse(Response):
 
 
 __all__ = [
-    "HierarchyInfo",
     "ExploreRequest",
     "ExploreResponse",
+    "HierarchyInfo",
 ]

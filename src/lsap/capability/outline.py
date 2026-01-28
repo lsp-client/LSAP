@@ -34,19 +34,22 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
 
     @override
     async def __call__(self, req: OutlineRequest) -> OutlineResponse | None:
-        if req.path.is_dir():
+        if req.glob or (req.path and req.path.is_dir()):
             return await self._handle_directory(req)
         return await self._handle_file(req)
 
     async def _handle_directory(self, req: OutlineRequest) -> OutlineResponse | None:
-        assert req.path.is_dir()
-
         code_files: list[Path] = []
 
-        lang_config = self.client.get_language_config()
-        glob = req.path.rglob if req.recursive else req.path.glob
-        for suffix in lang_config.suffixes:
-            code_files.extend(glob(f"*{suffix}"))
+        if req.glob:
+            base_path = req.path or Path.cwd()
+            code_files = [p for p in base_path.glob(req.glob) if p.is_file()]
+        else:
+            assert req.path is not None and req.path.is_dir()
+            lang_config = self.client.get_language_config()
+            glob_fn = req.path.rglob if req.recursive else req.path.glob
+            for suffix in lang_config.suffixes:
+                code_files.extend(p for p in glob_fn(f"*{suffix}") if p.is_file())
 
         file_groups: list[OutlineFileGroup] = []
         total_symbols = 0
@@ -66,14 +69,14 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
             total_symbols += len(group.symbols)
 
         has_subdirs = False
-        if not req.recursive:
+        if not req.recursive and req.path:
             for p in req.path.iterdir():
                 if p.is_dir() and not p.name.startswith("."):
                     has_subdirs = True
                     break
 
         return OutlineResponse(
-            path=req.path,
+            path=req.path or Path.cwd(),
             is_directory=True,
             request=req,
             files=file_groups,
@@ -105,6 +108,7 @@ class OutlineCapability(Capability[OutlineRequest, OutlineResponse]):
         file_groups.append(OutlineFileGroup(file_path=file_path, symbols=items))
 
     async def _handle_file(self, req: OutlineRequest) -> OutlineResponse | None:
+        assert req.path is not None
         file_path = req.path
         symbols = await ensure_capability(
             self.client, WithRequestDocumentSymbol

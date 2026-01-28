@@ -11,7 +11,7 @@ from lsp_client.client.document_state import DocumentStateManager
 from lsp_client.protocol import CapabilityClientProtocol
 from lsp_client.protocol.lang import LanguageConfig
 from lsp_client.utils.config import ConfigurationMap
-from lsp_client.utils.workspace import DEFAULT_WORKSPACE_DIR, Workspace, WorkspaceFolder
+from lsp_client.utils.workspace import WORKSPACE_ROOT_DIR, Workspace, WorkspaceFolder
 from lsprotocol.types import DocumentSymbol, LanguageKind, SymbolKind
 from lsprotocol.types import Position as LSPPosition
 from lsprotocol.types import Range as LSPRange
@@ -28,9 +28,9 @@ class MockOutlineClient(
     def __init__(self):
         self._workspace = Workspace(
             {
-                DEFAULT_WORKSPACE_DIR: WorkspaceFolder(
+                WORKSPACE_ROOT_DIR: WorkspaceFolder(
                     uri=Path.cwd().as_uri(),
-                    name=DEFAULT_WORKSPACE_DIR,
+                    name=WORKSPACE_ROOT_DIR,
                 )
             }
         )
@@ -633,3 +633,184 @@ async def test_outline_directory_excludes_non_code_files():
         assert file_names == {"file1.py"}
         assert "README.md" not in file_names
         assert "data.json" not in file_names
+
+
+@pytest.mark.asyncio
+async def test_outline_with_glob_pattern():
+    """Test outline with glob pattern to filter files."""
+
+    class MockGlobClient(MockOutlineClient):
+        def __init__(self, tmpdir):
+            super().__init__()
+            self.tmpdir = tmpdir
+            self.file_symbols = {
+                "test_one.py": [
+                    DocumentSymbol(
+                        name="TestOne",
+                        kind=SymbolKind.Class,
+                        range=LSPRange(
+                            start=LSPPosition(line=0, character=0),
+                            end=LSPPosition(line=1, character=0),
+                        ),
+                        selection_range=LSPRange(
+                            start=LSPPosition(line=0, character=6),
+                            end=LSPPosition(line=0, character=13),
+                        ),
+                    )
+                ],
+                "test_two.py": [
+                    DocumentSymbol(
+                        name="TestTwo",
+                        kind=SymbolKind.Class,
+                        range=LSPRange(
+                            start=LSPPosition(line=0, character=0),
+                            end=LSPPosition(line=1, character=0),
+                        ),
+                        selection_range=LSPRange(
+                            start=LSPPosition(line=0, character=6),
+                            end=LSPPosition(line=0, character=13),
+                        ),
+                    )
+                ],
+            }
+
+        async def request_document_symbol_list(self, file_path) -> list[DocumentSymbol]:
+            filename = file_path.name
+            return self.file_symbols.get(filename, [])
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmppath = Path(tmpdir)
+        (tmppath / "test_one.py").write_text("class TestOne:\n    pass\n")
+        (tmppath / "test_two.py").write_text("class TestTwo:\n    pass\n")
+        (tmppath / "main.py").write_text("def main():\n    pass\n")
+
+        client = MockGlobClient(tmppath)
+        capability = OutlineCapability(client=client)  # type: ignore
+
+        # Test with glob pattern to only match test files
+        req = OutlineRequest(path=tmppath, glob="test_*.py")
+        resp = await capability(req)
+
+        assert resp is not None
+        assert resp.is_directory is True
+        assert resp.total_files == 2
+        file_names = {group.file_path.name for group in resp.files}
+        assert file_names == {"test_one.py", "test_two.py"}
+        assert "main.py" not in file_names
+
+
+@pytest.mark.asyncio
+async def test_outline_glob_without_path():
+    """Test outline with glob pattern without explicit base path."""
+
+    class MockGlobClient(MockOutlineClient):
+        def __init__(self, tmpdir):
+            super().__init__()
+            self.tmpdir = tmpdir
+            self.file_symbols = {
+                "nested.py": [
+                    DocumentSymbol(
+                        name="NestedClass",
+                        kind=SymbolKind.Class,
+                        range=LSPRange(
+                            start=LSPPosition(line=0, character=0),
+                            end=LSPPosition(line=1, character=0),
+                        ),
+                        selection_range=LSPRange(
+                            start=LSPPosition(line=0, character=6),
+                            end=LSPPosition(line=0, character=17),
+                        ),
+                    )
+                ],
+            }
+
+        async def request_document_symbol_list(self, file_path) -> list[DocumentSymbol]:
+            filename = file_path.name
+            return self.file_symbols.get(filename, [])
+
+    import os
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmppath = Path(tmpdir)
+        subdir = tmppath / "subdir"
+        subdir.mkdir()
+        (subdir / "nested.py").write_text("class NestedClass:\n    pass\n")
+
+        # Change to tmpdir to test relative glob
+        old_cwd = Path.cwd()
+        try:
+            os.chdir(tmppath)
+
+            client = MockGlobClient(tmppath)
+            capability = OutlineCapability(client=client)  # type: ignore
+
+            # Test with glob pattern without base path
+            req = OutlineRequest(glob="subdir/*.py")
+            resp = await capability(req)
+
+            assert resp is not None
+            assert resp.is_directory is True
+            assert resp.total_files == 1
+            file_names = {group.file_path.name for group in resp.files}
+            assert file_names == {"nested.py"}
+        finally:
+            os.chdir(old_cwd)
+
+
+@pytest.mark.asyncio
+async def test_outline_validation_errors():
+    """Test validation errors in OutlineRequest."""
+
+    # Test: neither path nor glob provided
+    with pytest.raises(ValueError, match="Either path or glob must be provided"):
+        OutlineRequest()
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmppath = Path(tmpdir)
+        (tmppath / "test.py").write_text("class Test:\n    pass\n")
+
+        # Test: glob with file path
+        with pytest.raises(
+            ValueError, match="glob can only be used with directory paths"
+        ):
+            OutlineRequest(path=tmppath / "test.py", glob="*.py")
+
+        # Test: scope with glob
+        with pytest.raises(ValueError, match="scope cannot be used with glob patterns"):
+            OutlineRequest(glob="*.py", scope=SymbolScope(symbol_path=["Test"]))
+
+        # Test: recursive with glob
+        with pytest.raises(
+            ValueError, match="recursive cannot be used with glob patterns"
+        ):
+            OutlineRequest(glob="**/*.py", recursive=True)
+
+        # Test: path does not exist when used with glob
+        with pytest.raises(ValueError, match="path must exist when used with glob"):
+            OutlineRequest(path=tmppath / "non_existent", glob="*.py")
+
+
+@pytest.mark.asyncio
+async def test_outline_glob_excludes_directories():
+    """Test that glob pattern excludes directories from results."""
+
+    class MockGlobClient(MockOutlineClient):
+        async def request_document_symbol_list(self, file_path) -> list[DocumentSymbol]:
+            return []
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmppath = Path(tmpdir)
+        (tmppath / "file.py").write_text("pass")
+        (tmppath / "dir.py").mkdir()  # A directory named dir.py
+
+        client = MockGlobClient()
+        capability = OutlineCapability(client=client)  # type: ignore
+
+        req = OutlineRequest(path=tmppath, glob="*.py")
+        resp = await capability(req)
+
+        assert resp is not None
+        assert resp.total_files == 1
+        file_names = {group.file_path.name for group in resp.files}
+        assert file_names == {"file.py"}
+        assert "dir.py" not in file_names
